@@ -531,22 +531,11 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
             alert("삭제 중 오류가 발생했습니다.");
         }
     };
-    
-
-
-
-
-
-
-
-
-
-
     if (!isOpen) return null;
 
     return (
         <div className="inset-0 flex z-50 bg-black bg-opacity-50 pb-52">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-[625px] h-[1000px] overflow-auto">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-[625px] overflow-auto">
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-semibold">wizAd</h2>
