@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 
-const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
+const AdsDetailModal = ({ isOpen, onClose }) => {
+    const location = useLocation();
+
+    // URL 쿼리 파라미터를 파싱
+    const queryParams = new URLSearchParams(location.search);
+    const ads = Object.fromEntries(queryParams.entries()); // 쿼리 파라미터를 객체로 변환
+
+    const storeBusinessNumber = ads.store_business_number;
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [saveStatus, setSaveStatus] = useState(null); // 결과 처리
@@ -11,9 +20,9 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [storeInfo, setStoreInfo] = useState("")  // 가게 정보
     const [isStoreInfoVisible, setIsStoreInfoVisible] = useState(false);  // 가게 정보 접히기
 
-    const [useOption, setUseOption] = useState("문자메시지");  // 사이즈 용도
-    const [title, setTitle] = useState("매장 소개");    // 주제 용도
-    const [detailContent, setDetailContent] = useState('');   // 실제 적용할 문구 ex)500원 할인
+    const [useOption, setUseOption] = useState(ads.use_option);  // 사이즈 용도
+    const [title, setTitle] = useState(ads.title);    // 주제 용도
+    const [detailContent, setDetailContent] = useState(ads.detail_title);   // 실제 적용할 문구 ex)500원 할인
     const [gptRole, setGptRole] = useState(''); // gpt 역할 부여 - 지시 내용
     const [isGptRoleVisible, setIsGptRoleVisible] = useState(true);  // 지시 내용 접히기
     const [prompt, setPrompt] = useState(''); // gpt 내용 부여 - 전달 내용
@@ -51,12 +60,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         setData(null);
         setSelectedImages([]);
         setImageLoading(false);
-        setTitle("매장 소개"); // 초기값 유지
+        setTitle(''); // 초기값 유지
         setContent('');
         setContentLoading(false);
         setSaveStatus(null);
         setMessage('');
-        setUseOption("문자메시지"); // 초기값 유지
+        setUseOption(''); // 초기값 유지
         setModelOption('');
         setImageSize(null);
         setCombineImageText('');
@@ -76,16 +85,14 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     useEffect(() => {
         const fetchInitialData = async () => {
             if (isOpen) {
-                console.log(storeBusinessNumber)
                 try {
-                    // console.log("Request URL:", `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/image`);
                     setLoading(true);
                     const response = await axios.post(
                         `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/select/init/info`,
                         null,
                         { params: { store_business_number: storeBusinessNumber } }
                     );
-                    
+
                     const {
                         commercial_district_max_sales_day,
                         commercial_district_max_sales_time,
@@ -122,9 +129,13 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     };
                     setData(updatedData);
                     setImageSize(null)
-                    setUseOption("문자메시지")
-                    setTitle("매장 소개")
+                    setTitle(ads.title)
+                    setUseOption(ads.use_option)
+                    setDetailContent(ads.detail_title)
+                    setContent(ads.content)
                     setModelOption("dalle")
+                    setCombineImageText(ads.ads_image_url)
+
                 } catch (err) {
                     console.error("초기 데이터 로드 중 오류 발생:", err);
                     setError("초기 데이터 로드 중 오류가 발생했습니다.");
@@ -134,7 +145,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             }
         };
         fetchInitialData();
-    }, [isOpen, storeBusinessNumber]);
+    }, [isOpen, storeBusinessNumber, ads.ads_image_url, ads.content, ads.detail_title, ads.title, ads.use_option]);
 
     useEffect(() => {
         if (data) {
@@ -242,7 +253,6 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 basicInfo,
                 { headers: { 'Content-Type': 'application/json' } }
             );
-            // console.log(response.data.content)
             setContent(response.data.content); // 성공 시 서버에서 받은 데이터를 상태에 저장
             setSaveStatus('success'); // 성공 상태로 설정
             setContentLoading(false)
@@ -275,7 +285,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             ai_model_option: modelOption,
             ai_prompt: aiPrompt,
         };
-        
+
         try {
             const response = await axios.post(
                 `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/image`,
@@ -283,7 +293,6 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 { headers: { 'Content-Type': 'application/json' } }
             );
             // 성공 시 받은 데이터 상태에 저장
-            console.log(response.data)
             const { image: base64Image } = response.data; // AI로 생성된 Base64 이미지
             // Base64 -> Blob -> File 변환
             const aiImageBlob = base64ToBlob(base64Image);
@@ -450,7 +459,6 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             }, 1500);
             return;
         }
-        // console.log(base64ToBlob(combineImageText))
         const formData = new FormData();
         formData.append('store_business_number', storeBusinessNumber);
         formData.append('use_option', useOption);
@@ -496,6 +504,44 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             }, 3000); // 3초 후 메시지 숨기기
         }
     };
+
+    const onDelete = async () => {
+        const basicInfo = {
+            ads_id: ads.ads_id,
+        };
+        try {
+            const response = await axios.post(
+                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/delete/status`,
+                basicInfo,
+                { headers: { "Content-Type": "application/json" } }
+            );
+            if (response.status === 200) {
+                // 부모 페이지에 메시지 전송
+                if (window.opener) {
+                    window.opener.postMessage("reload", "*");
+                }
+                // 모달 창 닫기
+                window.close();
+            } else {
+                console.log("삭제 실패");
+                alert("삭제 실패: 항목을 찾을 수 없습니다.");
+            }
+        } catch (err) {
+            console.error("삭제 중 오류 발생:", err);
+            alert("삭제 중 오류가 발생했습니다.");
+        }
+    };
+    
+
+
+
+
+
+
+
+
+
+
     if (!isOpen) return null;
 
     return (
@@ -533,6 +579,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     <div className="w-full border border-black p-3">
                         <div className="mb-6">
                             <p className="text-xl">매장 명: {data.store_name} </p>
+                            <p className="text-xl">테스트: {ads.use_option} </p>
                         </div>
                         <div className="mb-6 flex items-center justify-between">
                             <label className="block text-lg text-gray-700 mb-2">
@@ -617,13 +664,13 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                         <div className="mb-6 w-full">
                             <div className="flex items-center justify-between mb-2">
                                 <label className="block text-lg text-gray-700 mb-2">
-                                    주제 세부 정보 입력
+                                    주제 세부 정보
                                 </label>
                             </div>
                             <div className="relative">
                                 <textarea
                                     rows={2}
-                                    value={detailContent}
+                                    value={detailContent || ""}
                                     onChange={(e) => setDetailContent(e.target.value)}
                                     className="border border-gray-300 rounded w-full px-3 py-2"
                                 />
@@ -713,7 +760,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                             d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
                                         />
                                     </svg>
-                                    ai 생성
+                                    ai 수정
                                 </button>
                             </div>
                             <div className="relative">
@@ -846,7 +893,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                             d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
                                         />
                                     </svg>
-                                    ai 생성
+                                    ai 수정
                                 </button>
                             </div>
                             <input
@@ -897,8 +944,8 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                 style={{
                                                     width: `${optionSizes[useOption]?.width || 'auto'}px`, // useOption의 가로 크기로 맞춤
                                                     height: `${optionSizes[useOption]?.width && imageSize?.width && imageSize?.height
-                                                            ? (optionSizes[useOption].width / imageSize.width) * imageSize.height // 비율에 맞춘 세로 크기
-                                                            : 'auto'
+                                                        ? (optionSizes[useOption].width / imageSize.width) * imageSize.height // 비율에 맞춘 세로 크기
+                                                        : 'auto'
                                                         }px`,
                                                 }}
                                                 className="rounded object-contain"
@@ -925,10 +972,13 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                         </div>
                         {/* 이미지 결과물 영역 */}
                         <div className="mt-4">
-
                             <div className="max-h-screen overflow-auto flex justify-center items-center">
                                 {combineImageText ? (
-                                    <img src={combineImageText} alt="결과 이미지" className="h-auto" />
+                                    <img
+                                        src={`${process.env.REACT_APP_FASTAPI_ADS_URL}${ads.ads_image_url}`}
+                                        alt="결과 이미지"
+                                        className="h-auto"
+                                    />
                                 ) : (
                                     <p className="text-center text-gray-500 p-4">이미지를 생성해주세요</p>
                                 )}
@@ -936,26 +986,37 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                         </div>
                     </div>
                 )}
-                <div className="flex justify-end items-center mt-6 space-x-4">
-                    {/* 좌측 취소 버튼 */}
-                    <button
-                        onClick={onClose}
-                        className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-                    >
-                        취소
-                    </button>
+                {/* 수정, 삭제, 닫기 버튼 */}
+                <div className="flex justify-between items-center mt-6">
+                    {/* 좌측 닫기 버튼 */}
+                    <div>
+                        <button
+                            onClick={onClose}
+                            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                        >
+                            닫기
+                        </button>
+                    </div>
 
-                    {/* 우측 등록 버튼 */}
-                    <button
-                        onClick={onSave}
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    >
-                        등록
-                    </button>
+                    {/* 우측 수정 및 삭제 버튼 */}
+                    <div className="flex space-x-4">
+                        <button
+                            onClick={onDelete}
+                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                        >
+                            삭제
+                        </button>
+                        <button
+                            onClick={onSave}
+                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                        >
+                            수정
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
 
-export default AdsModal;
+export default AdsDetailModal;
