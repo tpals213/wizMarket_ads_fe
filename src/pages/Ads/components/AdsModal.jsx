@@ -432,27 +432,41 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     // };
 
 
+    const getBase64Extension = (base64) => {
+        const mimeType = base64.match(/data:(.*?);base64/)[1];
+        return mimeType.split("/")[1]; // 확장자 추출
+    };
+
     const onSave = async () => {
         // 입력값 유효성 검사
-        if (!title.trim() || !content.trim()) {
+        if (!useOption.trim() || !title.trim()) {
             setSaveStatus('error');
-            setMessage('제목 및 내용을 올바르게 입력해 주세요.');
+            setImageErrorMessage('광고 채널 혹은 주제를 올바르게 선택해 주세요.');
             setLoading(false); // 로딩 상태 종료
             setTimeout(() => {
                 setSaveStatus(null); // 상태 초기화
-                setMessage(''); // 메시지 초기화
+                setImageErrorMessage(''); // 메시지 초기화
             }, 1500);
             return;
         }
-
+        // console.log(base64ToBlob(combineImageText))
         const formData = new FormData();
         formData.append('store_business_number', storeBusinessNumber);
+        formData.append('use_option', useOption);
         formData.append('title', title);
+        formData.append('detail_title', detailContent);
         formData.append('content', content);
+        // 이미지 추가 처리
+        if (combineImageText) {
+            const extension = getBase64Extension(combineImageText); // 확장자 추출
+            const blob = base64ToBlob(combineImageText, `image/${extension}`);
+            formData.append("image", blob, `image.${extension}`); // Blob과 확장자 추가
+        }
 
-        selectedImages.forEach((image) => {
-            formData.append('images', image.file);
-        });
+        // console.log('FormData Type:', Object.prototype.toString.call(formData));
+        // for (let [key, value] of formData.entries()) {
+        //     console.log(`${key}:`, value instanceof File ? value.name : value);
+        // }
 
         try {
             const response = await axios.post(
@@ -463,7 +477,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             // 성공 시 받은 데이터 상태에 저장
             setData(response.data); // 성공 시 서버에서 받은 데이터를 상태에 저장
             setSaveStatus('success'); // 성공 상태로 설정
-            setMessage('저장이 성공적으로 완료되었습니다.');
+            setImageErrorMessage('저장이 성공적으로 완료되었습니다.');
 
             // 모달을 닫기 전에 잠시 메시지를 표시
             setTimeout(() => {
@@ -473,11 +487,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         } catch (err) {
             console.error('저장 중 오류 발생:', err);
             setSaveStatus('error'); // 실패 상태로 설정
-            setMessage('저장 중 오류가 발생했습니다.');
+            setImageErrorMessage('저장 중 오류가 발생했습니다.');
         } finally {
             setTimeout(() => {
                 setSaveStatus(null);
-                setMessage('');
+                setImageErrorMessage('');
             }, 3000); // 3초 후 메시지 숨기기
         }
     };
@@ -497,7 +511,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                         className="text-2xl text-red-500 hover:text-red-800 focus:outline-none"
                         aria-label="Close"
                     >
-                        ✕
+                        외국어
                     </button>
                 </div>
                 {loading && <p>로딩 중...</p>}
