@@ -35,7 +35,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [imageErrorMessage, setImageErrorMessage] = useState('');   // 이미지 생성 에러
 
     const [combineImageText, setCombineImageText] = useState(null)  // 텍스트 + 이미지 결과물
-    // const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
+    const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
 
     const optionSizes = {
         "문자메시지": { width: 333, height: 458 },
@@ -60,7 +60,8 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         setUseOption("문자메시지"); // 초기값 유지
         setModelOption('');
         setImageSize(null);
-        setCombineImageText('');
+        // setCombineImageText('');
+        setCombineImageTexts('');
         setPrompt('');
         setGptRole('');
         setDetailContent('');
@@ -317,10 +318,10 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         // 입력값 유효성 검사
         if (!title.trim() || !content.trim()) {
             setSaveStatus('error');
-            setMessage('주제 혹은 문구를 올바르게 입력해 주세요.');
+            setImageErrorMessage('주제 혹은 문구를 올바르게 입력해 주세요.');
             setTimeout(() => {
                 setSaveStatus(null);
-                setMessage('');
+                setImageErrorMessage('');
             }, 1500);
             return;
         }
@@ -387,6 +388,29 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     };
 
 
+    // const sendFormData = async (formData) => {
+    //     try {
+    //         const response = await axios.post(
+    //             `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/combine/image/text`,
+    //             formData,
+    //             { headers: { 'Content-Type': 'multipart/form-data' } }
+    //         );
+    //         setCombineImageText(response.data.image);
+    //         setSaveStatus('success');
+    //         setMessage('생성이 성공적으로 완료되었습니다.');
+    //     } catch (err) {
+    //         console.error('저장 중 오류 발생:', err);
+    //         setSaveStatus('error');
+    //         setMessage('저장 중 오류가 발생했습니다.');
+    //     } finally {
+    //         setTimeout(() => {
+    //             setSaveStatus(null);
+    //             setMessage('');
+    //         }, 3000);
+    //     }
+    // };
+
+    // 템플릿 2개 처리
     const sendFormData = async (formData) => {
         try {
             const response = await axios.post(
@@ -394,7 +418,9 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
-            setCombineImageText(response.data.image);
+            // 두 개의 이미지를 상태로 저장
+            setCombineImageTexts(response.data.images);
+            console.log(response.data.image)
             setSaveStatus('success');
             setMessage('생성이 성공적으로 완료되었습니다.');
         } catch (err) {
@@ -409,29 +435,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
     };
 
-    // 템플릿 2개 처리
-    // const sendFormData = async (formData) => {
-    //     try {
-    //         const response = await axios.post(
-    //             `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/combine/image/text`,
-    //             formData,
-    //             { headers: { 'Content-Type': 'multipart/form-data' } }
-    //         );
-    //         // 두 개의 이미지를 상태로 저장
-    //         setCombineImageTexts(response.data.images);
-    //         setSaveStatus('success');
-    //         setMessage('생성이 성공적으로 완료되었습니다.');
-    //     } catch (err) {
-    //         console.error('저장 중 오류 발생:', err);
-    //         setSaveStatus('error');
-    //         setMessage('저장 중 오류가 발생했습니다.');
-    //     } finally {
-    //         setTimeout(() => {
-    //             setSaveStatus(null);
-    //             setMessage('');
-    //         }, 3000);
-    //     }
-    // };
+
+    const handleCheckboxChange = (e) => {
+        const { value } = e.target;
+        setCombineImageText(value); // 선택된 이미지 URL 저장
+    };
 
 
     const getBase64Extension = (base64) => {
@@ -451,7 +459,6 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             }, 1500);
             return;
         }
-        console.log(selectedImages)
         const formData = new FormData();
         formData.append('store_business_number', storeBusinessNumber);
         formData.append('use_option', useOption);
@@ -469,9 +476,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             formData.append("final_image", blob, `image.${extension}`); // Blob과 확장자 추가
         }
 
-        // console.log('FormData Type:', Object.prototype.toString.call(formData));
-        // for (let [key, value] of formData.entries()) {
-        //     console.log(`${key}:`, value instanceof File ? value.name : value);
+        // // 2개 처리 중
+        // if (combineImageTexts) {
+        //     const extension = getBase64Extension(combineImageTexts); // 확장자 추출
+        //     const blob = base64ToBlob(combineImageTexts, `image/${extension}`);
+        //     formData.append("final_image", blob, `image.${extension}`); // Blob과 확장자 추가
         // }
 
         try {
@@ -584,7 +593,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 <option value="배너">배너 (377x377)</option>
                             </select>
                         </div>
-                        
+
                         <div className="mb-6">
                             <div className="flex items-center justify-between mb-2">
                                 <label className="block text-lg text-gray-700 mb-2">주제</label>
@@ -940,34 +949,76 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </button>
                         </div>
                         {/* 이미지 결과물 영역 */}
-                        <div className="mt-4">
-
+                        {/* <div className="mt-4">
                             <div className="max-h-screen overflow-auto flex justify-center items-center">
-                                {combineImageText ? (
-                                    <img src={combineImageText} alt="결과 이미지" className="h-auto" />
+                                {combineImageTexts ? (
+                                    <img src={combineImageTexts} alt="결과 이미지" className="h-auto" />
                                 ) : (
                                     <p className="text-center text-gray-500 p-4">이미지를 생성해주세요</p>
                                 )}
                             </div>
-                        </div>
+                        </div> */}
+                        <div className="mt-4">
+    <div className="max-h-screen overflow-auto flex flex-row items-center justify-center gap-4">
+        {combineImageTexts && combineImageTexts.length > 0 ? (
+            combineImageTexts.map((image, index) => (
+                <div key={index} className="text-center">
+                    {/* 이미지 */}
+                    <img
+                        src={image} // 각각의 이미지 URL
+                        alt={`결과 이미지 ${index + 1}`}
+                        className="h-auto max-w-72 rounded-md shadow-md" // 이미지 크기 및 간격 조정
+                    />
+                    {/* 라디오 버튼 */}
+                    <div className="mt-2 flex justify-center">
+                        <input
+                            type="radio"
+                            name="selectedImage" // 같은 그룹으로 묶어 단일 선택 가능
+                            value={image}
+                            onChange={(e) => handleCheckboxChange(e)}
+                            className="form-radio w-6 h-6"
+                            checked={combineImageText === image} // 선택된 상태 유지
+                        />
+                    </div>
+                </div>
+            ))
+        ) : (
+            <p className="text-center text-gray-500 p-4">이미지를 생성해주세요</p>
+        )}
+    </div>
+</div>
+
+
+
+
                     </div>
                 )}
-                <div className="flex justify-end items-center mt-6 space-x-4">
-                    {/* 좌측 취소 버튼 */}
-                    <button
-                        onClick={onClose}
-                        className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-                    >
-                        취소
-                    </button>
+                <div className="flex justify-between items-center mt-6">
+                    {/* 좌측 닫기 버튼 */}
+                    <div>
+                        <button
+                            onClick={onClose}
+                            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                        >
+                            닫기
+                        </button>
+                    </div>
 
-                    {/* 우측 등록 버튼 */}
-                    <button
-                        onClick={onSave}
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    >
-                        등록
-                    </button>
+                    {/* 우측 수정 및 삭제 버튼 */}
+                    <div className="flex space-x-4">
+                        <button
+                            onClick={onSave}
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        >
+                            업로드
+                        </button>
+                        <button
+                            onClick={onSave}
+                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                        >
+                            저장
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
