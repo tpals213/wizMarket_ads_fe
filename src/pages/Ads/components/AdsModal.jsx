@@ -13,6 +13,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     const [useOption, setUseOption] = useState("문자메시지");  // 사이즈 용도
     const [title, setTitle] = useState("매장 소개");    // 주제 용도
+    const [customTitle, setCustomTitle] = useState(""); // 주제 기타 입력값 별도 관리
     const [detailContent, setDetailContent] = useState('');   // 실제 적용할 문구 ex)500원 할인
     const [gptRole, setGptRole] = useState(''); // gpt 역할 부여 - 지시 내용
     const [isGptRoleVisible, setIsGptRoleVisible] = useState(true);  // 지시 내용 접히기
@@ -76,7 +77,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     useEffect(() => {
         const fetchInitialData = async () => {
             if (isOpen) {
-                console.log(storeBusinessNumber)
+
                 try {
                     // console.log("Request URL:", `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/image`);
                     setLoading(true);
@@ -85,7 +86,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                         null,
                         { params: { store_business_number: storeBusinessNumber } }
                     );
-                    
+
                     const {
                         commercial_district_max_sales_day,
                         commercial_district_max_sales_time,
@@ -275,7 +276,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             ai_model_option: modelOption,
             ai_prompt: aiPrompt,
         };
-        
+
         try {
             const response = await axios.post(
                 `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/image`,
@@ -283,7 +284,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 { headers: { 'Content-Type': 'application/json' } }
             );
             // 성공 시 받은 데이터 상태에 저장
-            console.log(response.data)
+
             const { image: base64Image } = response.data; // AI로 생성된 Base64 이미지
             // Base64 -> Blob -> File 변환
             const aiImageBlob = base64ToBlob(base64Image);
@@ -450,18 +451,22 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             }, 1500);
             return;
         }
-        // console.log(base64ToBlob(combineImageText))
+        console.log(selectedImages)
         const formData = new FormData();
         formData.append('store_business_number', storeBusinessNumber);
         formData.append('use_option', useOption);
         formData.append('title', title);
         formData.append('detail_title', detailContent);
         formData.append('content', content);
-        // 이미지 추가 처리
+
+        selectedImages.forEach((image) => {
+            formData.append('image', image.file);
+        });
+        // 최종 이미지 처리
         if (combineImageText) {
             const extension = getBase64Extension(combineImageText); // 확장자 추출
             const blob = base64ToBlob(combineImageText, `image/${extension}`);
-            formData.append("image", blob, `image.${extension}`); // Blob과 확장자 추가
+            formData.append("final_image", blob, `image.${extension}`); // Blob과 확장자 추가
         }
 
         // console.log('FormData Type:', Object.prototype.toString.call(formData));
@@ -579,18 +584,23 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 <option value="배너">배너 (377x377)</option>
                             </select>
                         </div>
+                        
                         <div className="mb-6">
                             <div className="flex items-center justify-between mb-2">
-                                <label className="block text-lg text-gray-700 mb-2">
-                                    주제
-                                </label>
+                                <label className="block text-lg text-gray-700 mb-2">주제</label>
                             </div>
-
                             {/* 주제 선택 셀렉트 */}
                             <select
                                 className="border border-gray-300 rounded w-full px-3 py-2"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                value={title === "기타" ? "기타" : title}
+                                onChange={(e) => {
+                                    if (e.target.value === "기타") {
+                                        setTitle("기타"); // 기타 선택
+                                    } else {
+                                        setTitle(e.target.value); // 다른 옵션 선택 시 바로 title 업데이트
+                                        setCustomTitle(""); // 기타 입력 초기화
+                                    }
+                                }}
                             >
                                 <option value="매장 소개">매장 소개</option>
                                 <option value="이벤트">이벤트</option>
@@ -608,12 +618,18 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         type="text"
                                         className="border border-gray-300 rounded w-full px-3 py-2"
                                         placeholder="기타 항목을 입력하세요"
-                                        value={title}
-                                        onChange={(e) => setTitle(e.target.value)}
+                                        value={customTitle}
+                                        onChange={(e) => setCustomTitle(e.target.value)}
+                                        onBlur={() => {
+                                            if (customTitle.trim()) {
+                                                setTitle(customTitle); // 입력 완료 시 title 업데이트
+                                            }
+                                        }}
                                     />
                                 </div>
                             )}
                         </div>
+
                         <div className="mb-6 w-full">
                             <div className="flex items-center justify-between mb-2">
                                 <label className="block text-lg text-gray-700 mb-2">
@@ -897,8 +913,8 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                 style={{
                                                     width: `${optionSizes[useOption]?.width || 'auto'}px`, // useOption의 가로 크기로 맞춤
                                                     height: `${optionSizes[useOption]?.width && imageSize?.width && imageSize?.height
-                                                            ? (optionSizes[useOption].width / imageSize.width) * imageSize.height // 비율에 맞춘 세로 크기
-                                                            : 'auto'
+                                                        ? (optionSizes[useOption].width / imageSize.width) * imageSize.height // 비율에 맞춘 세로 크기
+                                                        : 'auto'
                                                         }px`,
                                                 }}
                                                 className="rounded object-contain"
