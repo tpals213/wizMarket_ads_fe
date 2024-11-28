@@ -37,6 +37,8 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [combineImageText, setCombineImageText] = useState(null)  // 텍스트 + 이미지 결과물
     const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
 
+    const [uploading, setUploading] = useState(false)
+
     const optionSizes = {
         "문자메시지": { width: 333, height: 458 },
         "유튜브 썸네일": { width: 412, height: 232 },
@@ -510,6 +512,54 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             }, 3000); // 3초 후 메시지 숨기기
         }
     };
+
+
+    const onUpload = async () => {
+        // 입력값 유효성 검사
+        if (!content.trim()) {
+            setSaveStatus('error');
+            setImageErrorMessage('컨텐츠를 입력해 주세요.');
+            setTimeout(() => {
+                setSaveStatus(null);
+                setImageErrorMessage('');
+            }, 1500);
+            return;
+        }
+
+        if (!combineImageText.trim()) {
+            setSaveStatus('error');
+            setImageErrorMessage('이미지 경로를 올바르게 설정해 주세요.');
+            setTimeout(() => {
+                setSaveStatus(null);
+                setImageErrorMessage('');
+            }, 1500);
+            return;
+        }
+        setUploading(true)
+        const formData = new FormData();
+        formData.append('content', content); // 컨텐츠 추가
+        if (combineImageText) {
+            const extension = getBase64Extension(combineImageText); // 확장자 추출
+            const blob = base64ToBlob(combineImageText, `image/${extension}`);
+            formData.append("upload_image", blob, `image.${extension}`); // Blob과 확장자 추가
+        }
+
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/upload`,
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+        } catch (err) {
+            setUploading(false)
+        } finally {
+            setUploading(false)
+        }
+    };
+
+
+
+
     if (!isOpen) return null;
 
     return (
@@ -1003,10 +1053,15 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     {/* 우측 수정 및 삭제 버튼 */}
                     <div className="flex space-x-4">
                         <button
-                            onClick={onSave}
-                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                            onClick={onUpload}
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex justify-center items-center"
+                            disabled={uploading} // 업로드 중일 때 버튼 비활성화
                         >
-                            업로드
+                            {uploading ? (
+                                <div className="w-6 h-6 border-4 border-white border-solid border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                "업로드"
+                            )}
                         </button>
                         <button
                             onClick={onSave}
