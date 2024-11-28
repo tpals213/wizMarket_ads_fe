@@ -526,17 +526,9 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             return;
         }
 
-        if (!combineImageText.trim()) {
-            setSaveStatus('error');
-            setImageErrorMessage('이미지 경로를 올바르게 설정해 주세요.');
-            setTimeout(() => {
-                setSaveStatus(null);
-                setImageErrorMessage('');
-            }, 1500);
-            return;
-        }
-        setUploading(true)
+        setUploading(true);
         const formData = new FormData();
+        formData.append('use_option', useOption); // 컨텐츠 추가
         formData.append('content', content); // 컨텐츠 추가
         if (combineImageText) {
             const extension = getBase64Extension(combineImageText); // 확장자 추출
@@ -551,11 +543,21 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
         } catch (err) {
-            setUploading(false)
+            console.error("업로드 중 오류 발생:", err); // 발생한 에러를 콘솔에 출력
+            if (err.response) {
+                console.error("응답 데이터:", err.response.data); // 서버 응답 에러 메시지
+                console.error("응답 상태 코드:", err.response.status); // HTTP 상태 코드
+                console.error("응답 헤더:", err.response.headers); // 응답 헤더
+            } else if (err.request) {
+                console.error("요청 데이터:", err.request); // 서버에 도달하지 못한 요청 정보
+            } else {
+                console.error("설정 오류:", err.message); // 요청 설정 중 발생한 에러 메시지
+            }
         } finally {
-            setUploading(false)
+            setUploading(false);
         }
     };
+
 
 
 
@@ -1070,6 +1072,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                             저장
                         </button>
                     </div>
+                </div>
+                <div className="mt-2 flex flex-col items-center justify-center p-4 rounded">
+                    <p className="text-gray-600 text-sm">인스타 스토리, 피드, 문자메시지는 업로드 가능</p>
+                    <p className="text-gray-600 text-sm">현재 문자메시지는 이메일로 전송됩니다.</p>
+                    <p className="text-gray-600 text-sm">MMS 기능 예정</p>
                 </div>
             </div>
         </div>
