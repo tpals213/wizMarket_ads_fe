@@ -235,15 +235,29 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
 
 
     useEffect(() => {
-        if (ads?.ads_image_url && selectedImages.length === 0) {
-            setSelectedImages([
-                {
-                    type: "url",
-                    previewUrl: `${process.env.REACT_APP_FASTAPI_ADS_URL}${ads.ads_image_url}`,
-                },
-            ]);
-        }
+        const processImageAsFile = async () => {
+            if (ads?.ads_image_url && selectedImages.length === 0) {
+                try {
+                    const response = await fetch(`${process.env.REACT_APP_FASTAPI_ADS_URL}${ads.ads_image_url}`);
+                    const blob = await response.blob();
+                    const file = new File([blob], "existing-image.jpg", { type: blob.type });
+
+                    setSelectedImages([
+                        {
+                            type: "file", // 파일로 표시
+                            file, // 실제 파일 객체
+                            previewUrl: URL.createObjectURL(file), // 미리보기 URL
+                        },
+                    ]);
+                } catch (error) {
+                    console.error("이미지를 파일로 처리하는 중 오류 발생:", error);
+                }
+            }
+        };
+
+        processImageAsFile();
     }, [ads?.ads_image_url, selectedImages]);
+
 
 
 
@@ -352,15 +366,7 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
             return;
         }
 
-        if (selectedImages[0]?.type === "url") {
-            setImageStatus("error");
-            setImageErrorMessage("이미지를 새로 업로드 하거나 재생성 해주세요");
-            setTimeout(() => {
-                setImageStatus(null);
-                setImageErrorMessage("");
-            }, 1500);
-            return;
-        }
+
 
         const formData = new FormData();
         formData.append("store_name", data.store_name);
@@ -975,8 +981,8 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                             style={{
                                                 width: `${optionSizes[useOption]?.width || 'auto'}px`,
                                                 height: `${optionSizes[useOption]?.width && imageSize?.width && imageSize?.height
-                                                    ? (optionSizes[useOption].width / imageSize.width) * imageSize.height
-                                                    : 'auto'
+                                                        ? (optionSizes[useOption].width / imageSize.width) * imageSize.height
+                                                        : 'auto'
                                                     }px`,
                                             }}
                                             className="rounded object-contain"
@@ -988,24 +994,6 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                         >
                                             &times;
                                         </button>
-                                    </div>
-                                </div>
-                            ) : ads.ads_image_url ? (
-                                // 기존 이미지를 표시
-                                <div className="mt-4 flex justify-center">
-                                    <div className="relative">
-                                        <img
-                                            src={`${process.env.REACT_APP_FASTAPI_ADS_URL}${ads.ads_image_url}`}
-                                            alt="기존 이미지"
-                                            style={{
-                                                width: `${optionSizes[useOption]?.width || 'auto'}px`,
-                                                height: `${optionSizes[useOption]?.width && imageSize?.width && imageSize?.height
-                                                    ? (optionSizes[useOption].width / imageSize.width) * imageSize.height
-                                                    : 'auto'
-                                                    }px`,
-                                            }}
-                                            className="rounded object-contain"
-                                        />
                                     </div>
                                 </div>
                             ) : (
