@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 
@@ -8,8 +8,9 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
     // URL 쿼리 파라미터를 파싱
     const queryParams = new URLSearchParams(location.search);
     const ads = Object.fromEntries(queryParams.entries()); // 쿼리 파라미터를 객체로 변환
-
     const storeBusinessNumber = ads.store_business_number;
+
+    const previousAds = useRef(null);
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -20,10 +21,10 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
     const [storeInfo, setStoreInfo] = useState("")  // 가게 정보
     const [isStoreInfoVisible, setIsStoreInfoVisible] = useState(false);  // 가게 정보 접히기
 
-    const [useOption, setUseOption] = useState(ads.use_option);  // 사이즈 용도
-    const [title, setTitle] = useState(ads.title);    // 주제 용도
+    const [useOption, setUseOption] = useState("");  // 사이즈 용도
+    const [title, setTitle] = useState("");    // 주제 용도
     const [customTitle, setCustomTitle] = useState(""); // 주제 기타 입력값 별도 관리
-    const [detailContent, setDetailContent] = useState(ads.detail_title);   // 실제 적용할 문구 ex)500원 할인
+    const [detailContent, setDetailContent] = useState("");   // 실제 적용할 문구 ex)500원 할인
     const [gptRole, setGptRole] = useState(''); // gpt 역할 부여 - 지시 내용
     const [isGptRoleVisible, setIsGptRoleVisible] = useState(true);  // 지시 내용 접히기
     const [prompt, setPrompt] = useState(''); // gpt 내용 부여 - 전달 내용
@@ -42,9 +43,10 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
     const [isAiPromptVisible, setAiPromptVisible] = useState(true);  // 지시 내용 접히기
     const [imageLoding, setImageLoading] = useState(false)  // 이미지 생성 로딩
     const [imageErrorMessage, setImageErrorMessage] = useState('');   // 이미지 생성 에러
+    const [imageStatus, setImageStatus] = useState('');   // 이미지 생성 상태
 
     const [combineImageText, setCombineImageText] = useState(null)  // 텍스트 + 이미지 결과물
-    // const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
+    const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
 
     const optionSizes = {
         "문자메시지": { width: 333, height: 458 },
@@ -85,7 +87,9 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
 
     useEffect(() => {
         const fetchInitialData = async () => {
-            if (isOpen) {
+            const currentAdsString = JSON.stringify(ads);
+            const previousAdsString = previousAds.current;
+            if (isOpen && ads && currentAdsString !== previousAdsString) {
                 try {
                     setLoading(true);
                     const response = await axios.post(
@@ -128,14 +132,14 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                         maxSalesFemale,
                         maxSalesFemaleValue,
                     };
+                    previousAds.current = currentAdsString; // 현재 상태 저장
                     setData(updatedData);
                     setImageSize(null)
                     setTitle(ads.title)
                     setUseOption(ads.use_option)
-                    setDetailContent(ads.detail_title)
+                    setDetailContent(ads.detail_title && ads.detail_title !== "null" ? ads.detail_title : "");
                     setContent(ads.content)
                     setModelOption("dalle")
-
 
                 } catch (err) {
                     console.error("초기 데이터 로드 중 오류 발생:", err);
@@ -146,7 +150,7 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
             }
         };
         fetchInitialData();
-    }, [isOpen, storeBusinessNumber, ads.ads_image_url, ads.ads_final_image_url, ads.content, ads.detail_title, ads.title, ads.use_option]);
+    }, [isOpen, storeBusinessNumber, ads]);
 
     useEffect(() => {
         if (data) {
@@ -228,6 +232,21 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
 - 스타일 : ${styleOption || "값 없음"}`);
         }
     }, [data, useOption, title, detailContent, content, styleOption]);
+
+
+    useEffect(() => {
+        if (ads?.ads_image_url && selectedImages.length === 0) {
+            setSelectedImages([
+                {
+                    type: "url",
+                    previewUrl: `${process.env.REACT_APP_FASTAPI_ADS_URL}${ads.ads_image_url}`,
+                },
+            ]);
+        }
+    }, [ads?.ads_image_url, selectedImages]);
+
+
+
 
     // 문구 생성
     const generateContent = async () => {
@@ -323,116 +342,149 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
     };
 
     const generateAds = async () => {
-        // 입력값 유효성 검사
         if (!title.trim() || !content.trim()) {
-            setSaveStatus("error");
-            setMessage("주제 혹은 문구를 올바르게 입력해 주세요.");
+            setImageStatus("error");
+            setImageErrorMessage("주제 혹은 문구를 올바르게 입력해 주세요.");
             setTimeout(() => {
-                setSaveStatus(null);
-                setMessage("");
+                setImageStatus(null);
+                setImageErrorMessage("");
             }, 1500);
             return;
         }
-    
+
+        if (selectedImages[0]?.type === "url") {
+            setImageStatus("error");
+            setImageErrorMessage("이미지를 새로 업로드 하거나 재생성 해주세요");
+            setTimeout(() => {
+                setImageStatus(null);
+                setImageErrorMessage("");
+            }, 1500);
+            return;
+        }
+
         const formData = new FormData();
         formData.append("store_name", data.store_name);
         formData.append("road_name", data.road_name);
         formData.append("content", content);
-    
+
         const resizedWidth = optionSizes[useOption]?.width || null;
-    
-        if (selectedImages.length > 0 && selectedImages[0].file) {
-            const file = selectedImages[0].file;
-    
-            const img = new Image();
-            img.src = URL.createObjectURL(file);
-    
-            img.onload = () => {
-                const originalWidth = img.width;
-                const originalHeight = img.height;
-    
-                const resizedHeight = resizedWidth
-                    ? Math.round((resizedWidth / originalWidth) * originalHeight)
-                    : null;
-    
-                if (resizedWidth && resizedHeight) {
-                    const canvas = document.createElement("canvas");
-                    canvas.width = resizedWidth;
-                    canvas.height = resizedHeight;
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(img, 0, 0, resizedWidth, resizedHeight);
-    
-                    canvas.toBlob(
-                        (blob) => {
-                            const resizedFile = new File([blob], file.name, { type: file.type });
-                            formData.append("image", resizedFile);
-                            formData.append("image_width", resizedWidth);
-                            formData.append("image_height", resizedHeight);
-    
-                            sendFormData(formData);
-                        },
-                        file.type
-                    );
-                } else {
-                    formData.append("image", file);
-                    formData.append("image_width", originalWidth);
-                    formData.append("image_height", originalHeight);
-    
-                    sendFormData(formData);
-                }
-            };
+
+        if (selectedImages.length > 0) {
+            if (selectedImages[0]?.file) {
+                // 파일 처리
+                const file = selectedImages[0].file;
+
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+
+                img.onload = () => {
+                    const originalWidth = img.width;
+                    const originalHeight = img.height;
+
+                    const resizedHeight = resizedWidth
+                        ? Math.round((resizedWidth / originalWidth) * originalHeight)
+                        : null;
+
+                    if (resizedWidth && resizedHeight) {
+                        const canvas = document.createElement("canvas");
+                        canvas.width = resizedWidth;
+                        canvas.height = resizedHeight;
+                        const ctx = canvas.getContext("2d");
+                        ctx.drawImage(img, 0, 0, resizedWidth, resizedHeight);
+
+                        canvas.toBlob(
+                            (blob) => {
+                                const resizedFile = new File([blob], file.name, { type: file.type });
+                                formData.append("image", resizedFile);
+                                formData.append("image_width", resizedWidth);
+                                formData.append("image_height", resizedHeight);
+
+                                sendFormData(formData);
+                            },
+                            file.type
+                        );
+                    } else {
+                        formData.append("image", file);
+                        formData.append("image_width", originalWidth);
+                        formData.append("image_height", originalHeight);
+
+                        sendFormData(formData);
+                    }
+                };
+            } else if (selectedImages[0]?.type === "url") {
+                // URL 처리
+                const response = await fetch(selectedImages[0]?.previewUrl);
+                const blob = await response.blob();
+                const file = new File([blob], "existing-image.jpg", { type: blob.type });
+
+                formData.append("image", file);
+                formData.append("image_width", resizedWidth || "auto");
+                formData.append("image_height", "auto");
+
+                sendFormData(formData);
+            }
         } else {
             setSaveStatus("error");
             setMessage("이미지를 업로드하거나 AI로 생성해주세요.");
-        }
-    };
-    
-    const sendFormData = async (formData) => {
-        try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/combine/image/text`,
-                formData,
-                { headers: { "Content-Type": "multipart/form-data" } }
-            );
-            setCombineImageText(response.data.image); // 새로 생성된 이미지를 상태로 설정
-            setSaveStatus("success");
-            setMessage("생성이 성공적으로 완료되었습니다.");
-        } catch (err) {
-            console.error("저장 중 오류 발생:", err);
-            setSaveStatus("error");
-            setMessage("저장 중 오류가 발생했습니다.");
-        } finally {
             setTimeout(() => {
                 setSaveStatus(null);
                 setMessage("");
-            }, 3000);
+            }, 1500);
         }
     };
 
-    // 템플릿 2개 처리
     // const sendFormData = async (formData) => {
     //     try {
     //         const response = await axios.post(
     //             `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/combine/image/text`,
     //             formData,
-    //             { headers: { 'Content-Type': 'multipart/form-data' } }
+    //             { headers: { "Content-Type": "multipart/form-data" } }
     //         );
-    //         // 두 개의 이미지를 상태로 저장
-    //         setCombineImageTexts(response.data.images);
-    //         setSaveStatus('success');
-    //         setMessage('생성이 성공적으로 완료되었습니다.');
+    //         setCombineImageText(response.data.image); // 새로 생성된 이미지를 상태로 설정
+    //         setSaveStatus("success");
+    //         setMessage("생성이 성공적으로 완료되었습니다.");
     //     } catch (err) {
-    //         console.error('저장 중 오류 발생:', err);
-    //         setSaveStatus('error');
-    //         setMessage('저장 중 오류가 발생했습니다.');
+    //         console.error("저장 중 오류 발생:", err);
+    //         setSaveStatus("error");
+    //         setMessage("저장 중 오류가 발생했습니다.");
     //     } finally {
     //         setTimeout(() => {
     //             setSaveStatus(null);
-    //             setMessage('');
+    //             setMessage("");
     //         }, 3000);
     //     }
     // };
 
+    // 템플릿 2개 처리
+    const sendFormData = async (formData) => {
+        try {
+            const response = await axios.post(
+                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/combine/image/text`,
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+            // 두 개의 이미지를 상태로 저장
+            setCombineImageTexts(response.data.images);
+            // console.log(response.data.image)
+            setSaveStatus('success');
+            setMessage('생성이 성공적으로 완료되었습니다.');
+        } catch (err) {
+            console.error('저장 중 오류 발생:', err);
+            setSaveStatus('error');
+            setMessage('저장 중 오류가 발생했습니다.');
+        } finally {
+            setTimeout(() => {
+                setSaveStatus(null);
+                setMessage('');
+            }, 3000);
+        }
+    };
+
+
+    const handleCheckboxChange = (e) => {
+        const { value } = e.target;
+        setCombineImageText(value); // 선택된 이미지 URL 저장
+    };
 
     const getBase64Extension = (base64) => {
         const mimeType = base64.match(/data:(.*?);base64/)[1];
@@ -531,13 +583,13 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                         <h5 className="text-l">간편한 고객 맞춤형 자동 AI광고 만들기</h5>
                         <h5 className="text-l">Create easy, personalized, automated AI ads</h5>
                     </div>
-                    <button
+                    {/* <button
                         onClick={onClose} // 모달 닫기 함수
                         className="text-2xl text-red-500 hover:text-red-800 focus:outline-none"
                         aria-label="Close"
                     >
                         외국어
-                    </button>
+                    </button> */}
                 </div>
                 {loading && <p>로딩 중...</p>}
                 {error && <p className="text-red-500">{error}</p>}
@@ -653,14 +705,12 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                     주제 세부 정보
                                 </label>
                             </div>
-                            <div className="relative">
-                                <textarea
-                                    rows={2}
-                                    value={detailContent || ""}
-                                    onChange={(e) => setDetailContent(e.target.value)}
-                                    className="border border-gray-300 rounded w-full px-3 py-2"
-                                />
-                            </div>
+                            <textarea
+                                rows={2}
+                                value={detailContent || ""} // null 또는 undefined를 빈 문자열로 변환
+                                onChange={(e) => setDetailContent(e.target.value)}
+                                className="border border-gray-300 rounded w-full px-3 py-2"
+                            />
                         </div>
                         <hr className="border-t border-black opacity-100" />
                         <div className="mb-6 mt-6 flex items-center justify-between">
@@ -916,12 +966,12 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                     <div className="w-6 h-6 border-4 border-blue-500 border-solid border-t-transparent rounded-full animate-spin"></div>
                                 </div>
                             ) : selectedImages.length > 0 ? (
-                                // 변경된 이미지를 우선적으로 표시
+                                // 선택되거나 변경된 이미지를 표시
                                 <div className="mt-4 flex justify-center">
                                     <div className="relative">
                                         <img
                                             src={selectedImages[0]?.previewUrl}
-                                            alt="변경된 이미지 미리보기"
+                                            alt="이미지 미리보기"
                                             style={{
                                                 width: `${optionSizes[useOption]?.width || 'auto'}px`,
                                                 height: `${optionSizes[useOption]?.width && imageSize?.width && imageSize?.height
@@ -958,14 +1008,11 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                         />
                                     </div>
                                 </div>
-                            ) : imageErrorMessage ? (
-                                <div className="text-red-500 text-center mt-4">
-                                    {imageErrorMessage}
-                                </div>
                             ) : (
                                 <p className="text-gray-500 text-center mt-4">이미지를 업로드해주세요.</p>
                             )}
                         </div>
+
 
                         <div className="mt-4 flex justify-center">
                             <button
@@ -977,27 +1024,48 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                         </div>
                         {/* 이미지 결과물 영역 */}
                         <div className="mt-4">
-                            <div className="max-h-screen overflow-auto flex justify-center items-center">
-                                {combineImageText ? (
-                                    // 새로 생성된 이미지를 우선적으로 표시
-                                    <img
-                                        src={combineImageText}
-                                        alt="새로 생성된 이미지"
-                                        className="h-auto"
-                                    />
+                            <div className="max-h-screen overflow-auto flex flex-row items-center justify-center gap-4">
+                                {imageStatus === "error" && imageErrorMessage ? (
+                                    // 에러 메시지를 최우선으로 처리
+                                    <div className="text-red-500 text-center p-4">
+                                        {imageErrorMessage}
+                                    </div>
+                                ) : combineImageTexts && combineImageTexts.length > 0 ? (
+                                    combineImageTexts.map((image, index) => (
+                                        <div key={index} className="text-center">
+                                            {/* 이미지 */}
+                                            <img
+                                                src={image} // 각각의 이미지 URL
+                                                alt={`결과 이미지 ${index + 1}`}
+                                                className="h-auto max-w-72 rounded-md shadow-md" // 이미지 크기 및 간격 조정
+                                            />
+                                            {/* 라디오 버튼 */}
+                                            <div className="mt-2 flex justify-center">
+                                                <input
+                                                    type="radio"
+                                                    name="selectedImage" // 같은 그룹으로 묶어 단일 선택 가능
+                                                    value={image}
+                                                    onChange={(e) => handleCheckboxChange(e)}
+                                                    className="form-radio w-6 h-6"
+                                                    checked={combineImageText === image} // 선택된 상태 유지
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
                                 ) : ads.ads_final_image_url ? (
-                                    // 기존 이미지를 표시
-                                    <img
-                                        src={`${process.env.REACT_APP_FASTAPI_ADS_URL}${ads.ads_final_image_url}`}
-                                        alt="기존 이미지"
-                                        className="h-auto"
-                                    />
+                                    <div className="text-center">
+                                        {/* 기존 이미지 표시 */}
+                                        <img
+                                            src={`${process.env.REACT_APP_FASTAPI_ADS_URL}${ads.ads_final_image_url}`}
+                                            alt="기존 이미지"
+                                            className="h-auto rounded-md shadow-md"
+                                        />
+                                    </div>
                                 ) : (
                                     <p className="text-center text-gray-500 p-4">이미지를 생성해주세요</p>
                                 )}
                             </div>
                         </div>
-
                     </div>
                 )}
                 {/* 수정, 삭제, 닫기 버튼 */}

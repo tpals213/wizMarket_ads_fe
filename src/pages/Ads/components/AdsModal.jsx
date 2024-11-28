@@ -420,7 +420,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             );
             // 두 개의 이미지를 상태로 저장
             setCombineImageTexts(response.data.images);
-            console.log(response.data.image)
+            // console.log(response.data.image)
             setSaveStatus('success');
             setMessage('생성이 성공적으로 완료되었습니다.');
         } catch (err) {
@@ -959,38 +959,34 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
                         </div> */}
                         <div className="mt-4">
-    <div className="max-h-screen overflow-auto flex flex-row items-center justify-center gap-4">
-        {combineImageTexts && combineImageTexts.length > 0 ? (
-            combineImageTexts.map((image, index) => (
-                <div key={index} className="text-center">
-                    {/* 이미지 */}
-                    <img
-                        src={image} // 각각의 이미지 URL
-                        alt={`결과 이미지 ${index + 1}`}
-                        className="h-auto max-w-72 rounded-md shadow-md" // 이미지 크기 및 간격 조정
-                    />
-                    {/* 라디오 버튼 */}
-                    <div className="mt-2 flex justify-center">
-                        <input
-                            type="radio"
-                            name="selectedImage" // 같은 그룹으로 묶어 단일 선택 가능
-                            value={image}
-                            onChange={(e) => handleCheckboxChange(e)}
-                            className="form-radio w-6 h-6"
-                            checked={combineImageText === image} // 선택된 상태 유지
-                        />
-                    </div>
-                </div>
-            ))
-        ) : (
-            <p className="text-center text-gray-500 p-4">이미지를 생성해주세요</p>
-        )}
-    </div>
-</div>
-
-
-
-
+                            <div className="max-h-screen overflow-auto flex flex-row items-center justify-center gap-4">
+                                {combineImageTexts && combineImageTexts.length > 0 ? (
+                                    combineImageTexts.map((image, index) => (
+                                        <div key={index} className="text-center">
+                                            {/* 이미지 */}
+                                            <img
+                                                src={image} // 각각의 이미지 URL
+                                                alt={`결과 이미지 ${index + 1}`}
+                                                className="h-auto max-w-72 rounded-md shadow-md" // 이미지 크기 및 간격 조정
+                                            />
+                                            {/* 라디오 버튼 */}
+                                            <div className="mt-2 flex justify-center">
+                                                <input
+                                                    type="radio"
+                                                    name="selectedImage" // 같은 그룹으로 묶어 단일 선택 가능
+                                                    value={image}
+                                                    onChange={(e) => handleCheckboxChange(e)}
+                                                    className="form-radio w-6 h-6"
+                                                    checked={combineImageText === image} // 선택된 상태 유지
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-gray-500 p-4">이미지를 생성해주세요</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
                 <div className="flex justify-between items-center mt-6">
