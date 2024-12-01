@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/pagination";
+import { Pagination } from "swiper/modules";
 
 const AdsDetailModal = ({ isOpen, onClose }) => {
     const location = useLocation();
@@ -981,8 +985,8 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                             style={{
                                                 width: `${optionSizes[useOption]?.width || 'auto'}px`,
                                                 height: `${optionSizes[useOption]?.width && imageSize?.width && imageSize?.height
-                                                        ? (optionSizes[useOption].width / imageSize.width) * imageSize.height
-                                                        : 'auto'
+                                                    ? (optionSizes[useOption].width / imageSize.width) * imageSize.height
+                                                    : 'auto'
                                                     }px`,
                                             }}
                                             className="rounded object-contain"
@@ -1012,34 +1016,45 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                         </div>
                         {/* 이미지 결과물 영역 */}
                         <div className="mt-4">
-                            <div className="max-h-screen overflow-auto flex flex-row items-center justify-center gap-4">
+                            <div className="max-h-screen overflow-auto flex items-center justify-center">
                                 {imageStatus === "error" && imageErrorMessage ? (
                                     // 에러 메시지를 최우선으로 처리
                                     <div className="text-red-500 text-center p-4">
                                         {imageErrorMessage}
                                     </div>
                                 ) : combineImageTexts && combineImageTexts.length > 0 ? (
-                                    combineImageTexts.map((image, index) => (
-                                        <div key={index} className="text-center">
-                                            {/* 이미지 */}
-                                            <img
-                                                src={image} // 각각의 이미지 URL
-                                                alt={`결과 이미지 ${index + 1}`}
-                                                className="h-auto max-w-72 rounded-md shadow-md" // 이미지 크기 및 간격 조정
-                                            />
-                                            {/* 라디오 버튼 */}
-                                            <div className="mt-2 flex justify-center">
-                                                <input
-                                                    type="radio"
-                                                    name="selectedImage" // 같은 그룹으로 묶어 단일 선택 가능
-                                                    value={image}
-                                                    onChange={(e) => handleCheckboxChange(e)}
-                                                    className="form-radio w-6 h-6"
-                                                    checked={combineImageText === image} // 선택된 상태 유지
-                                                />
-                                            </div>
-                                        </div>
-                                    ))
+                                    <Swiper
+                                        spaceBetween={30}
+                                        pagination={{
+                                            clickable: true,
+                                        }}
+                                        modules={[Pagination]}
+                                        className="w-full max-w-3xl"
+                                    >
+                                        {combineImageTexts.map((image, index) => (
+                                            <SwiperSlide key={index}>
+                                                <div className="text-center">
+                                                    {/* 이미지 */}
+                                                    <img
+                                                        src={image} // 각각의 이미지 URL
+                                                        alt={`결과 이미지 ${index + 1}`}
+                                                        className="h-auto rounded-md shadow-md mx-auto" // 이미지 크기 및 간격 조정
+                                                    />
+                                                    {/* 라디오 버튼 */}
+                                                    <div className="flex justify-center">
+                                                        <input
+                                                            type="radio"
+                                                            name="selectedImage" // 같은 그룹으로 묶어 단일 선택 가능
+                                                            value={image}
+                                                            onChange={(e) => handleCheckboxChange(e)}
+                                                            className="mb-8 mt-4 form-radio w-6 h-6"
+                                                            checked={combineImageText === image} // 선택된 상태 유지
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </SwiperSlide>
+                                        ))}
+                                    </Swiper>
                                 ) : ads.ads_final_image_url ? (
                                     <div className="text-center">
                                         {/* 기존 이미지 표시 */}
@@ -1054,6 +1069,9 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                 )}
                             </div>
                         </div>
+
+
+
                     </div>
                 )}
                 {/* 수정, 삭제, 닫기 버튼 */}

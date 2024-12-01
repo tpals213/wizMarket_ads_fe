@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/pagination";
+import { Pagination } from "swiper/modules";
 
 const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [loading, setLoading] = useState(false);
@@ -629,7 +633,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 />
                             </div>
                         )}
-                        <hr className="border-t border-black opacity-100" />
+                        <hr className="border-0 bg-black h-3" />
                         <div className="mb-6 mt-6">
                             <label className="block text-lg text-gray-700 mb-2">광고 채널</label>
                             <select
@@ -1011,29 +1015,40 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
                         </div> */}
                         <div className="mt-4">
-                            <div className="max-h-screen overflow-auto flex flex-row items-center justify-center gap-4">
+                            <div className="flex items-center justify-center">
                                 {combineImageTexts && combineImageTexts.length > 0 ? (
-                                    combineImageTexts.map((image, index) => (
-                                        <div key={index} className="text-center">
-                                            {/* 이미지 */}
-                                            <img
-                                                src={image} // 각각의 이미지 URL
-                                                alt={`결과 이미지 ${index + 1}`}
-                                                className="h-auto max-w-72 rounded-md shadow-md" // 이미지 크기 및 간격 조정
-                                            />
-                                            {/* 라디오 버튼 */}
-                                            <div className="mt-2 flex justify-center">
-                                                <input
-                                                    type="radio"
-                                                    name="selectedImage" // 같은 그룹으로 묶어 단일 선택 가능
-                                                    value={image}
-                                                    onChange={(e) => handleCheckboxChange(e)}
-                                                    className="form-radio w-6 h-6"
-                                                    checked={combineImageText === image} // 선택된 상태 유지
-                                                />
-                                            </div>
-                                        </div>
-                                    ))
+                                    <Swiper
+                                        spaceBetween={30}
+                                        pagination={{
+                                            clickable: true,
+                                        }}
+                                        modules={[Pagination]}
+                                        className="w-full max-w-3xl"
+                                    >
+                                        {combineImageTexts.map((image, index) => (
+                                            <SwiperSlide key={index}>
+                                                <div className="text-center">
+                                                    {/* 이미지 */}
+                                                    <img
+                                                        src={image} // 각각의 이미지 URL
+                                                        alt={`결과 이미지 ${index + 1}`}
+                                                        className="h-auto rounded-md shadow-md mx-auto" // 이미지 크기 및 간격 조정
+                                                    />
+                                                    {/* 라디오 버튼 */}
+                                                    <div className="flex justify-center">
+                                                        <input
+                                                            type="radio"
+                                                            name="selectedImage" // 같은 그룹으로 묶어 단일 선택 가능
+                                                            value={image}
+                                                            onChange={(e) => handleCheckboxChange(e)}
+                                                            className="mb-8 mt-4 form-radio w-6 h-6"
+                                                            checked={combineImageText === image} // 선택된 상태 유지
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </SwiperSlide>
+                                        ))}
+                                    </Swiper>
                                 ) : (
                                     <p className="text-center text-gray-500 p-4">이미지를 생성해주세요</p>
                                 )}
