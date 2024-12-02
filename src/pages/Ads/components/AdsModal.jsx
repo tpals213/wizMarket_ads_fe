@@ -534,6 +534,8 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         const formData = new FormData();
         formData.append('use_option', useOption); // 컨텐츠 추가
         formData.append('content', content); // 컨텐츠 추가
+        formData.append('store_name', data.store_name);
+        formData.append('tag', data.detail_category_name)
         if (combineImageText) {
             const extension = getBase64Extension(combineImageText); // 확장자 추출
             const blob = base64ToBlob(combineImageText, `image/${extension}`);
