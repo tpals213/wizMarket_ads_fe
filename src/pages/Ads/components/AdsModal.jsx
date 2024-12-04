@@ -336,8 +336,9 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         formData.append('store_name', data.store_name);
         formData.append('road_name', data.road_name)
         formData.append('content', content);
-
-        const resizedWidth = optionSizes[useOption]?.width || null;
+        const resizedWidth = useOption === '유튜브 썸네일'
+            ? 1792
+            : optionSizes[useOption]?.width || null;
 
         // 리사이즈된 이미지 생성 및 추가
         if (selectedImages.length > 0 && selectedImages[0].file) {
@@ -635,7 +636,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 />
                             </div>
                         )}
-                        <hr className="border-0 bg-black h-3" />
+                        <hr className="border-t border-black opacity-50" />
                         <div className="mb-6 mt-6">
                             <label className="block text-lg text-gray-700 mb-2">광고 채널</label>
                             <select
