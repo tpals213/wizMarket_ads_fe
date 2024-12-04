@@ -1063,10 +1063,10 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     {/* 좌측 닫기 버튼 */}
                     <div>
                         <button
-                            onClick={onClose}
+                            onClick={() => window.location.reload()} // 새로고침
                             className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
                         >
-                            닫기
+                            초기화
                         </button>
                     </div>
 
