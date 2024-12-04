@@ -4,6 +4,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import { Pagination } from "swiper/modules";
+import AdsShareNaver from './AdsShareNaver';
 
 const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [loading, setLoading] = useState(false);
@@ -42,6 +43,8 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
 
     const [uploading, setUploading] = useState(false)
+
+    const [storeName, setStoreName] = useState('')
 
     const optionSizes = {
         "문자메시지": { width: 333, height: 458 },
@@ -133,6 +136,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     setUseOption("문자메시지")
                     setTitle("매장 소개")
                     setModelOption("dalle")
+                    setStoreName(response.data.store_name)
                 } catch (err) {
                     console.error("초기 데이터 로드 중 오류 발생:", err);
                     setError("초기 데이터 로드 중 오류가 발생했습니다.");
@@ -1095,6 +1099,9 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     <p className="text-gray-600 text-sm">인스타 스토리, 피드, 문자메시지는 업로드 가능</p>
                     <p className="text-gray-600 text-sm">현재 문자메시지는 이메일로 전송됩니다.</p>
                     <p className="text-gray-600 text-sm">MMS 기능 예정</p>
+                </div>
+                <div className="mt-2 flex flex-col items-center justify-center p-4 rounded">
+                    <AdsShareNaver title = {title} storeName = {storeName}/>
                 </div>
             </div>
         </div>
