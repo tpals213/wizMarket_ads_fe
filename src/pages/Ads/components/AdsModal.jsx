@@ -4,7 +4,8 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import { Pagination } from "swiper/modules";
-import AdsShareNaver from './AdsShareNaver';
+// import AdsShareNaver from './AdsShareNaver';
+import AdsShareKakao from './AdsShareKakao'
 
 const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [loading, setLoading] = useState(false);
@@ -1075,7 +1076,13 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     </div>
 
                     {/* 우측 수정 및 삭제 버튼 */}
-                    <div className="flex space-x-4">
+                        <div className="flex space-x-4">
+                        <AdsShareKakao 
+                            title={`[${storeName}] ${title}`} 
+                            storeName={storeName} 
+                            content={content || "새로운 광고 메시지를 확인하세요!"} 
+                            base64Image={combineImageText}
+                        />
                         <button
                             onClick={onUpload}
                             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex justify-center items-center"
@@ -1096,12 +1103,9 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     </div>
                 </div>
                 <div className="mt-2 flex flex-col items-center justify-center p-4 rounded">
-                    <p className="text-gray-600 text-sm">인스타 스토리, 피드, 문자메시지는 업로드 가능</p>
+                    <p className="text-gray-600 text-sm">인스타 스토리, 피드, 유튜브, 문자메시지 업로드 가능</p>
                     <p className="text-gray-600 text-sm">현재 문자메시지는 이메일로 전송됩니다.</p>
                     <p className="text-gray-600 text-sm">MMS 기능 예정</p>
-                </div>
-                <div className="mt-2 flex flex-col items-center justify-center p-4 rounded">
-                    <AdsShareNaver title = {title} storeName = {storeName}/>
                 </div>
             </div>
         </div>
