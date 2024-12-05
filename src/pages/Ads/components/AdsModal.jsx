@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-import "swiper/css/pagination";
-import { Pagination } from "swiper/modules";
-// import AdsShareNaver from './AdsShareNaver';
+import "swiper/css/navigation"; // Navigation 스타일 추가
+import { Pagination, Navigation } from "swiper/modules"; // Navigation 모듈 추가
+import AdsShareNaver from './AdsShareNaver';
 import AdsShareKakao from './AdsShareKakao'
 
 const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
@@ -432,6 +432,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             );
             // 두 개의 이미지를 상태로 저장
             setCombineImageTexts(response.data.images);
+            setCombineImageText(response.data.images[0])
             // console.log(response.data.image)
             setSaveStatus('success');
             setMessage('생성이 성공적으로 완료되었습니다.');
@@ -1009,7 +1010,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 onClick={generateAds}
                                 className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                             >
-                                생성
+                                템플릿 적용
                             </button>
                         </div>
                         {/* 이미지 결과물 영역 */}
@@ -1030,27 +1031,31 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         pagination={{
                                             clickable: true,
                                         }}
-                                        modules={[Pagination]}
+                                        loop={true}
+                                        navigation={true} // Navigation 활성화
+                                        modules={[Pagination, Navigation]} // Navigation 모듈 포함
                                         className="w-full max-w-3xl"
+                                        onSlideChange={(swiper) => {
+                                            const currentImage = combineImageTexts[swiper.realIndex]; // 실제 인덱스 사용
+                                            setCombineImageText(currentImage); // 상태 업데이트
+                                        }}
                                     >
                                         {combineImageTexts.map((image, index) => (
                                             <SwiperSlide key={index}>
                                                 <div className="text-center">
-                                                    {/* 이미지 */}
                                                     <img
                                                         src={image} // 각각의 이미지 URL
                                                         alt={`결과 이미지 ${index + 1}`}
-                                                        className="h-auto rounded-md shadow-md mx-auto" // 이미지 크기 및 간격 조정
+                                                        className="h-auto rounded-md shadow-md mx-auto"
                                                     />
-                                                    {/* 라디오 버튼 */}
                                                     <div className="flex justify-center">
                                                         <input
                                                             type="radio"
-                                                            name="selectedImage" // 같은 그룹으로 묶어 단일 선택 가능
+                                                            name="selectedImage"
                                                             value={image}
                                                             onChange={(e) => handleCheckboxChange(e)}
-                                                            className="mb-8 mt-4 form-radio w-6 h-6"
-                                                            checked={combineImageText === image} // 선택된 상태 유지
+                                                            className="mb-12 mt-4 form-radio w-6 h-6"
+                                                            checked={combineImageText === image} // 동기화된 상태 유지
                                                         />
                                                     </div>
                                                 </div>
@@ -1076,11 +1081,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     </div>
 
                     {/* 우측 수정 및 삭제 버튼 */}
-                        <div className="flex space-x-4">
-                        <AdsShareKakao 
-                            title={`[${storeName}] ${title}`} 
-                            storeName={storeName} 
-                            content={content || "새로운 광고 메시지를 확인하세요!"} 
+                    <div className="flex space-x-4">
+                        <AdsShareKakao
+                            title={`[${storeName}] ${title}`}
+                            storeName={storeName}
+                            content={content || "새로운 광고 메시지를 확인하세요!"}
                             base64Image={combineImageText}
                         />
                         <button
@@ -1103,9 +1108,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     </div>
                 </div>
                 <div className="mt-2 flex flex-col items-center justify-center p-4 rounded">
-                    <p className="text-gray-600 text-sm">인스타 스토리, 피드, 유튜브, 문자메시지 업로드 가능</p>
+                    <p className="text-gray-600 text-sm">인스타 스토리, 피드, 유튜브, 카톡, 메일 업로드 가능</p>
                     <p className="text-gray-600 text-sm">현재 문자메시지는 이메일로 전송됩니다.</p>
-                    <p className="text-gray-600 text-sm">MMS 기능 예정</p>
+                    <p className="text-gray-600 text-sm">네이버 블로그 예정</p>
+                </div>
+                <div className="mt-2 flex-col items-center justify-center p-4 rounded hidden">
+                    <AdsShareNaver title={title} content={content} storeName={storeName}/>
                 </div>
             </div>
         </div>
