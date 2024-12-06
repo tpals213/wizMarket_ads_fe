@@ -845,8 +845,8 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                             >
                                 <option value="">이미지 생성 모델을 선택하세요</option>
                                 <option value="basic">기본(Stable Diffusion)</option>
-                                <option value="poster">영화 포스터(Diffusion)</option>
-                                <option value="food">음식 특화(Diffusion)</option>
+                                {/* <option value="poster">영화 포스터(Diffusion)</option> */}
+                                {/* <option value="food">음식 특화(Diffusion)</option> */}
                                 <option value="dalle">DALL·E 3(GPT)</option>
                             </select>
                         </div>

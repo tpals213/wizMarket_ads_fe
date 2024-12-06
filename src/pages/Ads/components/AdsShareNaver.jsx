@@ -5,7 +5,6 @@ const AdsShareNaver = ({ title, storeName, content }) => {
 
   // storeName이 변경될 때 URL 업데이트
   useEffect(() => {
-    console.log(storeName)
     const searchUrl = `https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query=${encodeURIComponent(
       storeName
     )}`;

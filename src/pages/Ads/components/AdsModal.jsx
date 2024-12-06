@@ -44,7 +44,6 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
 
     const [uploading, setUploading] = useState(false)
-
     const [storeName, setStoreName] = useState('')
 
     const optionSizes = {
@@ -506,12 +505,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             setData(response.data); // 성공 시 서버에서 받은 데이터를 상태에 저장
             setSaveStatus('success'); // 성공 상태로 설정
             setImageErrorMessage('저장이 성공적으로 완료되었습니다.');
-
-            // 모달을 닫기 전에 잠시 메시지를 표시
-            setTimeout(() => {
-                onClose();
-            }, 1500); // 2초 후 모달 닫기
-
+            return response.data;
         } catch (err) {
             console.error('저장 중 오류 발생:', err);
             setSaveStatus('error'); // 실패 상태로 설정
@@ -842,8 +836,8 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                             >
                                 <option value="">이미지 생성 모델을 선택하세요</option>
                                 <option value="basic">기본(Stable Diffusion)</option>
-                                <option value="poster">영화 포스터(Diffusion)</option>
-                                <option value="food">음식 특화(Diffusion)</option>
+                                {/* <option value="poster">영화 포스터(Diffusion)</option> */}
+                                {/* <option value="food">음식 특화(Diffusion)</option> */}
                                 <option value="dalle">DALL·E 3(GPT)</option>
                             </select>
                         </div>
@@ -1083,10 +1077,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     {/* 우측 수정 및 삭제 버튼 */}
                     <div className="flex space-x-4">
                         <AdsShareKakao
-                            title={`[${storeName}] ${title}`}
-                            storeName={storeName}
-                            content={content || "새로운 광고 메시지를 확인하세요!"}
-                            base64Image={combineImageText}
+                            title={`[${storeName}] ${title}`}   // 제목 ex) [몽뜨레셰프] 매장 소개
+                            storeName={storeName}   // 가게명
+                            content={content || "새로운 광고 메시지를 확인하세요!"} // 내용
+                            storeBusinessNumber={storeBusinessNumber}   // pk 값
+                            base64Image={combineImageText}  // 생성 이미지
+                            onSave={onSave} // 저장 함수
                         />
                         <button
                             onClick={onUpload}
