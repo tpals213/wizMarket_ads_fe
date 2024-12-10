@@ -3,8 +3,10 @@ import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { Pagination } from "swiper/modules";
+import { Pagination, Navigation } from "swiper/modules";
+import AdsDeatilShareKakao from './AdsDeatilShareKakao';
 
 const AdsDetailModal = ({ isOpen, onClose }) => {
     const location = useLocation();
@@ -13,6 +15,9 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
     const queryParams = new URLSearchParams(location.search);
     const ads = Object.fromEntries(queryParams.entries()); // 쿼리 파라미터를 객체로 변환
     const storeBusinessNumber = ads.store_business_number;
+    const storeName = ads.store_name
+    const adsId = ads.ads_id
+
 
     const previousAds = useRef(null);
 
@@ -22,35 +27,29 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
     const [message, setMessage] = useState(''); // 기본 성공 또는 실패 메시지
 
     const [data, setData] = useState(null); // 모달창 열릴 때 가져오는 기본 정보
-    const [storeInfo, setStoreInfo] = useState("")  // 가게 정보
-    const [isStoreInfoVisible, setIsStoreInfoVisible] = useState(false);  // 가게 정보 접히기
 
     const [useOption, setUseOption] = useState("");  // 사이즈 용도
     const [title, setTitle] = useState("");    // 주제 용도
     const [customTitle, setCustomTitle] = useState(""); // 주제 기타 입력값 별도 관리
     const [detailContent, setDetailContent] = useState("");   // 실제 적용할 문구 ex)500원 할인
     const [gptRole, setGptRole] = useState(''); // gpt 역할 부여 - 지시 내용
-    const [isGptRoleVisible, setIsGptRoleVisible] = useState(true);  // 지시 내용 접히기
     const [prompt, setPrompt] = useState(''); // gpt 내용 부여 - 전달 내용
-    const [isPromptVisible, setIsPromptVisible] = useState(true);  // 전달 내용 접히기
 
     const [content, setContent] = useState(''); // gpt 문구 생성 결과물
     const [contentLoading, setContentLoading] = useState(false) // gpt 문구 생성 로딩
     const [contentErrorMessage, setContentErrorMessage] = useState('');   // gpt 문구 생성 에러
 
     const [selectedImages, setSelectedImages] = useState([]); // 파일 업로드 기존 이미지
-    const [imageSize, setImageSize] = useState(null);   // 이미지 사이즈
 
-    const [modelOption, setModelOption] = useState(''); // 이미지 생성 모델 옵션
-    const [styleOption, setStyleOption] = useState('Illustration')  // 이미지 생성 스타일 옵션
-    const [aiPrompt, setAiPrompt] = useState('');   // 이미지 생성 프롬프트
-    const [isAiPromptVisible, setAiPromptVisible] = useState(true);  // 지시 내용 접히기
-    const [imageLoding, setImageLoading] = useState(false)  // 이미지 생성 로딩
     const [imageErrorMessage, setImageErrorMessage] = useState('');   // 이미지 생성 에러
     const [imageStatus, setImageStatus] = useState('');   // 이미지 생성 상태
 
     const [combineImageText, setCombineImageText] = useState(null)  // 텍스트 + 이미지 결과물
     const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
+
+    const [showButtons, setShowButtons] = useState(false);  // 공유하기 버튼 상태값
+    const [uploading, setUploading] = useState(false)
+    const buttonsContainerRef = useRef(null); // 버튼 컨테이너 참조
 
     const optionSizes = {
         "문자메시지": { width: 333, height: 458 },
@@ -66,20 +65,15 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
         setError(null);
         setData(null);
         setSelectedImages([]);
-        setImageLoading(false);
         setTitle(''); // 초기값 유지
         setContent('');
         setContentLoading(false);
         setSaveStatus(null);
         setMessage('');
         setUseOption(''); // 초기값 유지
-        setModelOption('');
-        setImageSize(null);
         setCombineImageText('');
         setPrompt('');
-        setGptRole('');
         setDetailContent('');
-        setAiPrompt('');
     };
 
     useEffect(() => {
@@ -138,12 +132,10 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                     };
                     previousAds.current = currentAdsString; // 현재 상태 저장
                     setData(updatedData);
-                    setImageSize(null)
                     setTitle(ads.title)
                     setUseOption(ads.use_option)
                     setDetailContent(ads.detail_title && ads.detail_title !== "null" ? ads.detail_title : "");
                     setContent(ads.content)
-                    setModelOption("dalle")
 
                 } catch (err) {
                     console.error("초기 데이터 로드 중 오류 발생:", err);
@@ -158,15 +150,6 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
 
     useEffect(() => {
         if (data) {
-            const dayMap = {
-                COMMERCIAL_DISTRICT_AVERAGE_SALES_PERCENT_SUN: "일요일",
-                COMMERCIAL_DISTRICT_AVERAGE_SALES_PERCENT_MON: "월요일",
-                COMMERCIAL_DISTRICT_AVERAGE_SALES_PERCENT_TUE: "화요일",
-                COMMERCIAL_DISTRICT_AVERAGE_SALES_PERCENT_WED: "수요일",
-                COMMERCIAL_DISTRICT_AVERAGE_SALES_PERCENT_THU: "목요일",
-                COMMERCIAL_DISTRICT_AVERAGE_SALES_PERCENT_FRI: "금요일",
-                COMMERCIAL_DISTRICT_AVERAGE_SALES_PERCENT_SAT: "토요일",
-            };
             const timeMap = {
                 COMMERCIAL_DISTRICT_AVERAGE_SALES_PERCENT_06_09: "06~09시",
                 COMMERCIAL_DISTRICT_AVERAGE_SALES_PERCENT_09_12: "09~12시",
@@ -199,22 +182,12 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
             // 시간, 분, 초 추가
             const hours = String(today.getHours()).padStart(2, '0');
             const minutes = String(today.getMinutes()).padStart(2, '0');
-
-            // 포맷팅
             const formattedToday = `${yyyy}-${mm}-${dd} (${dayName}) ${hours}:${minutes}`;
-            setStoreInfo(`매장명 : ${data.store_name || "값 없음"}
-주소 : ${data.road_name || "값 없음"}
-업종 : ${data.detail_category_name || "값 없음"}
-매출이 가장 높은 요일 : ${dayMap[data.maxSalesDay] || data.maxSalesDay || "값 없음"}
-매출이 가장 높은 시간대 : ${timeMap[data.maxSalesTime] || data.maxSalesTime || "값 없음"}
-매출이 가장 높은 남성 연령대 : ${maleMap[data.maxSalesMale] || data.maxSalesMale || "값 없음"}
-매출이 가장 높은 여성 연령대 : ${femaleMap[data.maxSalesFemale] || data.maxSalesFemale || "값 없음"}`);
             setGptRole(`다음과 같은 내용을 바탕으로 온라인 광고 콘텐츠를 제작하려고 합니다. 
 잘 어울리는 광고 문구를 생성해주세요.
 - 현재 날짜, 날씨, 시간, 계절 등의 상황에 어울릴 것
 - 주제 세부 정보 내용을 바탕으로 40자 이상 60자 이내로 작성할 것
 - 특수기호, 이모티콘은 제외할 것
-- 광고 채널 : ${useOption} 형태로 작성할 것
 - 주제 : ${title} 형태로 작성할 것`);
             setPrompt(`매장명 : ${data.store_name || "값 없음"}
 주소 : ${data.road_name || "값 없음"}
@@ -225,17 +198,9 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
 매출이 가장 높은 남성 연령대 : ${maleMap[data.maxSalesMale] || data.maxSalesMale || "값 없음"}
 매출이 가장 높은 여성 연령대 : ${femaleMap[data.maxSalesFemale] || data.maxSalesFemale || "값 없음"}
 주제 세부 정보 : ${detailContent}`);
-            setAiPrompt(`다음과 같은 내용을 바탕으로 온라인 광고 콘텐츠 이미지를 생성해주세요.
-- ${content || "값 없음"}
-- 주제 세부 정보 : ${detailContent}
-- 용도 : ${useOption || "값 없음"}
-- 주제 : ${title || "값 없음"} 용
-- 매장명 : ${data?.store_name || "값 없음"}
-- 주소 : ${data?.road_name || "값 없음"}
-- 업종 : ${data?.detail_category_name || "값 없음"}
-- 스타일 : ${styleOption || "값 없음"}`);
+            
         }
-    }, [data, useOption, title, detailContent, content, styleOption]);
+    }, [data, useOption, title, detailContent, content]);
 
 
     useEffect(() => {
@@ -315,49 +280,49 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
         return new Blob([byteArray], { type: contentType });
     };
 
-    // 이미지 생성
-    const generateImage = async () => {
-        setImageLoading(true)
-        const basicInfo = {
-            use_option: useOption,
-            ai_model_option: modelOption,
-            ai_prompt: aiPrompt,
-        };
+    // // 이미지 생성
+    // const generateImage = async () => {
+    //     setImageLoading(true)
+    //     const basicInfo = {
+    //         use_option: useOption,
+    //         ai_model_option: modelOption,
+    //         ai_prompt: aiPrompt,
+    //     };
 
-        try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/image`,
-                basicInfo,
-                { headers: { 'Content-Type': 'application/json' } }
-            );
-            // 성공 시 받은 데이터 상태에 저장
-            const { image: base64Image } = response.data; // AI로 생성된 Base64 이미지
-            // Base64 -> Blob -> File 변환
-            const aiImageBlob = base64ToBlob(base64Image);
-            const aiImageFile = new File([aiImageBlob], "ai-generated-image.png", { type: "image/png" });
-            // selectedImages에 추가
-            setSelectedImages([
-                {
-                    type: "ai",
-                    file: aiImageFile, // File 객체로 저장
-                    previewUrl: URL.createObjectURL(aiImageBlob), // 미리보기 URL
-                },
-            ]);
-            setSaveStatus('success'); // 성공 상태로 설정
-            setMessage('생성이 성공적으로 완료되었습니다.');
-            setImageLoading(false)
-        } catch (err) {
-            console.error('생성 중 오류 발생:', err);
-            setSaveStatus('error'); // 실패 상태로 설정
-            setImageErrorMessage('생성 중 오류가 발생했습니다.');
-        } finally {
-            setImageLoading(false); // 로딩 상태 종료
-            setTimeout(() => {
-                setSaveStatus(null);
-                setMessage('');
-            }, 3000); // 3초 후 메시지 숨기기
-        }
-    };
+    //     try {
+    //         const response = await axios.post(
+    //             `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/image`,
+    //             basicInfo,
+    //             { headers: { 'Content-Type': 'application/json' } }
+    //         );
+    //         // 성공 시 받은 데이터 상태에 저장
+    //         const { image: base64Image } = response.data; // AI로 생성된 Base64 이미지
+    //         // Base64 -> Blob -> File 변환
+    //         const aiImageBlob = base64ToBlob(base64Image);
+    //         const aiImageFile = new File([aiImageBlob], "ai-generated-image.png", { type: "image/png" });
+    //         // selectedImages에 추가
+    //         setSelectedImages([
+    //             {
+    //                 type: "ai",
+    //                 file: aiImageFile, // File 객체로 저장
+    //                 previewUrl: URL.createObjectURL(aiImageBlob), // 미리보기 URL
+    //             },
+    //         ]);
+    //         setSaveStatus('success'); // 성공 상태로 설정
+    //         setMessage('생성이 성공적으로 완료되었습니다.');
+    //         setImageLoading(false)
+    //     } catch (err) {
+    //         console.error('생성 중 오류 발생:', err);
+    //         setSaveStatus('error'); // 실패 상태로 설정
+    //         setImageErrorMessage('생성 중 오류가 발생했습니다.');
+    //     } finally {
+    //         setImageLoading(false); // 로딩 상태 종료
+    //         setTimeout(() => {
+    //             setSaveStatus(null);
+    //             setMessage('');
+    //         }, 3000); // 3초 후 메시지 숨기기
+    //     }
+    // };
 
     const generateAds = async () => {
         if (!title.trim() || !content.trim()) {
@@ -556,6 +521,75 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
         }
     };
 
+    const onShow = () => {
+        setShowButtons((prev) => !prev);
+
+        // 버튼 보이게 설정된 후 스크롤 이동
+        setTimeout(() => {
+            if (buttonsContainerRef.current) {
+                buttonsContainerRef.current.scrollIntoView({
+                    behavior: "smooth", // 부드러운 스크롤
+                    block: "nearest", // 컨테이너 위치를 화면에서 가장 가까운 곳에 맞춤
+                });
+            }
+        }, 0); // 상태 업데이트 후 실행
+    };
+
+
+    const onUpload = async () => {
+        // 입력값 유효성 검사
+        if (!content.trim()) {
+            setSaveStatus('error');
+            setImageErrorMessage('컨텐츠를 입력해 주세요.');
+            setTimeout(() => {
+                setSaveStatus(null);
+                setImageErrorMessage('');
+            }, 1500);
+            return;
+        }
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('use_option', useOption); // 컨텐츠 추가
+        formData.append('content', content); // 컨텐츠 추가
+        formData.append('store_name', data.store_name);
+        formData.append('tag', data.detail_category_name)
+        if (combineImageText) {
+            const extension = getBase64Extension(combineImageText); // 확장자 추출
+            const blob = base64ToBlob(combineImageText, `image/${extension}`);
+            formData.append("upload_image", blob, `image.${extension}`); // Blob과 확장자 추가
+        } else {
+            // ads.final_image_url 경로에서 이미지 가져와 처리
+            const response = await axios.get(`${process.env.REACT_APP_FASTAPI_BASE_URL}${ads.ads_final_image_url}`, {
+                responseType: "blob",
+            });
+
+            const file = new File([response.data], "uploaded_image.png", { type: response.data.type });
+            formData.append("upload_image", file);
+        }
+
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/upload`,
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+        } catch (err) {
+            console.error("업로드 중 오류 발생:", err); // 발생한 에러를 콘솔에 출력
+            if (err.response) {
+                console.error("응답 데이터:", err.response.data); // 서버 응답 에러 메시지
+                console.error("응답 상태 코드:", err.response.status); // HTTP 상태 코드
+                console.error("응답 헤더:", err.response.headers); // 응답 헤더
+            } else if (err.request) {
+                console.error("요청 데이터:", err.request); // 서버에 도달하지 못한 요청 정보
+            } else {
+                console.error("설정 오류:", err.message); // 요청 설정 중 발생한 에러 메시지
+            }
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const onDelete = async () => {
         const basicInfo = {
             ads_id: ads.ads_id,
@@ -620,35 +654,7 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                         <div className="mb-6">
                             <p className="text-xl">매장 명: {data.store_name} </p>
                         </div>
-                        <div className="mb-6 flex items-center justify-between">
-                            <label className="block text-lg text-gray-700 mb-2">
-                                매장 정보
-                            </label>
-                            <button
-                                className="text-gray-500 focus:outline-none"
-                                onClick={() => setIsStoreInfoVisible(!isStoreInfoVisible)}
-                            >
-                                {isStoreInfoVisible ? (
-                                    <>
-                                        <span>&#xFE3F;</span>  {/* ▼ 아래 방향 화살표 */}
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>&#xFE40;</span>  {/* ▶ 오른쪽 방향 화살표 */}
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                        {isStoreInfoVisible && (
-                            <div className="mb-6">
-                                <textarea
-                                    rows={8}
-                                    value={storeInfo}
-                                    onChange={(e) => setStoreInfo(e.target.value)}
-                                    className="border border-gray-300 rounded w-full px-3 py-2"
-                                />
-                            </div>
-                        )}
+
                         <hr className="border-t border-black opacity-100" />
                         <div className="mb-6 mt-6">
                             <label className="block text-lg text-gray-700 mb-2">광고 채널</label>
@@ -723,27 +729,16 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                             />
                         </div>
                         <hr className="border-t border-black opacity-100" />
-                        <div className="mb-6 mt-6 flex items-center justify-between">
-                            <label className="block text-lg text-gray-700">
+
+
+                        <hr className="border-t border-black opacity-100" />
+
+                        {/* 숨김 내용 */}
+                        <div className="mb-6 mt-6 hidden">
+                            <label className="block text-lg text-gray-700 mb-2">
                                 AI에게 명령할 내용 (지시문)
                             </label>
-                            <button
-                                className="text-gray-500 focus:outline-none"
-                                onClick={() => setIsGptRoleVisible(!isGptRoleVisible)}
-                            >
-                                {isGptRoleVisible ? (
-                                    <>
-                                        <span>&#xFE3F;</span>  {/* ▼ 아래 방향 화살표 */}
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>&#xFE40;</span>  {/* ▶ 오른쪽 방향 화살표 */}
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                        {isGptRoleVisible && (
-                            <div className="mb-6">
+                            <div>
                                 <textarea
                                     rows={8}
                                     value={gptRole}
@@ -751,28 +746,12 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                     className="border border-gray-300 rounded w-full px-3 py-2"
                                 />
                             </div>
-                        )}
-                        <div className="mb-6 flex items-center justify-between">
+                        </div>
+                        <div className="mb-6 hidden">
                             <label className="block text-lg text-gray-700">
                                 세부 내용 (DB+정보직접입력)
                             </label>
-                            <button
-                                className="text-gray-500 focus:outline-none"
-                                onClick={() => setIsPromptVisible(!isPromptVisible)}
-                            >
-                                {isPromptVisible ? (
-                                    <>
-                                        <span>&#xFE3F;</span>  {/* ▼ 아래 방향 화살표 */}
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>&#xFE40;</span>  {/* ▶ 오른쪽 방향 화살표 */}
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                        {isPromptVisible && (
-                            <div className="mb-6">
+                            <div className="">
                                 <textarea
                                     rows={10}
                                     value={prompt}
@@ -780,8 +759,8 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                     className="border border-gray-300 rounded w-full px-3 py-2"
                                 />
                             </div>
-                        )}
-                        <hr className="border-t border-black opacity-100" />
+                        </div>
+
                         <div className="mb-6 mt-6 w-full">
                             <div className="flex items-center justify-between mb-2">
                                 <label className="block text-lg text-gray-700 mb-2">
@@ -833,7 +812,7 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                 )}
                             </div>
                         </div>
-                        <hr className="border-t border-black opacity-100" />
+                        {/* <hr className="border-t border-black opacity-100" />
                         <div className="mb-6 mt-6">
                             <label className="block text-lg text-gray-700 mb-2">
                                 이미지 생성 모델 선택
@@ -845,8 +824,8 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                             >
                                 <option value="">이미지 생성 모델을 선택하세요</option>
                                 <option value="basic">기본(Stable Diffusion)</option>
-                                {/* <option value="poster">영화 포스터(Diffusion)</option> */}
-                                {/* <option value="food">음식 특화(Diffusion)</option> */}
+                                <option value="poster">영화 포스터(Diffusion)</option>
+                                <option value="food">음식 특화(Diffusion)</option>
                                 <option value="dalle">DALL·E 3(GPT)</option>
                             </select>
                         </div>
@@ -884,28 +863,11 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                 <option value="판타지">판타지</option>
                                 <option value="타이포그래픽">타이포그래픽</option>
                             </select>
-
                         </div>
-                        <div className="mb-6 flex items-center justify-between">
+                        <div className="mb-6 hidden">
                             <label className="block text-lg text-gray-700">
                                 이미지 생성 Prompt
                             </label>
-                            <button
-                                className="text-gray-500 focus:outline-none"
-                                onClick={() => setAiPromptVisible(!isAiPromptVisible)}
-                            >
-                                {isAiPromptVisible ? (
-                                    <>
-                                        <span>&#xFE3F;</span>  {/* ▼ 아래 방향 화살표 */}
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>&#xFE40;</span>  {/* ▶ 오른쪽 방향 화살표 */}
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                        {isAiPromptVisible && (
                             <div className="mb-6">
                                 <textarea
                                     rows={11}
@@ -914,7 +876,7 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                     className="border border-gray-300 rounded w-full px-3 py-2"
                                 />
                             </div>
-                        )}
+                        </div>
                         <div className="mb-6">
                             <div className="flex items-center justify-between mb-2">
                                 <label className="block text-lg text-gray-700 mb-2">
@@ -969,8 +931,8 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                     }
                                 }}
                             />
-                        </div>
-                        <div className="mt-4 flex justify-center">
+                        </div> */}
+                        {/* <div className="mt-4 flex justify-center">
                             {imageLoding ? (
                                 <div className="flex justify-center items-center w-48 h-48">
                                     <div className="w-6 h-6 border-4 border-blue-500 border-solid border-t-transparent rounded-full animate-spin"></div>
@@ -991,7 +953,7 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                             }}
                                             className="rounded object-contain"
                                         />
-                                        {/* 삭제 버튼 */}
+                                        
                                         <button
                                             className="absolute top-4 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-700"
                                             onClick={() => setSelectedImages([])}
@@ -1003,7 +965,7 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                             ) : (
                                 <p className="text-gray-500 text-center mt-4">이미지를 업로드해주세요.</p>
                             )}
-                        </div>
+                        </div> */}
 
 
                         <div className="mt-4 flex justify-center">
@@ -1011,9 +973,10 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                 onClick={generateAds}
                                 className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                             >
-                                생성
+                                템플릿 재적용
                             </button>
                         </div>
+
                         {/* 이미지 결과물 영역 */}
                         <div className="mt-4">
                             <div className="max-h-screen overflow-auto flex items-center justify-center">
@@ -1028,27 +991,31 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                         pagination={{
                                             clickable: true,
                                         }}
-                                        modules={[Pagination]}
+                                        loop={true}
+                                        navigation={true} // Navigation 활성화
+                                        modules={[Pagination, Navigation]} // Navigation 모듈 포함
                                         className="w-full max-w-3xl"
+                                        onSlideChange={(swiper) => {
+                                            const currentImage = combineImageTexts[swiper.realIndex]; // 실제 인덱스 사용
+                                            setCombineImageText(currentImage); // 상태 업데이트
+                                        }}
                                     >
                                         {combineImageTexts.map((image, index) => (
                                             <SwiperSlide key={index}>
                                                 <div className="text-center">
-                                                    {/* 이미지 */}
                                                     <img
                                                         src={image} // 각각의 이미지 URL
                                                         alt={`결과 이미지 ${index + 1}`}
-                                                        className="h-auto rounded-md shadow-md mx-auto" // 이미지 크기 및 간격 조정
+                                                        className="h-auto rounded-md shadow-md mx-auto"
                                                     />
-                                                    {/* 라디오 버튼 */}
                                                     <div className="flex justify-center">
                                                         <input
                                                             type="radio"
-                                                            name="selectedImage" // 같은 그룹으로 묶어 단일 선택 가능
+                                                            name="selectedImage"
                                                             value={image}
                                                             onChange={(e) => handleCheckboxChange(e)}
-                                                            className="mb-8 mt-4 form-radio w-6 h-6"
-                                                            checked={combineImageText === image} // 선택된 상태 유지
+                                                            className="mb-12 mt-4 form-radio w-6 h-6"
+                                                            checked={combineImageText === image} // 동기화된 상태 유지
                                                         />
                                                     </div>
                                                 </div>
@@ -1069,9 +1036,6 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                                 )}
                             </div>
                         </div>
-
-
-
                     </div>
                 )}
                 {/* 수정, 삭제, 닫기 버튼 */}
@@ -1089,6 +1053,16 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                     {/* 우측 수정 및 삭제 버튼 */}
                     <div className="flex space-x-4">
                         <button
+                            onClick={onShow}
+                            className="px-4 py-2 border border-gray-300 rounded-md"
+                        >
+                            <img
+                                className="w-6 h-6"
+                                src={require("../../../assets/sns/sns.png")}
+                                alt="user-img"
+                            />
+                        </button>
+                        <button
                             onClick={onDelete}
                             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                         >
@@ -1102,6 +1076,96 @@ const AdsDetailModal = ({ isOpen, onClose }) => {
                         </button>
                     </div>
                 </div>
+                {showButtons && (
+                    <div 
+                        className="flex justify-end items-center mt-6"
+                        ref={buttonsContainerRef}
+                    >
+                        <div className="flex space-x-4">
+                            <div>
+                                <AdsDeatilShareKakao
+                                    id="kakaoShareButton" // 버튼 ID
+                                    title={title}
+                                    content={content}
+                                    storeName={storeName}
+                                    storeBusinessNumber={storeBusinessNumber}
+                                    filePath={
+                                        combineImageText
+                                            ? `${combineImageText}` // combineImageText 있을 경우
+                                            : `${process.env.REACT_APP_FASTAPI_ADS_URL}${ads.ads_final_image_url}` // 없을 경우 기존 값 유지
+                                    }
+                                    adsPkValue={adsId}
+                                />
+                                <p className="mt-2 text-center">카카오톡</p>
+                            </div>
+                            <div>
+                                <button
+                                    onClick={() => {
+                                        setUseOption("문자메시지"); // 값 변경
+                                        onUpload(); // 업로드 동작 호출
+                                    }}
+                                    className="flex flex-col items-center px-4 py-2 border border-gray-300 rounded-md bg-white shadow-md"
+                                    disabled={uploading}
+                                >
+                                    {uploading ? (
+                                        <div className="w-8 h-8 border-4 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                        <img
+                                            className="w-8 h-8"
+                                            src={require("../../../assets/sns/mail.png")}
+                                            alt="mail_img"
+                                        />
+                                    )}
+                                </button>
+                                <p className="mt-2 text-center">메일</p>
+                            </div>
+                            <div>
+                                <button
+                                    onClick={() => {
+                                        setUseOption("인스타그램 피드"); // 값 변경
+                                        onUpload(); // 업로드 동작 호출
+                                    }}
+                                    className="flex flex-col items-center px-4 py-2 border border-gray-300 rounded-md bg-white shadow-md"
+                                    disabled={uploading}
+                                >
+                                    {uploading ? (
+                                        <div className="w-8 h-8 border-4 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                        <img
+                                            className="w-8 h-8"
+                                            src={require("../../../assets/sns/insta_feed.png")}
+                                            alt="insta_feed_img"
+                                        />
+                                    )}
+                                </button>
+                                <p className="mt-2 text-center">피드</p>
+                            </div>
+                            {/* 인스타 스토리 버튼 */}
+                            <div>
+                                <button
+                                    onClick={() => {
+                                        setUseOption("인스타그램 스토리"); // 값 변경
+                                        onUpload(); // 업로드 동작 호출
+                                    }}
+                                    className="flex flex-col items-center px-4 py-2 border border-gray-300 rounded-md bg-white shadow-md"
+                                    disabled={uploading}
+                                >
+                                    {uploading ? (
+                                        <div className="w-8 h-8 border-4 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                        <img
+                                            className="w-8 h-8"
+                                            src={require("../../../assets/sns/insta_story.png")}
+                                            alt="insta_story_img"
+                                        />
+                                    )}
+                                </button>
+                                <p className="mt-2 text-center">스토리</p>
+                            </div>
+
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

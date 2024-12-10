@@ -40,7 +40,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [imageLoding, setImageLoading] = useState(false)  // 이미지 생성 로딩
     const [imageErrorMessage, setImageErrorMessage] = useState('');   // 이미지 생성 에러
 
-    const [combineImageText, setCombineImageText] = useState(null)  // 텍스트 + 이미지 결과물
+    const [combineImageText, setCombineImageText] = useState(null)  // 선택 텍스트 + 이미지 결과물
     const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
 
     const [uploading, setUploading] = useState(false)
