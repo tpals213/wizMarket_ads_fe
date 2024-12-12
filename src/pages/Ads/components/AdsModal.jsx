@@ -46,6 +46,9 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [uploading, setUploading] = useState(false)
     const [storeName, setStoreName] = useState('')
 
+    const [videoUrl, setVideoUrl] = useState('')
+    const [videoLoading, setVideoLoading] = useState(false)
+
     const optionSizes = {
         "문자메시지": { width: 333, height: 458 },
         "유튜브 썸네일": { width: 412, height: 232 },
@@ -458,6 +461,37 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         const mimeType = base64.match(/data:(.*?);base64/)[1];
         return mimeType.split("/")[1]; // 확장자 추출
     };
+
+    const onGenerateVideo = async () => {
+        setVideoLoading(true)
+        const formData = new FormData();
+        formData.append('title', title);
+        // if (combineImageText) {
+        //     const extension = getBase64Extension(combineImageText); // 확장자 추출
+        //     const blob = base64ToBlob(combineImageText, `image/${extension}`);
+        //     formData.append("final_image", blob, `image.${extension}`); // Blob과 확장자 추가
+        // }
+        if (selectedImages[0] && selectedImages[0].file) {
+            formData.append('final_image', selectedImages[0].file, selectedImages[0].file.name); // 파일과 이름 추가
+        }
+
+        try {
+            const response = await axios.post(
+                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/video`,
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+            // 성공 시 받은 데이터 상태에 저장
+            setVideoUrl(response.data.result_url.result_url); // 성공 시 서버에서 받은 데이터를 상태에 저장
+            return response.data;
+        } catch (err) {
+            console.error('저장 중 오류 발생:', err);
+            setSaveStatus('error'); // 실패 상태로 설정
+            setImageErrorMessage('저장 중 오류가 발생했습니다.');
+        } finally {
+            setVideoLoading(false)
+        }
+    }
 
     const onSave = async () => {
         // 입력값 유효성 검사
@@ -1096,6 +1130,17 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                             )}
                         </button>
                         <button
+                            onClick={onGenerateVideo}
+                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                            disabled={videoLoading}
+                        >
+                            {videoLoading ? (
+                                <div className="w-6 h-6 border-4 border-white border-solid border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                "영상"
+                            )}
+                        </button>
+                        <button
                             onClick={onSave}
                             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                         >
@@ -1104,12 +1149,19 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     </div>
                 </div>
                 <div className="mt-2 flex flex-col items-center justify-center p-4 rounded">
-                    <p className="text-gray-600 text-sm">인스타 스토리, 피드, 유튜브, 카톡, 메일 업로드 가능</p>
+                    <p className="text-gray-600 text-sm">인스타 스토리, 피드, 유튜브, 카톡, 메일, 네이버 블로그 업로드 가능</p>
                     <p className="text-gray-600 text-sm">현재 문자메시지는 이메일로 전송됩니다.</p>
-                    <p className="text-gray-600 text-sm">네이버 블로그 예정</p>
                 </div>
                 <div className="mt-2 flex-col items-center justify-center p-4 rounded hidden">
-                    <AdsShareNaver title={title} content={content} storeName={storeName}/>
+                    <AdsShareNaver title={title} content={content} storeName={storeName} />
+                </div>
+                <div>
+                    {videoUrl && (
+                        <video controls>
+                            <source src={videoUrl} type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
+                    )}
                 </div>
             </div>
         </div>
