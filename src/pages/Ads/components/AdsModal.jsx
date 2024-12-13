@@ -276,6 +276,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     // Base64 데이터를 Blob으로 변환하는 유틸리티 함수
     const base64ToBlob = (base64, contentType = "image/png") => {
+        if (!base64 || typeof base64 !== "string") {
+            console.error("유효하지 않은 Base64 데이터:", base64);
+            return null; // 또는 기본 Blob을 반환하거나 예외를 발생시킬 수 있음
+        }
+
         const byteCharacters = atob(base64.split(",")[1]);
         const byteNumbers = Array.from(byteCharacters, (char) => char.charCodeAt(0));
         const byteArray = new Uint8Array(byteNumbers);
