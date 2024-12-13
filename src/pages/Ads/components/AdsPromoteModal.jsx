@@ -16,7 +16,7 @@ const AdsPromoteModal = ({ isOpen, onClose, ads_id }) => {
 
             try {
                 const response = await axios.post(
-                    `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/promote/detail`,
+                    `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/promote/detail`,
                     null,
                     { params: { ads_id: ads_id } }
                 );

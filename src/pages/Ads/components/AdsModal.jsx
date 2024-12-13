@@ -92,10 +92,10 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             if (isOpen) {
 
                 try {
-                    // console.log("Request URL:", `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/image`);
+                    // console.log("Request URL:", `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/image`);
                     setLoading(true);
                     const response = await axios.post(
-                        `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/select/init/info`,
+                        `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/select/init/info`,
                         null,
                         { params: { store_business_number: storeBusinessNumber } }
                     );
@@ -253,7 +253,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         };
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/content`,
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/content`,
                 basicInfo,
                 { headers: { 'Content-Type': 'application/json' } }
             );
@@ -293,7 +293,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/image`,
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/image`,
                 basicInfo,
                 { headers: { 'Content-Type': 'application/json' } }
             );
@@ -405,7 +405,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     // const sendFormData = async (formData) => {
     //     try {
     //         const response = await axios.post(
-    //             `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/combine/image/text`,
+    //             `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/combine/image/text`,
     //             formData,
     //             { headers: { 'Content-Type': 'multipart/form-data' } }
     //         );
@@ -428,7 +428,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const sendFormData = async (formData) => {
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/combine/image/text`,
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/combine/image/text`,
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
@@ -477,7 +477,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/generate/video`,
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/video`,
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
@@ -531,7 +531,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/insert`,
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/insert`,
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
@@ -579,7 +579,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 
         try {
             await axios.post(
-                `${process.env.REACT_APP_FASTAPI_BASE_URL}/ads/upload`,
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/upload`,
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
