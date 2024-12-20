@@ -30,6 +30,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [contentLoading, setContentLoading] = useState(false) // gpt 문구 생성 로딩
     const [contentErrorMessage, setContentErrorMessage] = useState('');   // gpt 문구 생성 에러
 
+    const [selectedImage, setSelectedImage] = useState(null); // 파일 업로드 기존 이미지
     const [selectedImages, setSelectedImages] = useState([]); // 파일 업로드 기존 이미지
     const [imageSize, setImageSize] = useState(null);   // 이미지 사이즈
 
@@ -39,6 +40,9 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [isAiPromptVisible, setAiPromptVisible] = useState(true);  // 지시 내용 접히기
     const [imageLoding, setImageLoading] = useState(false)  // 이미지 생성 로딩
     const [imageErrorMessage, setImageErrorMessage] = useState('');   // 이미지 생성 에러
+
+    const [aiMidPrompt, setAiMidPrompt] = useState('');   // 미드 저니 생성 프롬프트
+    const [isAiMidPromptVisible, setAiMidPromptVisible] = useState(true);  // 지시 내용 접히기
 
     const [combineImageText, setCombineImageText] = useState(null)  // 선택 텍스트 + 이미지 결과물
     const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
@@ -50,12 +54,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [videoLoading, setVideoLoading] = useState(false)
 
     const optionSizes = {
-        "문자메시지": { width: 333, height: 458 },
-        "유튜브 썸네일": { width: 412, height: 232 },
-        "인스타그램 스토리": { width: 412, height: 732 },
-        "인스타그램 피드": { width: 412, height: 514 },
-        "네이버 블로그": { width: 400, height: 400 },
-        "배너": { width: 377, height: 377 },
+        "문자메시지": { width: 1024, height: 1792 },
+        "유튜브 썸네일": { width: 1792, height: 1024 },
+        "인스타그램 스토리": { width: 1024, height: 1792 },
+        "인스타그램 피드": { width: 1024, height: 1024 },
+        "네이버 블로그": { width: 1024, height: 1792 },
+        "배너": { width: 1792, height: 1024 },
     };
 
     const resetModalState = () => {
@@ -229,6 +233,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 - 주소 : ${data?.road_name || "값 없음"}
 - 업종 : ${data?.detail_category_name || "값 없음"}
 - 스타일 : ${styleOption || "값 없음"}`);
+
+        setAiMidPrompt(`다음 내용을 바탕으로 온라인 광고 콘텐츠 이미지를 제작합니다. 글자 없이 작성해주세요
+- 테마 : ${content || "값 없음"}
+- 용도 : ${useOption || "값 없음"} - ${title || "값 없음"} 용
+- 업종 : ${data?.detail_category_name || "값 없음"}
+- 스타일 : ${styleOption || "값 없음"}`);
         }
     }, [data, useOption, title, detailContent, content, styleOption]);
 
@@ -289,11 +299,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     // 이미지 생성
     const generateImage = async () => {
-        setImageLoading(true)
+        setImageLoading(true);
         const basicInfo = {
             use_option: useOption,
             ai_model_option: modelOption,
             ai_prompt: aiPrompt,
+            ai_mid_prompt: aiMidPrompt
         };
 
         try {
@@ -302,23 +313,23 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 basicInfo,
                 { headers: { 'Content-Type': 'application/json' } }
             );
-            // 성공 시 받은 데이터 상태에 저장
 
-            const { image: base64Image } = response.data; // AI로 생성된 Base64 이미지
-            // Base64 -> Blob -> File 변환
-            const aiImageBlob = base64ToBlob(base64Image);
-            const aiImageFile = new File([aiImageBlob], "ai-generated-image.png", { type: "image/png" });
-            // selectedImages에 추가
-            setSelectedImages([
-                {
+            const base64Images = response.data.image; // Base64 이미지 배열
+            const newImages = base64Images.map((base64Image, index) => {
+                // Base64 -> Blob -> File 변환
+                const aiImageBlob = base64ToBlob(base64Image);
+                const aiImageFile = new File([aiImageBlob], `ai-generated-image-${index + 1}.png`, { type: "image/png" });
+
+                return {
                     type: "ai",
                     file: aiImageFile, // File 객체로 저장
-                    previewUrl: URL.createObjectURL(aiImageBlob), // 미리보기 URL
-                },
-            ]);
+                    previewUrl: URL.createObjectURL(aiImageBlob), // 미리보기 URL 생성
+                };
+            });
+
+            setSelectedImages(newImages);
             setSaveStatus('success'); // 성공 상태로 설정
             setMessage('생성이 성공적으로 완료되었습니다.');
-            setImageLoading(false)
         } catch (err) {
             console.error('생성 중 오류 발생:', err);
             setSaveStatus('error'); // 실패 상태로 설정
@@ -331,6 +342,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             }, 3000); // 3초 후 메시지 숨기기
         }
     };
+
 
     const generateAds = async () => {
         // 입력값 유효성 검사
@@ -346,13 +358,64 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 
         const formData = new FormData();
         formData.append('store_name', data.store_name);
-        formData.append('road_name', data.road_name)
+        formData.append('road_name', data.road_name);
         formData.append('content', content);
         const resizedWidth = useOption === '유튜브 썸네일'
             ? 1792
             : optionSizes[useOption]?.width || null;
 
-        // 리사이즈된 이미지 생성 및 추가
+        // 미드저니 조건 추가
+        if (modelOption === 'midJouney') {
+            if (!selectedImage) {
+                setSaveStatus('error');
+                setMessage('미드저니에서 이미지를 선택해주세요.');
+                return;
+            }
+
+            const img = new Image();
+            img.src = selectedImage.previewUrl; // 선택된 이미지의 미리보기 URL 사용
+
+            img.onload = () => {
+                const originalWidth = img.width;
+                const originalHeight = img.height;
+
+                const resizedHeight = resizedWidth
+                    ? Math.round((resizedWidth / originalWidth) * originalHeight)
+                    : null;
+
+                if (resizedWidth && resizedHeight) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = resizedWidth;
+                    canvas.height = resizedHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, resizedWidth, resizedHeight);
+
+                    canvas.toBlob(
+                        (blob) => {
+                            const resizedFile = new File([blob], "selected-midjourney-image.png", { type: "image/png" });
+                            formData.append('image', resizedFile);
+                            formData.append('image_width', resizedWidth);
+                            formData.append('image_height', resizedHeight);
+
+                            // 서버로 전송
+                            sendFormData(formData);
+                        },
+                        "image/png"
+                    );
+                } else {
+                    formData.append('image', selectedImage.file);
+                    formData.append('image_width', originalWidth);
+                    formData.append('image_height', originalHeight);
+
+                    // 서버로 전송
+                    sendFormData(formData);
+                }
+            };
+
+            return; // 미드저니 조건 처리 후 함수 종료
+        }
+
+        // 기존 코드 유지
         if (selectedImages.length > 0 && selectedImages[0].file) {
             const file = selectedImages[0].file;
 
@@ -363,20 +426,17 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 const originalWidth = img.width;
                 const originalHeight = img.height;
 
-                // 비율에 맞춘 세로 크기 계산
                 const resizedHeight = resizedWidth
                     ? Math.round((resizedWidth / originalWidth) * originalHeight)
                     : null;
 
                 if (resizedWidth && resizedHeight) {
-                    // 리사이즈된 크기로 Canvas 생성
                     const canvas = document.createElement('canvas');
                     canvas.width = resizedWidth;
                     canvas.height = resizedHeight;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, resizedWidth, resizedHeight);
 
-                    // Canvas를 Blob으로 변환하여 FormData에 추가
                     canvas.toBlob(
                         (blob) => {
                             const resizedFile = new File([blob], file.name, { type: file.type });
@@ -390,7 +450,6 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                         file.type
                     );
                 } else {
-                    // 리사이즈 크기가 없으면 원본 이미지와 크기를 전송
                     formData.append('image', file);
                     formData.append('image_width', originalWidth);
                     formData.append('image_height', originalHeight);
@@ -405,6 +464,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             return;
         }
     };
+
 
 
     // const sendFormData = async (formData) => {
@@ -461,6 +521,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         setCombineImageText(value); // 선택된 이미지 URL 저장
     };
 
+    const handleCheckboxMidChange = (e) => {
+        const { value } = e.target;
+        setSelectedImage(value); // 선택된 이미지 URL 저장
+    };
+
 
     const getBase64Extension = (base64) => {
         const mimeType = base64.match(/data:(.*?);base64/)[1];
@@ -476,7 +541,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         //     const blob = base64ToBlob(combineImageText, `image/${extension}`);
         //     formData.append("final_image", blob, `image.${extension}`); // Blob과 확장자 추가
         // }
-        if (selectedImages[0] && selectedImages[0].file) {
+        
+        if (modelOption === 'midJouney' && selectedImage && selectedImage.file) {
+            formData.append('final_image', selectedImage.file, selectedImage.file.name); // 파일과 이름 추가
+        }
+        else  {
             formData.append('final_image', selectedImages[0].file, selectedImages[0].file.name); // 파일과 이름 추가
         }
 
@@ -683,12 +752,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 value={useOption}
                                 onChange={(e) => setUseOption(e.target.value)}
                             >
-                                <option value="문자메시지">문자메시지 (333x458)</option>
-                                <option value="유튜브 썸네일">유튜브 썸네일 (412x232)</option>
-                                <option value="인스타그램 스토리">인스타 스토리 (412x732)</option>
-                                <option value="인스타그램 피드">인스타 피드 (412x514)</option>
-                                <option value="네이버 블로그">네이버 블로그</option>
-                                <option value="배너">배너 (377x377)</option>
+                                <option value="문자메시지">문자메시지 (9:16)</option>
+                                <option value="유튜브 썸네일">유튜브 썸네일 (16:9)</option>
+                                <option value="인스타그램 스토리">인스타 스토리 (9:16)</option>
+                                <option value="인스타그램 피드">인스타 피드 (1:1)</option>
+                                <option value="네이버 블로그">네이버 블로그 (16:9)</option>
+                                <option value="배너">배너 (16:9)</option>
                             </select>
                         </div>
 
@@ -878,6 +947,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 {/* <option value="poster">영화 포스터(Diffusion)</option> */}
                                 {/* <option value="food">음식 특화(Diffusion)</option> */}
                                 <option value="dalle">DALL·E 3(GPT)</option>
+                                <option value="midJouney">Midjourney</option>
                             </select>
                         </div>
                         <div className="mb-6 mt-6">
@@ -945,6 +1015,48 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 />
                             </div>
                         )}
+
+                        <div className="mb-6 flex items-center justify-between">
+                            <label className="block text-lg text-gray-700">
+                                미드저니 생성 Prompt
+                            </label>
+                            <button
+                                className="text-gray-500 focus:outline-none"
+                                onClick={() => setAiMidPromptVisible(!isAiMidPromptVisible)}
+                            >
+                                {isAiMidPromptVisible ? (
+                                    <>
+                                        <span>&#xFE3F;</span>  {/* ▼ 아래 방향 화살표 */}
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>&#xFE40;</span>  {/* ▶ 오른쪽 방향 화살표 */}
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                        {isAiMidPromptVisible && (
+                            <div className="mb-6">
+                                <p>미드저니 프롬프트는 다음과 같은 과정을 거쳐 생성 됩니다.</p>
+                                <p>아래의 프롬프트를 역할이 설정된 gpt 로 전달하여 미드저니 프롬프트처럼 만들어 달라고 요청</p>
+                                <p>생성된 프롬프트를 미드저니에게 전달하여 생성된 이미지 반환</p>
+                                <p>gpt 역할</p>
+                                <p>
+                                    You are now a Midjourney prompt engineer.
+                                    Midjourney AI creates images based on given prompts.
+                                    Please refer to the link below for Midjourney.
+                                    https://en.wikipedia.org/wiki/Midjourney
+                                    All you have to do is configure the prompt so Midjourney can generate the best image for what you're requesting.
+                                </p>
+                                <textarea
+                                    rows={11}
+                                    value={aiMidPrompt}
+                                    onChange={(e) => setAiMidPrompt(e.target.value)}
+                                    className="border border-gray-300 rounded w-full px-3 py-2"
+                                />
+                            </div>
+                        )}
+
                         <div className="mb-6">
                             <div className="flex items-center justify-between mb-2">
                                 <label className="block text-lg text-gray-700 mb-2">
@@ -1000,15 +1112,63 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 }}
                             />
                         </div>
-                        <div className="mt-4 flex justify-center">
+                        <div className="mt-4 justify-center items-center">
                             {imageLoding ? (
-                                <div className="flex justify-center items-center w-48 h-48">
+                                <div className="h-[100px] flex items-center justify-center">
                                     <div className="w-6 h-6 border-4 border-blue-500 border-solid border-t-transparent rounded-full animate-spin"></div>
                                 </div>
                             ) : imageErrorMessage ? (
                                 // 에러 메시지 표시
                                 <div className="text-red-500 text-center mt-4">
                                     {imageErrorMessage}
+                                </div>
+                            ) : modelOption === 'midJouney' && selectedImages.length > 0 ? (
+                                <div className="mt-4 flex justify-center">
+                                    <Swiper
+                                        spaceBetween={30}
+                                        pagination={{
+                                            clickable: true,
+                                        }}
+                                        loop={true}
+                                        navigation={true} // Navigation 활성화
+                                        modules={[Pagination, Navigation]} // Navigation 모듈 포함
+                                        className="w-full max-w-3xl"
+                                        onSlideChange={(swiper) => {
+                                            const currentImage = selectedImages[swiper.realIndex]; // 실제 인덱스 사용
+                                            setSelectedImage(currentImage); // 상태 업데이트
+                                        }}
+                                    >
+                                        {selectedImages.map((image, index) => (
+                                            <SwiperSlide key={index}>
+                                                <div className="text-center relative">
+                                                    <img
+                                                        src={image.previewUrl} // 미리보기 URL 사용
+                                                        alt={`미리보기 ${index + 1}`}
+                                                        style={{
+                                                            maxWidth: "100%", // 부모 요소 크기에 맞게 축소
+                                                            maxHeight: "100%", // 화면 크기를 넘지 않도록 설정
+                                                            width: `${optionSizes[useOption]?.width || 'auto'}px`, // useOption의 가로 크기로 맞춤
+                                                            height: `${optionSizes[useOption]?.width && imageSize?.width && imageSize?.height
+                                                                ? (optionSizes[useOption].width / imageSize.width) * imageSize.height // 비율에 맞춘 세로 크기
+                                                                : 'auto'
+                                                                }px`,
+                                                        }}
+                                                        className="h-auto rounded-md shadow-md mx-auto"
+                                                    />
+                                                    <div className="flex justify-center">
+                                                        <input
+                                                            type="radio"
+                                                            name="selectedImage"
+                                                            value={image.previewUrl}
+                                                            onChange={(e) => handleCheckboxMidChange(e)}
+                                                            className="mb-12 mt-4 form-radio w-6 h-6"
+                                                            checked={selectedImage?.previewUrl === image.previewUrl}  // 동기화된 상태 유지
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </SwiperSlide>
+                                        ))}
+                                    </Swiper>
                                 </div>
                             ) : (
                                 selectedImages.length > 0 && (
@@ -1026,13 +1186,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                 }}
                                                 className="rounded object-contain"
                                             />
-                                            {/* 삭제 버튼 */}
-                                            <button
-                                                className="absolute top-4 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-700"
-                                                onClick={() => setSelectedImages([])}
-                                            >
-                                                &times;
-                                            </button>
+
                                         </div>
                                     </div>
                                 )
@@ -1154,7 +1308,6 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     </div>
                 </div>
                 <div className="mt-2 flex flex-col items-center justify-center p-4 rounded">
-                    <p className="text-gray-600 text-sm">인스타 스토리, 피드, 유튜브, 카톡, 메일, 네이버 블로그 업로드 가능</p>
                     <p className="text-gray-600 text-sm">현재 문자메시지는 이메일로 전송됩니다.</p>
                 </div>
                 <div className="mt-2 flex-col items-center justify-center p-4 rounded hidden">
@@ -1163,9 +1316,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 <div>
                     {videoUrl && (
                         <video controls>
-                            <source src={videoUrl} type="video/mp4" />
-                            Your browser does not support the video tag.
-                        </video>
+                        <source
+                            src={`${process.env.REACT_APP_FASTAPI_ADS_URL}${videoUrl}`}
+                            type="video/mp4"
+                        />
+                        Your browser does not support the video tag.
+                    </video>
                     )}
                 </div>
             </div>
