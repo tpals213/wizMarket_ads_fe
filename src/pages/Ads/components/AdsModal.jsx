@@ -6,6 +6,7 @@ import "swiper/css/navigation"; // Navigation 스타일 추가
 import { Pagination, Navigation } from "swiper/modules"; // Navigation 모듈 추가
 import AdsShareNaver from './AdsShareNaver';
 import AdsShareKakao from './AdsShareKakao'
+import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
 
 const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [customTitle, setCustomTitle] = useState(""); // 주제 기타 입력값 별도 관리
     const [detailContent, setDetailContent] = useState('');   // 실제 적용할 문구 ex)500원 할인
     const [gptRole, setGptRole] = useState(''); // gpt 역할 부여 - 지시 내용
-    const [isGptRoleVisible, setIsGptRoleVisible] = useState(true);  // 지시 내용 접히기
+    
     const [prompt, setPrompt] = useState(''); // gpt 내용 부여 - 전달 내용
     const [isPromptVisible, setIsPromptVisible] = useState(true);  // 전달 내용 접히기
 
@@ -208,13 +209,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 매출이 가장 높은 시간대 : ${timeMap[data.maxSalesTime] || data.maxSalesTime || "값 없음"}
 매출이 가장 높은 남성 연령대 : ${maleMap[data.maxSalesMale] || data.maxSalesMale || "값 없음"}
 매출이 가장 높은 여성 연령대 : ${femaleMap[data.maxSalesFemale] || data.maxSalesFemale || "값 없음"}`);
-            setGptRole(`다음과 같은 내용을 바탕으로 온라인 광고 콘텐츠를 제작하려고 합니다. 
-잘 어울리는 광고 문구를 생성해주세요.
-- 현재 날짜, 날씨, 시간, 계절 등의 상황에 어울릴 것
-- 주제 세부 정보 내용을 바탕으로 40자 이상 60자 이내로 작성할 것
-- 특수기호, 이모티콘은 제외할 것
-- 광고 채널 : ${useOption} 형태로 작성할 것
-- 주제 : ${title} 형태로 작성할 것`);
+
             setPrompt(`매장명 : ${data.store_name || "값 없음"}
 주소 : ${data.road_name || "값 없음"}
 업종 : ${data.detail_category_name || "값 없음"}
@@ -242,6 +237,9 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
     }, [data, useOption, title, detailContent, content, styleOption]);
 
+
+
+
     // 문구 생성
     const generateContent = async () => {
         // 입력값 유효성 검사
@@ -261,6 +259,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             prompt: prompt,
             detail_content: detailContent
         };
+
         try {
             const response = await axios.post(
                 `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/content`,
@@ -822,35 +821,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
                         </div>
                         <hr className="border-t border-black opacity-100" />
-                        <div className="mb-6 mt-6 flex items-center justify-between">
-                            <label className="block text-lg text-gray-700">
-                                AI에게 명령할 내용 (지시문)
-                            </label>
-                            <button
-                                className="text-gray-500 focus:outline-none"
-                                onClick={() => setIsGptRoleVisible(!isGptRoleVisible)}
-                            >
-                                {isGptRoleVisible ? (
-                                    <>
-                                        <span>&#xFE3F;</span>  {/* ▼ 아래 방향 화살표 */}
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>&#xFE40;</span>  {/* ▶ 오른쪽 방향 화살표 */}
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                        {isGptRoleVisible && (
-                            <div className="mb-6">
-                                <textarea
-                                    rows={8}
-                                    value={gptRole}
-                                    onChange={(e) => setGptRole(e.target.value)}
-                                    className="border border-gray-300 rounded w-full px-3 py-2"
-                                />
-                            </div>
-                        )}
+                            <AdsAIInstructionByTitle title={title} gptRole={gptRole} setGptRole={setGptRole}/>
                         <div className="mb-6 flex items-center justify-between">
                             <label className="block text-lg text-gray-700">
                                 세부 내용 (DB+정보직접입력)
