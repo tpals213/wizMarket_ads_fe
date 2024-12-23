@@ -359,6 +359,8 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         formData.append('store_name', data.store_name);
         formData.append('road_name', data.road_name);
         formData.append('content', content);
+        formData.append('use_option', useOption);
+        formData.append('title', title);
         const resizedWidth = useOption === '유튜브 썸네일'
             ? 1792
             : optionSizes[useOption]?.width || null;
@@ -424,7 +426,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             img.onload = () => {
                 const originalWidth = img.width;
                 const originalHeight = img.height;
-
+                // console.log(originalWidth, originalHeight);
                 const resizedHeight = resizedWidth
                     ? Math.round((resizedWidth / originalWidth) * originalHeight)
                     : null;
