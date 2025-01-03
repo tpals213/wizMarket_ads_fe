@@ -1013,14 +1013,13 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 <p>미드저니 프롬프트는 다음과 같은 과정을 거쳐 생성 됩니다.</p>
                                 <p>아래의 프롬프트를 역할이 설정된 gpt 로 전달하여 미드저니 프롬프트처럼 만들어 달라고 요청</p>
                                 <p>생성된 프롬프트를 미드저니에게 전달하여 생성된 이미지 반환</p>
+                                <br />
                                 <p>gpt 역할</p>
-                                <p>
-                                    You are now a Midjourney prompt engineer.
-                                    Midjourney AI creates images based on given prompts.
-                                    Please refer to the link below for Midjourney.
-                                    https://en.wikipedia.org/wiki/Midjourney
-                                    All you have to do is configure the prompt so Midjourney can generate the best image for what you're requesting.
-                                </p>
+                                <p>You are now a Midjourney prompt engineer.</p>
+                                <p>Midjourney AI creates images based on given prompts.</p>
+                                <p>Please refer to the link below for Midjourney.</p>
+                                <p>https://en.wikipedia.org/wiki/Midjourney.</p>
+                                <p>All you have to do is configure the prompt so Midjourney can generate the best image for what you're requesting.</p>
                                 <textarea
                                     rows={11}
                                     value={aiMidPrompt}
