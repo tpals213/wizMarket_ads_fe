@@ -1,43 +1,54 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const crypto = require("crypto");
-const { exec } = require("child_process");
+var http    = require('http');
+var spawn   = require('child_process').spawn;
+var crypto  = require('crypto');
+var url     = require('url');
 
-const app = express();
-const PORT = 3002; // Webhook 서버 포트
-const SECRET = "key"; // GitHub/GitLab Webhook Secret
+var secret  = 'key'; // secret key of the webhook
+var port    = 8002; // port
 
-app.use(bodyParser.json());
+http.createServer(function(req, res){
+    
+    console.log("request received");
+    res.writeHead(400, {"Content-Type": "application/json"});
 
-// Webhook 엔드포인트
-app.post("/webhook", (req, res) => {
-    const sig = req.headers["x-hub-signature-256"];
-    const hmac = crypto.createHmac("sha256", SECRET);
-    const digest = `sha256=${hmac.update(JSON.stringify(req.body)).digest("hex")}`;
+    var path = url.parse(req.url).pathname;
 
-    if (sig !== digest) {
-        return res.status(403).send("Forbidden: Invalid signature");
+    if(path!='/push' || req.method != 'POST'){
+       var data = JSON.stringify({"error": "invalid request"});
+       return res.end(data); 
     }
 
-    const branch = req.body.ref;
-    if (branch === "refs/heads/main") {
-        console.log("Main branch updated. Pulling changes...");
 
-        exec("git pull && npm install && npm run build", (err, stdout, stderr) => {
-            if (err) {
-                console.error(`Error during git pull: ${err.message}`);
-                return res.status(500).send("Internal Server Error");
-            }
-            console.log(`stdout: ${stdout}`);
-            console.error(`stderr: ${stderr}`);
-            res.status(200).send("Webhook processed successfully");
-        });
-    } else {
-        console.log(`Ignored branch: ${branch}`);
-        res.status(200).send("Branch ignored");
-    }
-});
+    var jsonString = '';
+    req.on('data', function(data){
+        jsonString += data;
+    });
 
-app.listen(PORT, () => {
-    console.log(`Webhook server running on port ${PORT}`);
-});
+    req.on('end', function(){
+      var hash = "sha1=" + crypto.createHmac('sha1', secret).update(jsonString).digest('hex');
+      if(hash != req.headers['x-hub-signature']){
+          console.log('invalid key');
+          var data = JSON.stringify({"error": "invalid key", key: hash});
+          return res.end(data);
+      } 
+       
+      console.log("running hook.sh");
+   
+      var deploySh = spawn('sh', ['hook.sh']);
+      deploySh.stdout.on('data', function(data){
+          var buff = new Buffer(data);
+          console.log(buff.toString('utf-8'));
+      });
+
+      
+    res.writeHead(400, {"Content-Type": "application/json"});
+    
+    var data = JSON.stringify({"success": true});
+      return res.end(data);
+ 
+    });
+
+    
+}).listen(port);
+
+console.log("Server listening at " + port);
