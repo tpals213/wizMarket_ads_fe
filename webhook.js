@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
+const { exec } = require('child_process');
 
 const app = express();
 const PORT = 3003;
@@ -35,11 +36,28 @@ app.post('/webhook', (req, res) => {
   // Handle GitHub payload
   if (req.body.ref === 'refs/heads/main') {
     console.log('Push to main branch detected');
-    // TODO: Add your logic here (e.g., trigger build, notify React, etc.)
-    return res.status(200).send('Webhook received successfully');
-  }
 
-  return res.status(200).send('Event ignored');
+    // Execute Git Pull
+    exec('git pull', (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Git pull error: ${error.message}`);
+        return res.status(500).send(`Git pull failed: ${error.message}`);
+      }
+      console.log(`Git pull output: ${stdout}`);
+
+      // Restart React server using PM2
+      exec('pm2 restart react-server', (restartError, restartStdout, restartStderr) => {
+        if (restartError) {
+          console.error(`React server restart error: ${restartError.message}`);
+          return res.status(500).send(`React server restart failed: ${restartError.message}`);
+        }
+        console.log(`React server restarted: ${restartStdout}`);
+        return res.status(200).send('Webhook received and React server restarted');
+      });
+    });
+  } else {
+    return res.status(200).send('Event ignored');
+  }
 });
 
 // Start server
