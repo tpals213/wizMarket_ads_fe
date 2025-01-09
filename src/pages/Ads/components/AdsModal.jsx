@@ -718,7 +718,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                         </div>
                         <div className="mb-6 flex items-center justify-between">
                             <label className="block text-lg text-gray-700 mb-2">
-                                매장 정보
+                                매장 정보보보보보보
                             </label>
                             <button
                                 className="text-gray-500 focus:outline-none"
