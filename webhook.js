@@ -4,10 +4,8 @@ const crypto = require('crypto');
 const { exec } = require('child_process');
 
 const app = express();
-const PORT = 3003;
-
-// GitHub Webhook Secret
-const SECRET = 'key';
+const PORT = 3003; // 포트 번호
+const SECRET = 'key'; // 테스트용 Secret 키
 
 // Middleware for parsing JSON
 app.use(bodyParser.json());
@@ -45,8 +43,8 @@ app.post('/webhook', (req, res) => {
       }
       console.log(`Git pull output: ${stdout}`);
 
-      // Restart React server using PM2
-      exec('pm2 restart react-server', (restartError, restartStdout, restartStderr) => {
+      // Restart React server (using npm start)
+      exec('pkill -f "npm start" && npm start', { cwd: '/path/to/react-app' }, (restartError, restartStdout, restartStderr) => {
         if (restartError) {
           console.error(`React server restart error: ${restartError.message}`);
           return res.status(500).send(`React server restart failed: ${restartError.message}`);
