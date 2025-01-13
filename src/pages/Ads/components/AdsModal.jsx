@@ -43,16 +43,16 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [imageErrorMessage, setImageErrorMessage] = useState('');   // 이미지 생성 에러
 
     const [aiMidPrompt, setAiMidPrompt] = useState('');   // 미드 저니 생성 프롬프트
-    const [isAiMidPromptVisible, setAiMidPromptVisible] = useState(true);  // 지시 내용 접히기
+    const [isAiMidPromptVisible, setAiMidPromptVisible] = useState(false);  // 지시 내용 접히기
 
     const [combineImageText, setCombineImageText] = useState(null)  // 선택 텍스트 + 이미지 결과물
     const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
 
-    const [uploading, setUploading] = useState(false)
+    const [uploading, setUploading] = useState(false)   // 유튜브 업로드
     const [storeName, setStoreName] = useState('')
 
-    const [videoUrl, setVideoUrl] = useState('')
-    const [videoLoading, setVideoLoading] = useState(false)
+    const [videoUrl, setVideoUrl] = useState('')    // 비디오 URL
+    const [videoLoading, setVideoLoading] = useState(false) // 비디오 생성 로딩
 
     const optionSizes = {
         "문자메시지": { width: 1024, height: 1792 },
@@ -361,6 +361,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         formData.append('content', content);
         formData.append('use_option', useOption);
         formData.append('title', title);
+
         const resizedWidth = useOption === '유튜브 썸네일'
             ? 1792
             : optionSizes[useOption]?.width || null;
