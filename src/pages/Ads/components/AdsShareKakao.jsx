@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 
-const AdsShareKakao = ({ title, content, storeName, storeBusinessNumber, base64Image, onSave }) => {
+const AdsShareKakao = ({ title, content, storeName, storeBusinessNumber, base64Image }) => {
     const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
-    const [isSaved, setIsSaved] = useState(false); // 이미 저장된지 여부 추적
 
     useEffect(() => {
         // 카카오 SDK 초기화
@@ -76,18 +75,8 @@ const AdsShareKakao = ({ title, content, storeName, storeBusinessNumber, base64I
             return;
         }
 
-        let adsPkValue; // 로컬 변수로 adsPk 값 초기화
-        if (!isSaved && onSave) {
-            // 저장이 안 되었을 때만 저장 수행
-            try {
-                adsPkValue = await onSave(); // onSave 실행 후 adsPk 값 받기
-                setIsSaved(true); // 저장 여부 업데이트
-                console.log("Ads PK Value:", adsPkValue);
-            } catch (error) {
-                console.error("onSave 실행 중 오류 발생:", error);
-                return; // 오류 발생 시 카카오톡 공유 실행 중단
-            }
-        }
+        // adsInfo URL 생성
+        const adsInfoUrl = `?title=${encodeURIComponent(title || "기본 제목")}&content=${encodeURIComponent(content || "기본 내용")}&storeName=${encodeURIComponent(storeName || "기본 매장명")}&imageUrl=${encodeURIComponent(uploadedImageUrl || "기본 내용")}`;
 
         // 커스텀 템플릿 전송
         window.Kakao.Share.sendCustom({
@@ -97,7 +86,7 @@ const AdsShareKakao = ({ title, content, storeName, storeBusinessNumber, base64I
                 imageUrl: uploadedImageUrl,
                 storeName: storeName || "기본 매장명",
                 content: content || "기본 내용",
-                adsPk: adsPkValue,
+                adsInfo: adsInfoUrl,
                 store_business_id: storeBusinessNumber,
             },
         });
