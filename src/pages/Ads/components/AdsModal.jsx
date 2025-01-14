@@ -468,29 +468,6 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     };
 
 
-
-    // const sendFormData = async (formData) => {
-    //     try {
-    //         const response = await axios.post(
-    //             `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/combine/image/text`,
-    //             formData,
-    //             { headers: { 'Content-Type': 'multipart/form-data' } }
-    //         );
-    //         setCombineImageText(response.data.image);
-    //         setSaveStatus('success');
-    //         setMessage('생성이 성공적으로 완료되었습니다.');
-    //     } catch (err) {
-    //         console.error('저장 중 오류 발생:', err);
-    //         setSaveStatus('error');
-    //         setMessage('저장 중 오류가 발생했습니다.');
-    //     } finally {
-    //         setTimeout(() => {
-    //             setSaveStatus(null);
-    //             setMessage('');
-    //         }, 3000);
-    //     }
-    // };
-
     // 템플릿 2개 처리
     const sendFormData = async (formData) => {
         try {
@@ -499,10 +476,17 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
+
+            // 이미지 배열 평탄화 처리
+            const images = Array.isArray(response.data.images[0]) 
+            ? response.data.images[0] // 이중 배열인 경우 첫 번째 배열 사용
+            : response.data.images;   // 1차원 배열인 경우 그대로 사용
+
             // 두 개의 이미지를 상태로 저장
-            setCombineImageTexts(response.data.images);
-            setCombineImageText(response.data.images[0])
-            // console.log(response.data.image)
+            setCombineImageTexts(images);
+            setCombineImageText(images[0])
+
+
             setSaveStatus('success');
             setMessage('생성이 성공적으로 완료되었습니다.');
         } catch (err) {
