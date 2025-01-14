@@ -11,6 +11,7 @@ const Router = () => {
         <Route path="/ads/:storeBusinessNumber" element={<AdsModalPage type="create" />} />
         <Route path="/ads/detail" element={<AdsModalPage type="edit" />} />
         <Route path="/ads/promote" element={<AdsModalPage type="promote" />} />
+        <Route path="/ads/auth/callback" element={<AdsModalPage type="youtube" />} />
       </Routes>
     </BrowserRouter>
   );

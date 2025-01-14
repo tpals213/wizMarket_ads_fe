@@ -476,7 +476,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
-
+            // console.log(response.data.images)
             // 이미지 배열 평탄화 처리
             const images = Array.isArray(response.data.images[0]) 
             ? response.data.images[0] // 이중 배열인 경우 첫 번째 배열 사용
