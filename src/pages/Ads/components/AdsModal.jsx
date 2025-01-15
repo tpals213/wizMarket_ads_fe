@@ -638,11 +638,18 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
 
         try {
-            await axios.post(
+            const response = await axios.post(
                 `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/upload`,
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
+            // console.log(response.data.auth_url);
+            // 유튜브 옵션일 경우 auth_url 리디렉션 처리
+            if (useOption === "유튜브 썸네일" && response.data.auth_url) {
+                window.location.href = response.data.auth_url; // 유저를 Google OAuth 페이지로 리디렉션
+                return;
+            }
+
         } catch (err) {
             console.error("업로드 중 오류 발생:", err); // 발생한 에러를 콘솔에 출력
             if (err.response) {
@@ -742,7 +749,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 <option value="유튜브 썸네일">유튜브 썸네일 (16:9)</option>
                                 <option value="인스타그램 스토리">인스타 스토리 (9:16)</option>
                                 <option value="인스타그램 피드">인스타 피드 (1:1)</option>
-                                <option value="네이버 블로그">네이버 블로그 (16:9)</option>
+                                {/* <option value="네이버 블로그">네이버 블로그 (16:9)</option> */}
                                 <option value="배너">배너 (16:9)</option>
                             </select>
                         </div>
