@@ -641,16 +641,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
 
         try {
-            const response = await axios.post(
+            await axios.post(
                 `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/upload`,
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
-            // 유튜브 옵션일 경우 auth_url 리디렉션 처리
-            if (useOption === "유튜브 썸네일" && response.data.auth_url) {
-                window.location.href = response.data.auth_url;
-                return;
-            }
+
         } catch (err) {
             console.error("업로드 중 오류 발생:", err); // 발생한 에러를 콘솔에 출력
             if (err.response) {
