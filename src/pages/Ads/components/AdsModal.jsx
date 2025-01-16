@@ -8,7 +8,9 @@ import AdsShareNaver from './AdsShareNaver';
 import AdsShareKakao from './AdsShareKakao'
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
 
+
 const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [saveStatus, setSaveStatus] = useState(null); // 결과 처리
@@ -23,7 +25,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [customTitle, setCustomTitle] = useState(""); // 주제 기타 입력값 별도 관리
     const [detailContent, setDetailContent] = useState('');   // 실제 적용할 문구 ex)500원 할인
     const [gptRole, setGptRole] = useState(''); // gpt 역할 부여 - 지시 내용
-    
+
     const [prompt, setPrompt] = useState(''); // gpt 내용 부여 - 전달 내용
     const [isPromptVisible, setIsPromptVisible] = useState(true);  // 전달 내용 접히기
 
@@ -104,7 +106,6 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                         null,
                         { params: { store_business_number: storeBusinessNumber } }
                     );
-
                     const {
                         commercial_district_max_sales_day,
                         commercial_district_max_sales_time,
@@ -229,7 +230,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 - 업종 : ${data?.detail_category_name || "값 없음"}
 - 스타일 : ${styleOption || "값 없음"}`);
 
-        setAiMidPrompt(`다음 내용을 바탕으로 온라인 광고 콘텐츠 이미지를 제작합니다. 글자 없이 작성해주세요
+            setAiMidPrompt(`다음 내용을 바탕으로 온라인 광고 콘텐츠 이미지를 제작합니다. 글자 없이 작성해주세요
 - 테마 : ${content || "값 없음"}
 - 용도 : ${useOption || "값 없음"} - ${title || "값 없음"} 용
 - 업종 : ${data?.detail_category_name || "값 없음"}
@@ -295,6 +296,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         const byteArray = new Uint8Array(byteNumbers);
         return new Blob([byteArray], { type: contentType });
     };
+    
 
     // 이미지 생성
     const generateImage = async () => {
@@ -478,9 +480,9 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
             );
             // console.log(response.data.images)
             // 이미지 배열 평탄화 처리
-            const images = Array.isArray(response.data.images[0]) 
-            ? response.data.images[0] // 이중 배열인 경우 첫 번째 배열 사용
-            : response.data.images;   // 1차원 배열인 경우 그대로 사용
+            const images = Array.isArray(response.data.images[0])
+                ? response.data.images[0] // 이중 배열인 경우 첫 번째 배열 사용
+                : response.data.images;   // 1차원 배열인 경우 그대로 사용
 
             // 두 개의 이미지를 상태로 저장
             setCombineImageTexts(images);
@@ -527,11 +529,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         //     const blob = base64ToBlob(combineImageText, `image/${extension}`);
         //     formData.append("final_image", blob, `image.${extension}`); // Blob과 확장자 추가
         // }
-        
+
         if (modelOption === 'midJouney' && selectedImage && selectedImage.file) {
             formData.append('final_image', selectedImage.file, selectedImage.file.name); // 파일과 이름 추가
         }
-        else  {
+        else {
             formData.append('final_image', selectedImages[0].file, selectedImages[0].file.name); // 파일과 이름 추가
         }
 
@@ -627,10 +629,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
 
         setUploading(true);
         const formData = new FormData();
-        formData.append('use_option', useOption); // 컨텐츠 추가
+        formData.append('use_option', useOption); // 용도 추가
         formData.append('content', content); // 컨텐츠 추가
         formData.append('store_name', data.store_name);
         formData.append('tag', data.detail_category_name)
+
         if (combineImageText) {
             const extension = getBase64Extension(combineImageText); // 확장자 추출
             const blob = base64ToBlob(combineImageText, `image/${extension}`);
@@ -643,13 +646,11 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
-            // console.log(response.data.auth_url);
             // 유튜브 옵션일 경우 auth_url 리디렉션 처리
             if (useOption === "유튜브 썸네일" && response.data.auth_url) {
-                window.location.href = response.data.auth_url; // 유저를 Google OAuth 페이지로 리디렉션
+                window.location.href = response.data.auth_url;
                 return;
             }
-
         } catch (err) {
             console.error("업로드 중 오류 발생:", err); // 발생한 에러를 콘솔에 출력
             if (err.response) {
@@ -815,7 +816,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
                         </div>
                         <hr className="border-t border-black opacity-100" />
-                            <AdsAIInstructionByTitle title={title} gptRole={gptRole} setGptRole={setGptRole}/>
+                        <AdsAIInstructionByTitle title={title} gptRole={gptRole} setGptRole={setGptRole} />
                         <div className="mb-6 flex items-center justify-between">
                             <label className="block text-lg text-gray-700">
                                 세부 내용 (DB+정보직접입력)
@@ -1280,12 +1281,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 <div>
                     {videoUrl && (
                         <video controls>
-                        <source
-                            src={`${process.env.REACT_APP_FASTAPI_ADS_URL}${videoUrl}`}
-                            type="video/mp4"
-                        />
-                        Your browser does not support the video tag.
-                    </video>
+                            <source
+                                src={`${process.env.REACT_APP_FASTAPI_ADS_URL}${videoUrl}`}
+                                type="video/mp4"
+                            />
+                            Your browser does not support the video tag.
+                        </video>
                     )}
                 </div>
             </div>
