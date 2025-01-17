@@ -9,7 +9,7 @@ import AdsShareKakao from './AdsShareKakao'
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
 
 
-const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
+const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -20,7 +20,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [storeInfo, setStoreInfo] = useState("")  // 가게 정보
     const [isStoreInfoVisible, setIsStoreInfoVisible] = useState(false);  // 가게 정보 접히기
 
-    const [useOption, setUseOption] = useState("문자메시지");  // 사이즈 용도
+    const [useOption, setUseOption] = useState("");  // 사이즈 용도
     const [title, setTitle] = useState("매장 소개");    // 주제 용도
     const [customTitle, setCustomTitle] = useState(""); // 주제 기타 입력값 별도 관리
     const [detailContent, setDetailContent] = useState('');   // 실제 적용할 문구 ex)500원 할인
@@ -76,7 +76,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         setContentLoading(false);
         setSaveStatus(null);
         setMessage('');
-        setUseOption("문자메시지"); // 초기값 유지
+        setUseOption(""); // 초기값 유지
         setModelOption('');
         setImageSize(null);
         // setCombineImageText('');
@@ -142,7 +142,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                     };
                     setData(updatedData);
                     setImageSize(null)
-                    setUseOption("문자메시지")
+                    
                     setTitle("매장 소개")
                     setModelOption("dalle")
                     setStoreName(response.data.store_name)
@@ -296,7 +296,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
         const byteArray = new Uint8Array(byteNumbers);
         return new Blob([byteArray], { type: contentType });
     };
-    
+
 
     // 이미지 생성
     const generateImage = async () => {
@@ -701,100 +701,44 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 )}
 
                 {data && (
-                    <div className="w-full border border-black p-3">
-                        <div className="mb-6">
-                            <p className="text-xl">매장 명: {data.store_name} </p>
-                        </div>
-                        <div className="mb-6 flex items-center justify-between">
-                            <label className="block text-lg text-gray-700 mb-2">
-                                매장 정보
-                            </label>
-                            <button
-                                className="text-gray-500 focus:outline-none"
-                                onClick={() => setIsStoreInfoVisible(!isStoreInfoVisible)}
-                            >
-                                {isStoreInfoVisible ? (
-                                    <>
-                                        <span>&#xFE3F;</span>  {/* ▼ 아래 방향 화살표 */}
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>&#xFE40;</span>  {/* ▶ 오른쪽 방향 화살표 */}
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                        {isStoreInfoVisible && (
-                            <div className="mb-6">
-                                <textarea
-                                    rows={8}
-                                    value={storeInfo}
-                                    onChange={(e) => setStoreInfo(e.target.value)}
-                                    className="border border-gray-300 rounded w-full px-3 py-2"
-                                />
-                            </div>
-                        )}
-                        <hr className="border-t border-black opacity-50" />
+                    <div className="w-full p-3">
                         <div className="mb-6 mt-6">
-                            <label className="block text-lg text-gray-700 mb-2">광고 채널</label>
-                            <select
-                                className="border border-gray-300 rounded w-full px-3 py-2"
-                                value={useOption}
-                                onChange={(e) => setUseOption(e.target.value)}
-                            >
-                                <option value="문자메시지">문자메시지 (9:16)</option>
-                                <option value="유튜브 썸네일">유튜브 썸네일 (16:9)</option>
-                                <option value="인스타그램 스토리">인스타 스토리 (9:16)</option>
-                                <option value="인스타그램 피드">인스타 피드 (1:1)</option>
-                                {/* <option value="네이버 블로그">네이버 블로그 (16:9)</option> */}
-                                <option value="배너">배너 (16:9)</option>
-                            </select>
+                            <fieldset className="border border-gray-300 rounded w-full px-3 py-2">
+                                <legend className="text-lg text-gray-700 px-2">광고 채널</legend>
+                                <select
+                                    className="border-none w-full focus:outline-none"
+                                    value={useOption}
+                                    onChange={(e) => setUseOption(e.target.value)}
+                                >
+                                    <option value="" disabled selected>광고를 게시할 채널을 선택해 주세요.</option>
+                                    <option value="문자메시지">문자메시지 (9:16)</option>
+                                    <option value="유튜브 썸네일">유튜브 썸네일 (16:9)</option>
+                                    <option value="인스타그램 스토리">인스타 스토리 (9:16)</option>
+                                    <option value="인스타그램 피드">인스타 피드 (1:1)</option>
+                                    {/* <option value="네이버 블로그">네이버 블로그 (16:9)</option> */}
+                                    <option value="배너">배너 (16:9)</option>
+                                </select>
+                            </fieldset>
+                        </div>
+                        <div className="mb-6">
+                            <fieldset className="border border-gray-300 rounded w-full px-3 py-2">
+                                <legend className="text-lg text-gray-700 px-2">주제</legend>
+                                <select
+                                    className="border-none w-full focus:outline-none"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                >
+                                    <option value="매장 소개">매장 소개</option>
+                                    <option value="이벤트">이벤트</option>
+                                    <option value="상품 소개">상품 소개</option>
+                                    <option value="예약">예약</option>
+                                    <option value="시즌인사">시즌인사</option>
+                                    <option value="감사">감사</option>
+                                    <option value="공지">공지</option>
+                                </select>
+                            </fieldset>
                         </div>
 
-                        <div className="mb-6">
-                            <div className="flex items-center justify-between mb-2">
-                                <label className="block text-lg text-gray-700 mb-2">주제</label>
-                            </div>
-                            {/* 주제 선택 셀렉트 */}
-                            <select
-                                className="border border-gray-300 rounded w-full px-3 py-2"
-                                value={title === "기타" ? "기타" : title}
-                                onChange={(e) => {
-                                    if (e.target.value === "기타") {
-                                        setTitle("기타"); // 기타 선택
-                                    } else {
-                                        setTitle(e.target.value); // 다른 옵션 선택 시 바로 title 업데이트
-                                        setCustomTitle(""); // 기타 입력 초기화
-                                    }
-                                }}
-                            >
-                                <option value="매장 소개">매장 소개</option>
-                                <option value="이벤트">이벤트</option>
-                                <option value="상품 소개">상품 소개</option>
-                                <option value="예약">예약</option>
-                                <option value="시즌인사">시즌인사</option>
-                                <option value="감사">감사</option>
-                                <option value="공지">공지</option>
-                                <option value="기타">기타</option>
-                            </select>
-                            {/* 기타 선택 시 추가 입력란 */}
-                            {title === "기타" && (
-                                <div className="mt-4">
-                                    <input
-                                        type="text"
-                                        className="border border-gray-300 rounded w-full px-3 py-2"
-                                        placeholder="기타 항목을 입력하세요"
-                                        value={customTitle}
-                                        onChange={(e) => setCustomTitle(e.target.value)}
-                                        onBlur={() => {
-                                            if (customTitle.trim()) {
-                                                setTitle(customTitle); // 입력 완료 시 title 업데이트
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            )}
-                        </div>
 
                         <div className="mb-6 w-full">
                             <div className="flex items-center justify-between mb-2">
@@ -1290,4 +1234,4 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     );
 };
 
-export default AdsModal;
+export default AdsModalLightVer;

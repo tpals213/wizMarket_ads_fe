@@ -1,5 +1,6 @@
 import React from "react";
-import AdsModal from "./components/AdsModal";
+// import AdsModal from "./components/AdsModal";
+import AdsModalLightVer from "./components/AdsModalLightVer";
 import AdsDetailModal from "./components/AdsDetailModal";
 import AdsPromoteModal from "./components/AdsPromoteModal";
 import AdsShareYoutube from "./components/AdsShareYoutube";
@@ -17,7 +18,7 @@ const AdsModalPage = ({ type }) => {
     return (
         <>
             {type === "create" ? (
-                <AdsModal
+                <AdsModalLightVer
                     isOpen={true}
                     onClose={handleClose}
                     storeBusinessNumber={storeBusinessNumber}
