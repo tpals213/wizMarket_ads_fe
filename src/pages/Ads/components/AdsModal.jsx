@@ -27,7 +27,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [gptRole, setGptRole] = useState(''); // gpt 역할 부여 - 지시 내용
 
     const [prompt, setPrompt] = useState(''); // gpt 내용 부여 - 전달 내용
-    const [isPromptVisible, setIsPromptVisible] = useState(true);  // 전달 내용 접히기
+    const [isPromptVisible, setIsPromptVisible] = useState(false);  // 전달 내용 접히기
 
     const [content, setContent] = useState(''); // gpt 문구 생성 결과물
     const [contentLoading, setContentLoading] = useState(false) // gpt 문구 생성 로딩
@@ -40,12 +40,12 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [modelOption, setModelOption] = useState(''); // 이미지 생성 모델 옵션
     const [styleOption, setStyleOption] = useState('Illustration')  // 이미지 생성 스타일 옵션
     const [aiPrompt, setAiPrompt] = useState('');   // 이미지 생성 프롬프트
-    const [isAiPromptVisible, setAiPromptVisible] = useState(true);  // 지시 내용 접히기
+    const [isAiPromptVisible, setAiPromptVisible] = useState(false);  // 지시 내용 접히기
     const [imageLoding, setImageLoading] = useState(false)  // 이미지 생성 로딩
     const [imageErrorMessage, setImageErrorMessage] = useState('');   // 이미지 생성 에러
 
     const [aiMidPrompt, setAiMidPrompt] = useState('');   // 미드 저니 생성 프롬프트
-    const [isAiMidPromptVisible, setAiMidPromptVisible] = useState(false);  // 지시 내용 접히기
+    const [isAiMidPromptVisible, setAiMidPromptVisible] = useState(true);  // 지시 내용 접히기
 
     const [combineImageText, setCombineImageText] = useState(null)  // 선택 텍스트 + 이미지 결과물
     const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
@@ -999,16 +999,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                         </div>
                         {isAiMidPromptVisible && (
                             <div className="mb-6">
-                                <p>미드저니 프롬프트는 다음과 같은 과정을 거쳐 생성 됩니다.</p>
-                                <p>아래의 프롬프트를 역할이 설정된 gpt 로 전달하여 미드저니 프롬프트처럼 만들어 달라고 요청</p>
-                                <p>생성된 프롬프트를 미드저니에게 전달하여 생성된 이미지 반환</p>
-                                <br />
-                                <p>gpt 역할</p>
-                                <p>You are now a Midjourney prompt engineer.</p>
-                                <p>Midjourney AI creates images based on given prompts.</p>
-                                <p>Please refer to the link below for Midjourney.</p>
-                                <p>https://en.wikipedia.org/wiki/Midjourney.</p>
-                                <p>All you have to do is configure the prompt so Midjourney can generate the best image for what you're requesting.</p>
+                                
                                 <textarea
                                     rows={11}
                                     value={aiMidPrompt}

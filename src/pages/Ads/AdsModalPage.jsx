@@ -1,9 +1,10 @@
 import React from "react";
-// import AdsModal from "./components/AdsModal";
+import AdsModal from "./components/AdsModal";
 import AdsModalLightVer from "./components/AdsModalLightVer";
 import AdsDetailModal from "./components/AdsDetailModal";
 import AdsPromoteModal from "./components/AdsPromoteModal";
 import AdsShareYoutube from "./components/AdsShareYoutube";
+import AdsDetailInsta from "./components/AdsDetailInsta";
 import { useParams } from "react-router-dom";
 
 const AdsModalPage = ({ type }) => {
@@ -18,7 +19,7 @@ const AdsModalPage = ({ type }) => {
     return (
         <>
             {type === "create" ? (
-                <AdsModalLightVer
+                <AdsModal
                     isOpen={true}
                     onClose={handleClose}
                     storeBusinessNumber={storeBusinessNumber}
@@ -29,8 +30,20 @@ const AdsModalPage = ({ type }) => {
                     onClose={handleClose}
                     ads_id={ads_id} // 필요한 경우 전달
                 />
+            ) : type === "light" ? (
+                <AdsModalLightVer
+                    isOpen={true}
+                    onClose={handleClose}
+                    storeBusinessNumber={storeBusinessNumber}
+                />
+            ) : type === "insta" ? (
+                <AdsDetailInsta
+                    isOpen={true}
+                    onClose={handleClose}
+                    storeBusinessNumber={storeBusinessNumber}
+                />
             ) : type === "youtube" ? (
-                <AdsShareYoutube/>
+                <AdsShareYoutube />
             ) : (
                 <AdsDetailModal
                     isOpen={true}
