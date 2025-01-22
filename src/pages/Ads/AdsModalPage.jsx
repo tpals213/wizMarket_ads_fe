@@ -5,6 +5,7 @@ import AdsDetailModal from "./components/AdsDetailModal";
 import AdsPromoteModal from "./components/AdsPromoteModal";
 import AdsShareYoutube from "./components/AdsShareYoutube";
 import AdsDetailInsta from "./components/AdsDetailInsta";
+
 import { useParams } from "react-router-dom";
 
 const AdsModalPage = ({ type }) => {

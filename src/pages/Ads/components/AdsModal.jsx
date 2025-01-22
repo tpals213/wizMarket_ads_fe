@@ -4,7 +4,6 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation"; // Navigation 스타일 추가
 import { Pagination, Navigation } from "swiper/modules"; // Navigation 모듈 추가
-import AdsShareNaver from './AdsShareNaver';
 import AdsShareKakao from './AdsShareKakao'
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
 
@@ -1262,9 +1261,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 <div className="mt-2 flex flex-col items-center justify-center p-4 rounded">
                     <p className="text-gray-600 text-sm">현재 문자메시지는 이메일로 전송됩니다.</p>
                 </div>
-                <div className="mt-2 flex-col items-center justify-center p-4 rounded hidden">
-                    <AdsShareNaver title={title} content={content} storeName={storeName} />
-                </div>
+
                 <div>
                     {videoUrl && (
                         <video controls>

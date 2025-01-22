@@ -7,7 +7,8 @@ import "swiper/css/pagination"; // pagination 스타일 추가
 import { Pagination } from "swiper/modules"; // pagination 모듈 추가
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
 import AdsAllInstructionByUseOption from './AdsAllInstructionByUseOption';
-import AdsShareKakao from './AdsShareKakao';
+// import * as fabric from 'fabric';
+
 
 const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const navigate = useNavigate();
@@ -190,7 +191,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
     };
 
-
     // 업로드한 파일로 생성
     const gernerateImageWithText = async (imageData) => {
 
@@ -295,10 +295,36 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     // 선택 이미지 해당 체널에 업로드
     const onUpload = async () => {
         if (useOption === "카카오톡") {
-            // 실행할 코드
             console.log("카카오톡이 선택되었습니다.");
-            return;
+
+            // 카카오톡 공유 로직
+            const kakaoJsKey = process.env.REACT_APP_KAKAO_JS_API_KEY;
+            if (!kakaoJsKey) {
+                console.error("Kakao JavaScript Key가 설정되지 않았습니다.");
+                return;
+            }
+
+            if (!window.Kakao) {
+                const script = document.createElement("script");
+                script.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
+                script.async = true;
+                script.onload = () => {
+                    if (!window.Kakao.isInitialized()) {
+                        window.Kakao.init(kakaoJsKey);
+                    }
+                    shareOnKakao();
+                };
+                document.body.appendChild(script);
+            } else {
+                if (!window.Kakao.isInitialized()) {
+                    window.Kakao.init(kakaoJsKey);
+                }
+                shareOnKakao();
+            }
+
+            return; // 카카오톡 처리 후 다른 로직 실행 방지
         }
+
         setUploading(true)
 
         const updatedUseOption = useOption === "" ? "인스타그램 피드" : useOption;
@@ -341,6 +367,56 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             setUploading(false)
         }
     };
+
+
+    const shareOnKakao = async () => {
+        if (!uploadImage) {
+            console.error("업로드할 이미지가 없습니다.");
+            return;
+        }
+
+        try {
+            const base64ToBlob = (base64Data) => {
+                const byteString = atob(base64Data.split(",")[1]);
+                const mimeString = base64Data.split(",")[0].split(":")[1].split(";")[0];
+                const byteArray = new Uint8Array(byteString.length);
+                for (let i = 0; i < byteString.length; i++) {
+                    byteArray[i] = byteString.charCodeAt(i);
+                }
+                return new Blob([byteArray], { type: mimeString });
+            };
+
+            const blob = base64ToBlob(uploadImage);
+            const file = new File([blob], "uploaded_image.png", { type: "image/png" });
+
+            const response = await window.Kakao.Share.uploadImage({
+                file: [file],
+            });
+
+            const uploadedImageUrl = response.infos.original.url;
+
+            // adsInfo URL 생성
+            const adsInfoUrl = `?title=${encodeURIComponent(content || "기본 제목")}&content=${encodeURIComponent(content || "기본 내용")}&storeName=${encodeURIComponent(data.store_name || "기본 매장명")}&imageUrl=${encodeURIComponent(uploadedImageUrl || "기본 내용")}`;
+
+            // 카카오톡 공유
+            window.Kakao.Share.sendCustom({
+                templateId: 115008, // 생성한 템플릿 ID
+                templateArgs: {
+                    title: content || "기본 제목",
+                    imageUrl: uploadedImageUrl,
+                    storeName: data.store_name || "기본 매장명",
+                    content: content || "기본 내용",
+                    adsInfo: adsInfoUrl,
+                    store_business_id: storeBusinessNumber,
+                },
+            });
+
+            console.log("카카오톡 공유 완료");
+        } catch (error) {
+            console.error("카카오톡 공유 중 오류 발생:", error);
+        }
+    };
+
 
     if (!isOpen) return null;
 
@@ -499,8 +575,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 예 : 오늘 방문하신 고객들에게 테이블당 소주 1병 서비스!!
                             </p>
                         </div>
-
-
                         {/* gpt 역할 영역 */}
                         <AdsAIInstructionByTitle useOption={useOption} title={title} setGptRole={setGptRole} />
 
@@ -606,11 +680,12 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         return (
                                             <>
                                                 <p className="mb-2 text-xl">
-                                                    <strong>제목:</strong> {extractedTitle}
+                                                    제목: {extractedTitle}
                                                 </p>
-                                                <p>
-                                                    <strong className='text-xl'>이벤트 내용:</strong> {extractedContent}
+                                                <p className="mb-2 text-xl">
+                                                    내용: {extractedContent}
                                                 </p>
+
                                             </>
                                         );
                                     })()

@@ -4,7 +4,7 @@ const AdsAllInstructionByUseOption = ({ selectedOption }) => {
             case "인스타그램 스토리":
                 return "인스타그램 스토리는 24시간만 인스타그램에서 보여지는 방식입니다.";
             case "인스타그램 피드":
-                return "인스타그램 피드는 사람들이 사진과 동영상을 공유하는 게시물입니다..";
+                return "인스타그램 피드는 사람들이 사진과 동영상을 공유하는 게시물입니다.";
             case "문자메시지":
                 return "문자메시지는 개인 맞춤형 메시지를 전달하는 방식입니다.";
             case "네이버 블로그":
