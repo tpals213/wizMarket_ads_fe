@@ -10,7 +10,7 @@ const AdsDetailInsta = () => {
     }
 
     return (
-        <div className="p-6 flex flex-col items-center bg-white w-full h-full">
+        <div className="pt-[28px] pb-[28px] pl-[20px] pr-[20px] flex flex-col items-center bg-white w-full h-full">
             {/* Title */}
             <h2 className="font-bold text-2xl">
                 <span className="text-2xl" style={{ color: '#FF1664' }}>{instaName}</span> {useOption}에
@@ -50,7 +50,7 @@ const AdsDetailInsta = () => {
 
             {/* Return to Start Button */}
             <button
-                className="px-6 py-3 border border-[rgba(0,0,0,0.12)] bg-white text-pink-500 font-bold rounded-full hover:bg-pink-600 transition flex items-center space-x-2"
+                className="px-6 py-3 border border-[rgba(0,0,0,0.12)] bg-white text-pink-500 font-bold rounded-full hover:bg-pink-500 transition flex items-center space-x-2"
                 onClick={() => (window.location.href = `/ads/light/${storeBusinessNumber}`)}
             >
                 <img

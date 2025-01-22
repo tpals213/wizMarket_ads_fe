@@ -6,6 +6,8 @@ import "swiper/css";
 import "swiper/css/pagination"; // pagination 스타일 추가
 import { Pagination } from "swiper/modules"; // pagination 모듈 추가
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
+import AdsAllInstructionByUseOption from './AdsAllInstructionByUseOption';
+import AdsShareKakao from './AdsShareKakao';
 
 const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const navigate = useNavigate();
@@ -33,7 +35,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [uploadImage, setUploadImage] = useState(null); // 선택 된 이미지
     const [uploading, setUploading] = useState(false)   // 이미지 업로드 로딩 처리
 
-    const [selectedImages, setSelectedImages] = useState([]); // 파일 업로드 기존 이미지
+    const [selectedImages, setSelectedImages] = useState([]); // 기존 이미지 파일 업로드 
 
     const resetModalState = () => {
         setLoading(false);
@@ -91,7 +93,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             if (isOpen) {
 
                 try {
-                    // console.log("Request URL:", `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/image`);
                     setLoading(true);
                     const response = await axios.post(
                         `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/select/init/info`,
@@ -181,7 +182,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
             setAdsChan(response.data.chan); // 성공 시 서버에서 받은 데이터를 상태에 저장
             setAdsChanVisible(true)
-            // console.log(response.data.chan)
             setAdsChanLoading(false)
         } catch (err) {
             console.error('저장 중 오류 발생:', err);
@@ -193,6 +193,8 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     // 업로드한 파일로 생성
     const gernerateImageWithText = async (imageData) => {
+
+        setContentLoading(true)
 
         const updatedTitle = title === "" ? "매장 소개" : title;
         const updatedUseOption = useOption === "" ? "인스타그램 피드" : useOption;
@@ -213,10 +215,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         if (imageData && imageData.file) {
             formData.append("image", imageData.file);
         }
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}:`, value);
-        }
-
         try {
             const response = await axios.post(
                 `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/exist/image`,
@@ -296,8 +294,13 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     // 선택 이미지 해당 체널에 업로드
     const onUpload = async () => {
+        if (useOption === "카카오톡") {
+            // 실행할 코드
+            console.log("카카오톡이 선택되었습니다.");
+            return;
+        }
         setUploading(true)
-        
+
         const updatedUseOption = useOption === "" ? "인스타그램 피드" : useOption;
         const formData = new FormData();
         formData.append('use_option', updatedUseOption); // 용도 추가
@@ -317,33 +320,23 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
-            console.log("업로드 성공");
-            console.log(response.data);
-            const [instaName, instaFollowers, instaCount] = response.data;
             // 페이지 이동
-            navigate('/ads/detail/insta', {
-                state: {
-                    instaName,
-                    instaFollowers,
-                    instaCount,
-                    uploadImage,
-                    updatedUseOption,
-                    storeBusinessNumber
-                }
-            });
-            
+            if (useOption === "" || useOption === "인스타그램 피드" || useOption === "인스타그램 스토리") {
+                const [instaName, instaFollowers, instaCount] = response.data;
+                navigate('/ads/detail/insta', {
+                    state: {
+                        instaName,
+                        instaFollowers,
+                        instaCount,
+                        uploadImage,
+                        updatedUseOption,
+                        storeBusinessNumber
+                    }
+                });
+            }
         } catch (err) {
             setUploading(false)
             console.error("업로드 중 오류 발생:", err); // 발생한 에러를 콘솔에 출력
-            if (err.response) {
-                console.error("응답 데이터:", err.response.data); // 서버 응답 에러 메시지
-                console.error("응답 상태 코드:", err.response.status); // HTTP 상태 코드
-                console.error("응답 헤더:", err.response.headers); // 응답 헤더
-            } else if (err.request) {
-                console.error("요청 데이터:", err.request); // 서버에 도달하지 못한 요청 정보
-            } else {
-                console.error("설정 오류:", err.message); // 요청 설정 중 발생한 에러 메시지
-            }
         } finally {
             setUploading(false)
         }
@@ -355,7 +348,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         <div className="inset-0 flex z-50 bg-opacity-50 h-full">
             <div className="bg-white p-6 rounded-lg shadow-lg w-full overflow-auto">
                 <div className="flex justify-between items-center mb-4">
-                    <div className="flex flex-col p-5 space-y-2">
+                    <div className="flex flex-col pt-5 space-y-2">
                         {/* 이미지 영역 */}
                         <div className="flex items-center space-x-4">
                             <img
@@ -395,7 +388,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                 )}
 
                 {data && (
-                    <div className="w-full p-5">
+                    <div className="w-full">
 
                         {/* 주제 선택 영역 */}
                         <div className="mb-6">
@@ -410,7 +403,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     <option value="" disabled>
                                         어떤 주제로 홍보하실 건가요?
                                     </option>
-                                    <option value="매장 소개">매장 소개</option>
+                                    <option value="매장 소개">매장 홍보</option>
                                     <option value="이벤트">이벤트</option>
                                     <option value="상품소개">상품소개</option>
                                     <option value="인사">인사</option>
@@ -439,6 +432,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     <option value="카카오톡">카카오톡 (9:16)</option>
                                 </select>
                             </fieldset>
+                            <AdsAllInstructionByUseOption selectedOption={useOption} />
                         </div>
 
                         {/* 광고 채널 추천 받기 */}
@@ -450,7 +444,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 </div>
                             ) : (
                                 <div
-                                    className={`flex flex-col items-start cursor-pointer p-4 rounded-md ${adsChan && adsChanVisible ? "border-2 border-gray-300" : ""
+                                    className={`flex flex-col items-start cursor-pointer pt-4 rounded-md ${adsChan && adsChanVisible ? "border-2 border-gray-300" : ""
                                         }`}
                                 >
                                     {/* 기본 상태: 이미지와 텍스트 */}
@@ -458,7 +452,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         <img
                                             src={require("../../../assets/icon/star_icon.png")}
                                             alt="채널 선택"
-                                            className="ml-4 w-6 h-6"
+                                            className="w-6 h-6"
                                         />
                                         <p className="text-[#FF1664] font-[Pretendard] text-[16px] font-bold leading-normal ml-2">
                                             지금 나에게 가장 효과가 좋은 광고채널은?
@@ -501,7 +495,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     className="rounded w-full px-3 py-2"
                                 />
                             </fieldset>
-                            <p className="flex items-center justify-between mb-2 text-gray-400">
+                            <p className="flex items-center justify-between mb-2 pl-4 text-gray-400">
                                 예 : 오늘 방문하신 고객들에게 테이블당 소주 1병 서비스!!
                             </p>
                         </div>
@@ -602,12 +596,32 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     fontSize: '20px', // 텍스트 크기를 20px로 설정
                                 }}
                             >
-                                {content}
+                                {title === '이벤트' ? (
+                                    (() => {
+                                        // ':'을 기준으로 제목과 내용을 분리
+                                        const parts = content.split(':');
+                                        const extractedTitle = parts[1]?.split('이벤트 내용')[0]?.trim() || "제목 없음";
+                                        const extractedContent = parts[2]?.trim() || "내용 없음";
+
+                                        return (
+                                            <>
+                                                <p className="mb-2 text-xl">
+                                                    <strong>제목:</strong> {extractedTitle}
+                                                </p>
+                                                <p>
+                                                    <strong className='text-xl'>이벤트 내용:</strong> {extractedContent}
+                                                </p>
+                                            </>
+                                        );
+                                    })()
+                                ) : (
+                                    <p className='text-xl'>{content}</p> // 이벤트가 아닌 경우 content 그대로 출력
+                                )}
                             </div>
                         )}
 
                         {/* 이미지들 영역 */}
-                        <div className="flex flex-col justify-center items-center p-4 rounded-[16px] text-white">
+                        <div className="flex flex-col justify-center items-center rounded-[16px] text-white pt-4 pb-4">
                             {combineImageTexts && combineImageTexts.length > 0 && (
                                 <Swiper
                                     spaceBetween={10}
