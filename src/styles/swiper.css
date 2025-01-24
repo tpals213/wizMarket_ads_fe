@@ -1,0 +1,18 @@
+/* 비활성 점 */
+.swiper-pagination-bullet {
+    background-color: gray; /* 기본 회색 점 */
+    width: 10px; /* 점 크기 */
+    height: 10px;
+    border-radius: 50%; /* 원형 */
+    margin: 0 6px; /* 점 간격 */
+    transition: all 0.3s ease; /* 부드러운 전환 효과 */
+}
+
+/* 활성 점 (타원형 막대) */
+.swiper-pagination-bullet-active {
+    background-color: black; /* 검은색 */
+    width: 50px; /* 타원형 너비 */
+    height: 10px; /* 타원형 높이 */
+    border-radius: 15px; /* 타원형 */
+    transition: all 0.3s ease; /* 부드러운 전환 효과 */
+}

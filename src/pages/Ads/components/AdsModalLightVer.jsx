@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination"; // pagination 스타일 추가
+import "./../../../styles/swiper.css";
 import { Pagination } from "swiper/modules"; // pagination 모듈 추가
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
 import AdsAllInstructionByUseOption from './AdsAllInstructionByUseOption';
@@ -32,11 +33,17 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [content, setContent] = useState(''); // gpt 문구 생성 결과물
     const [contentLoading, setContentLoading] = useState(false) // gpt 문구 생성 로딩
     const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿들
-    const [checkImage, setCheckImage] = useState(null); // 이미지 체크 - 템플릿의 인덱스
-    const [uploadImage, setUploadImage] = useState(null); // 선택 된 이미지
+    const [checkImages, setCheckImages] = useState([]); // 선택된 이미지들의 인덱스
+    const [uploadImages, setUploadImages] = useState([]); // 선택된 이미지들
     const [uploading, setUploading] = useState(false)   // 이미지 업로드 로딩 처리
 
     const [selectedImages, setSelectedImages] = useState([]); // 기존 이미지 파일 업로드 
+
+
+    // 영상 처리
+    const [selectedMedia, setSelectedMedia] = useState("사진");
+    const [videoPath, setVideoPath] = useState(null);
+    const [videoUploading, setVideoUploading] = useState(false)   // 이미지 업로드 로딩 처리
 
     const resetModalState = () => {
         setLoading(false);
@@ -57,12 +64,13 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         setContent("")
         setContentLoading(false);
         setCombineImageTexts([])
-        setCheckImage(null)
-        setUploadImage(null)
+        setCheckImages([])
+        setUploadImages([])
         setUploading(false)
 
         setGptRole('');
-
+        setVideoPath(null);
+        setVideoUploading(false)
     };
 
     const maleMap = useMemo(() => ({
@@ -149,16 +157,35 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
 
     const handleImageClick = (index) => {
-        if (checkImage === index) {
-            // 이미 선택된 이미지를 다시 클릭 → 선택 해제
-            setCheckImage(null);
-            setUploadImage(null);
+        if (useOption === "인스타그램 피드") {
+            // 다수 선택 가능
+            if (checkImages.includes(index)) {
+                // 이미 선택된 이미지를 다시 클릭 → 선택 해제
+                const updatedCheckImages = checkImages.filter((i) => i !== index);
+                const updatedUploadImages = uploadImages.filter(
+                    (_, i) => checkImages[i] !== index
+                );
+                setCheckImages(updatedCheckImages);
+                setUploadImages(updatedUploadImages);
+            } else {
+                // 새로운 이미지를 추가로 선택
+                setCheckImages([...checkImages, index]);
+                setUploadImages([...uploadImages, combineImageTexts[index]]);
+            }
         } else {
-            // 새로운 이미지를 선택
-            setCheckImage(index);
-            setUploadImage(combineImageTexts[index]);
+            // 단일 선택만 가능
+            if (checkImages.includes(index)) {
+                // 이미 선택된 이미지를 클릭하면 선택 해제
+                setCheckImages([]);
+                setUploadImages([]);
+            } else {
+                // 새로운 이미지를 선택
+                setCheckImages([index]);
+                setUploadImages([combineImageTexts[index]]);
+            }
         }
     };
+    
 
 
     // 광고 채널 추천
@@ -193,6 +220,10 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     // 업로드한 파일로 생성
     const gernerateImageWithText = async (imageData) => {
+        if (selectedMedia === "영상") {
+            gernerateVideoWithText(imageData);
+            return;
+        }
 
         setContentLoading(true)
 
@@ -233,7 +264,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         } finally {
             setContentLoading(false)
         }
-
     };
 
     // AI 로생성
@@ -274,26 +304,49 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
     };
 
-    // Base64 데이터를 Blob으로 변환하는 유틸리티 함수
-    const base64ToBlob = (base64, contentType = "image/png") => {
-        if (!base64 || typeof base64 !== "string") {
-            console.error("유효하지 않은 Base64 데이터:", base64);
-            return null; // 또는 기본 Blob을 반환하거나 예외를 발생시킬 수 있음
+    // 업로드한 파일로 영상 생성
+    const gernerateVideoWithText = async (imageData) => {
+        setContentLoading(true)
+
+        const formData = new FormData();
+        formData.append('store_name', data.store_name);
+        formData.append('road_name', data.road_name);
+        formData.append('tag', data.detail_category_name);
+        formData.append('weather', data.main);
+        formData.append('temp', data.temp);
+        formData.append('male_base', maleMap[data.maxSalesMale] || data.maxSalesMale || "값 없음");
+        formData.append('female_base', femaleMap[data.maxSalesFemale] || data.maxSalesFemale || "값 없음");
+        formData.append('gpt_role', gptRole);
+        formData.append('detail_content', detailContent || detailContent || "값 없음");
+
+        if (imageData && imageData.file) {
+            formData.append("image", imageData.file);
         }
-
-        const byteCharacters = atob(base64.split(",")[1]);
-        const byteNumbers = Array.from(byteCharacters, (char) => char.charCodeAt(0));
-        const byteArray = new Uint8Array(byteNumbers);
-        return new Blob([byteArray], { type: contentType });
-    };
-
-    const getBase64Extension = (base64) => {
-        const mimeType = base64.match(/data:(.*?);base64/)[1];
-        return mimeType.split("/")[1]; // 확장자 추출
+        try {
+            const response = await axios.post(
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/video/image`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data", // 중요: FastAPI가 이 형식을 기대
+                    },
+                }
+            );
+            setContent(response.data.copyright); // 성공 시 서버에서 받은 데이터를 상태에 저장
+            const videoPath = response.data.result_url
+            const staticIndex = videoPath.indexOf("/static/");
+            setVideoPath(videoPath.substring(staticIndex));
+            setContentLoading(false)
+        } catch (err) {
+            console.error('저장 중 오류 발생:', err);
+        } finally {
+            setContentLoading(false)
+        }
     };
 
     // 선택 이미지 해당 체널에 업로드
     const onUpload = async () => {
+        // 카카오 업로드
         if (useOption === "카카오톡") {
             console.log("카카오톡이 선택되었습니다.");
 
@@ -334,10 +387,15 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         formData.append('store_name', data.store_name);
         formData.append('tag', data.detail_category_name)
 
-        if (uploadImage) {
-            const extension = getBase64Extension(uploadImage); // 확장자 추출
-            const blob = base64ToBlob(uploadImage, `image/${extension}`);
-            formData.append("upload_image", blob, `image.${extension}`); // Blob과 확장자 추가
+        if (uploadImages.length > 0) {
+            uploadImages.forEach((image) => {
+                const extension = getBase64Extension(image); // 확장자 추출
+                const blob = base64ToBlob(image, `image/${extension}`); // Base64 → Blob 변환
+                formData.append("upload_images", blob, `image.${extension}`); // 동일한 키로 추가
+            });
+        }
+        for (const [key, value] of formData.entries()) {
+            console.log(`Key: ${key}, Value:`, value);
         }
 
         try {
@@ -354,7 +412,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                         instaName,
                         instaFollowers,
                         instaCount,
-                        uploadImage,
+                        uploadImages,
                         updatedUseOption,
                         storeBusinessNumber
                     }
@@ -368,9 +426,27 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
     };
 
+    // Base64 데이터를 Blob으로 변환하는 유틸리티 함수
+    const base64ToBlob = (base64, contentType = "image/png") => {
+        if (!base64 || typeof base64 !== "string") {
+            console.error("유효하지 않은 Base64 데이터:", base64);
+            return null; // 또는 기본 Blob을 반환하거나 예외를 발생시킬 수 있음
+        }
 
+        const byteCharacters = atob(base64.split(",")[1]);
+        const byteNumbers = Array.from(byteCharacters, (char) => char.charCodeAt(0));
+        const byteArray = new Uint8Array(byteNumbers);
+        return new Blob([byteArray], { type: contentType });
+    };
+
+    const getBase64Extension = (base64) => {
+        const mimeType = base64.match(/data:(.*?);base64/)[1];
+        return mimeType.split("/")[1]; // 확장자 추출
+    };
+
+    // 카카오톡 공유 함수
     const shareOnKakao = async () => {
-        if (!uploadImage) {
+        if (!uploadImages) {
             console.error("업로드할 이미지가 없습니다.");
             return;
         }
@@ -386,7 +462,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                 return new Blob([byteArray], { type: mimeString });
             };
 
-            const blob = base64ToBlob(uploadImage);
+            const blob = base64ToBlob(uploadImages[0]);
             const file = new File([blob], "uploaded_image.png", { type: "image/png" });
 
             const response = await window.Kakao.Share.uploadImage({
@@ -417,6 +493,28 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
     };
 
+    // 비디오 업로드 함수
+    const videoUpload = async () => {
+        setVideoUploading(true)
+        const basicInfo = {
+            video_path: videoPath,
+            content: content || "기본 내용" // 기본값 설정
+        };
+
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/upload/video`,
+                basicInfo,
+                { headers: { 'Content-Type': 'application/json' } }
+            );
+            setVideoUploading(false)
+        } catch (error) {
+            console.error("Error during video path upload:", error);
+            setVideoUploading(false)
+        } finally {
+            setVideoUploading(false)
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -510,6 +608,33 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </fieldset>
                             <AdsAllInstructionByUseOption selectedOption={useOption} />
                         </div>
+
+                        {/* 버튼 영역 */}
+                        <div className="items-center justify-center flex-row mt-4 hidden">
+                            {useOption === "인스타그램 스토리" || useOption === "인스타그램 피드" ? (
+                                <>
+                                    <button
+                                        onClick={() => setSelectedMedia("사진")}
+                                        className={`px-5 py-2 mr-2 border rounded cursor-pointer ${selectedMedia === "사진"
+                                            ? "bg-blue-500 text-white border-blue-500"
+                                            : "bg-gray-100 text-black border-gray-300"
+                                            }`}
+                                    >
+                                        사진
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedMedia("영상")}
+                                        className={`px-5 py-2 border rounded cursor-pointer ${selectedMedia === "영상"
+                                            ? "bg-blue-500 text-white border-blue-500"
+                                            : "bg-gray-100 text-black border-gray-300"
+                                            }`}
+                                    >
+                                        영상
+                                    </button>
+                                </>
+                            ) : null}
+                        </div>
+
 
                         {/* 광고 채널 추천 받기 */}
                         <div className="mb-6 flex flex-col justify-center">
@@ -695,50 +820,73 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
                         )}
 
-                        {/* 이미지들 영역 */}
+                        {/* 영상 및 이미지 영역 */}
                         <div className="flex flex-col justify-center items-center rounded-[16px] text-white pt-4 pb-4">
-                            {combineImageTexts && combineImageTexts.length > 0 && (
-                                <Swiper
-                                    spaceBetween={10}
-                                    slidesPerView={1}
-                                    pagination={{ clickable: true }} // 하단 점 페이지네이션 활성화
-                                    modules={[Pagination]}
-                                    className="w-full h-full relative"
-                                >
-                                    {combineImageTexts.map((image, index) => (
-                                        <SwiperSlide key={index}>
-                                            <div className="flex justify-center items-center relative">
-                                                {/* 이미지 표시 */}
-                                                <img
-                                                    src={image}
-                                                    alt={`Slide ${index + 1}`}
-                                                    className="rounded-[16px] max-w-full max-h-[600px] object-cover"
-                                                />
+                            {videoPath ? (
+                                // 비디오 표시
+                                <div className="w-full h-full flex justify-center items-center">
+                                    <video
+                                        src={`${process.env.REACT_APP_FASTAPI_ADS_URL}${videoPath}`}
+                                        controls
+                                        className="rounded-[16px] max-w-full max-h-[600px] object-cover"
+                                    >
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            ) : (
+                                // 이미지 슬라이더 표시
+                                combineImageTexts && combineImageTexts.length > 0 && (
+                                    <>
+                                        <Swiper
+                                            spaceBetween={10}
+                                            slidesPerView={1}
+                                            pagination={{
+                                                clickable: true, // 페이지네이션 클릭 활성화
+                                                el: '.custom-pagination', // 페이지네이션 커스텀 클래스 설정
+                                            }}
+                                            modules={[Pagination]}
+                                            className="w-full h-full relative"
+                                        >
+                                            {combineImageTexts.map((image, index) => (
+                                                <SwiperSlide key={index}>
+                                                    <div className="flex justify-center items-center relative">
+                                                        {/* 이미지 표시 */}
+                                                        <img
+                                                            src={image}
+                                                            alt={`Slide ${index + 1}`}
+                                                            className="rounded-[16px] max-w-full max-h-[600px] object-cover"
+                                                        />
 
-                                                {/* 체크 아이콘 */}
-                                                <div
-                                                    className="absolute inset-0 flex justify-center items-center cursor-pointer"
-                                                    onClick={() => handleImageClick(index)}
-                                                >
-                                                    <img
-                                                        src={
-                                                            checkImage === index
-                                                                ? require("../../../assets/icon/check_icon.png") // 체크된 상태
-                                                                : require("../../../assets/icon/non_check_icon.png") // 체크되지 않은 상태
-                                                        }
-                                                        alt={checkImage === index ? "Checked" : "Non-checked"}
-                                                        className="w-[68px] h-[68px]" // 아이콘 크기 설정
-                                                    />
-                                                </div>
-                                            </div>
-                                        </SwiperSlide>
-                                    ))}
-                                </Swiper>
+                                                        {/* 체크 아이콘 */}
+                                                        <div
+                                                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center cursor-pointer w-16 h-16"
+                                                            onClick={() => handleImageClick(index)}
+                                                        >
+                                                            <img
+                                                                src={
+                                                                    checkImages.includes(index)
+                                                                        ? require("../../../assets/icon/check_icon.png") // 체크된 상태
+                                                                        : require("../../../assets/icon/non_check_icon.png") // 체크되지 않은 상태
+                                                                }
+                                                                alt={checkImages.includes(index) ? "Checked" : "Non-checked"}
+                                                                className="w-full h-full"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </SwiperSlide>
+                                            ))}
+                                        </Swiper>
+
+                                        {/* 페이지네이션 */}
+                                        <div className="custom-pagination mt-4 flex justify-center items-center"></div>
+                                    </>
+                                )
                             )}
                         </div>
 
+
                         {/* 공유하기 버튼 */}
-                        {uploadImage && (
+                        {uploadImages && (
                             <button
                                 className={`flex flex-col justify-center items-center self-stretch px-[22px] py-[8px] rounded-[4px] 
                                             ${uploading ? "bg-[#2196F3] cursor-not-allowed" : "bg-[#2196F3] hover:bg-[#1976D2]"} 
@@ -747,6 +895,22 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 disabled={uploading} // 로딩 중일 때 클릭 비활성화
                             >
                                 {uploading ? (
+                                    <div className="w-6 h-6 border-4 border-white border-solid border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                    `${useOption !== "" ? useOption : "인스타그램 피드"}에 업로드하기`
+                                )}
+                            </button>
+                        )}
+                        {/* 비디오 공유하기 버튼 */}
+                        {videoPath && (
+                            <button
+                                className={`flex flex-col justify-center items-center self-stretch px-[22px] py-[8px] rounded-[4px] 
+                                            ${videoUploading ? "bg-[#2196F3] cursor-not-allowed" : "bg-[#2196F3] hover:bg-[#1976D2]"} 
+                                            text-white text-[16px] transition-all w-full`} // text-[16px] 추가
+                                onClick={videoUpload}
+                                disabled={videoUploading} // 로딩 중일 때 클릭 비활성화
+                            >
+                                {videoUploading ? (
                                     <div className="w-6 h-6 border-4 border-white border-solid border-t-transparent rounded-full animate-spin"></div>
                                 ) : (
                                     `${useOption !== "" ? useOption : "인스타그램 피드"}에 업로드하기`

@@ -3,11 +3,12 @@ import { useLocation } from 'react-router-dom';
 
 const AdsDetailInsta = () => {
     const location = useLocation();
-    const { instaName, instaFollowers, instaCount, uploadImage, useOption, storeBusinessNumber } = location.state || {};
+    const { instaName, instaFollowers, instaCount, uploadImages, useOption, storeBusinessNumber } = location.state || {};
 
     if (!instaName || !instaFollowers || !instaCount) {
         return <p className="text-red-500">데이터를 불러오지 못했습니다.</p>;
     }
+    const uploadImage = uploadImages[0];
 
     return (
         <div className="pt-[28px] pb-[28px] pl-[20px] pr-[20px] flex flex-col items-center bg-white w-full h-full">
@@ -21,11 +22,11 @@ const AdsDetailInsta = () => {
             <p className="text-gray-500 mt-2 mb-7 text-s">{new Date().toLocaleString()}</p>
 
             {/* Uploaded Image */}
-            <div className="mt-6 w-full max-w-md h-auto mb-7">
+            <div className="mt-6 w-full max-w-md h-auto mb-7 flex flex-col items-center">
                 <img
                     src={uploadImage}
                     alt="Uploaded Content"
-                    className="rounded-lg shadow-md"
+                    className="rounded-lg shadow-md max-h-[500px]"
                 />
             </div>
             {/* Instagram Stats */}
@@ -43,8 +44,21 @@ const AdsDetailInsta = () => {
                     <p className="text-lg font-bold">{(instaFollowers / instaCount).toFixed(2)}</p>
                     <p className="text-lg font-bold">참여도</p>
                 </div>
-                <div className="flex flex-col items-center text-red-500">
-                    ▼
+                <div className="flex flex-col items-center">
+                    <p
+                        className={`text-lg font-bold ${instaFollowers / instaCount > 1 ? "text-red-500" : "text-blue-500"
+                            }`}
+                    >
+                        {(instaFollowers / instaCount).toFixed(2)}
+                    </p>
+                    <p className="text-lg font-bold">참여도</p>
+                </div>
+                <div className="flex flex-col items-center">
+                    {instaFollowers / instaCount > 1 ? (
+                        <span className="text-red-500">▲</span>
+                    ) : (
+                        <span className="text-blue-500">▼</span>
+                    )}
                 </div>
             </div>
 
