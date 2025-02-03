@@ -645,17 +645,17 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 </div>
                             ) : (
                                 <div
-                                    className={`flex flex-col items-start cursor-pointer pt-4 rounded-md ${adsChan && adsChanVisible ? "border-2 border-gray-300" : ""
+                                    className={`flex flex-col items-start pt-4 rounded-md ${adsChan && adsChanVisible ? "border-2 border-gray-300" : ""
                                         }`}
                                 >
                                     {/* 기본 상태: 이미지와 텍스트 */}
-                                    <div className="flex items-center" onClick={generateAdsChan}>
+                                    <div className="flex items-center" >
                                         <img
                                             src={require("../../../assets/icon/star_icon.png")}
                                             alt="채널 선택"
                                             className="w-6 h-6"
                                         />
-                                        <p className="text-[#FF1664] font-[Pretendard] text-[16px] font-bold leading-normal ml-2">
+                                        <p className="text-[#FF1664] font-[Pretendard] cursor-pointer text-[16px] font-bold leading-normal ml-2" onClick={generateAdsChan}>
                                             지금 나에게 가장 효과가 좋은 광고채널은?
                                         </p>
                                         {/* ▼ 버튼 (결과 생성 후) */}
@@ -700,6 +700,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 예 : 오늘 방문하신 고객들에게 테이블당 소주 1병 서비스!!
                             </p>
                         </div>
+
                         {/* gpt 역할 영역 */}
                         <AdsAIInstructionByTitle useOption={useOption} title={title} setGptRole={setGptRole} />
 

@@ -45,15 +45,6 @@ const AdsDetailInsta = () => {
                     <p className="text-lg font-bold">참여도</p>
                 </div>
                 <div className="flex flex-col items-center">
-                    <p
-                        className={`text-lg font-bold ${instaFollowers / instaCount > 1 ? "text-red-500" : "text-blue-500"
-                            }`}
-                    >
-                        {(instaFollowers / instaCount).toFixed(2)}
-                    </p>
-                    <p className="text-lg font-bold">참여도</p>
-                </div>
-                <div className="flex flex-col items-center">
                     {instaFollowers / instaCount > 1 ? (
                         <span className="text-red-500">▲</span>
                     ) : (
