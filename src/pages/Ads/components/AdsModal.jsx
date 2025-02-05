@@ -44,7 +44,7 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [imageErrorMessage, setImageErrorMessage] = useState('');   // 이미지 생성 에러
 
     const [aiMidPrompt, setAiMidPrompt] = useState('');   // 미드 저니 생성 프롬프트
-    const [isAiMidPromptVisible, setAiMidPromptVisible] = useState(true);  // 지시 내용 접히기
+    const [isAiMidPromptVisible, setAiMidPromptVisible] = useState(false);  // 지시 내용 접히기
 
     const [combineImageText, setCombineImageText] = useState(null)  // 선택 텍스트 + 이미지 결과물
     const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿 2개
@@ -284,16 +284,13 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
     };
 
     // Base64 데이터를 Blob으로 변환하는 유틸리티 함수
-    const base64ToBlob = (base64, contentType = "image/png") => {
-        if (!base64 || typeof base64 !== "string") {
-            console.error("유효하지 않은 Base64 데이터:", base64);
-            return null; // 또는 기본 Blob을 반환하거나 예외를 발생시킬 수 있음
+    const base64ToBlob = (base64, mimeType) => {
+        const byteCharacters = atob(base64);
+        const byteArrays = [];
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteArrays.push(byteCharacters.charCodeAt(i));
         }
-
-        const byteCharacters = atob(base64.split(",")[1]);
-        const byteNumbers = Array.from(byteCharacters, (char) => char.charCodeAt(0));
-        const byteArray = new Uint8Array(byteNumbers);
-        return new Blob([byteArray], { type: contentType });
+        return new Blob([new Uint8Array(byteArrays)], { type: mimeType });
     };
     
 
@@ -313,8 +310,8 @@ const AdsModal = ({ isOpen, onClose, storeBusinessNumber }) => {
                 basicInfo,
                 { headers: { 'Content-Type': 'application/json' } }
             );
-
-            const base64Images = response.data.image; // Base64 이미지 배열
+            console.log(response.data)
+            const base64Images = response.data; // Base64 이미지 배열
             const newImages = base64Images.map((base64Image, index) => {
                 // Base64 -> Blob -> File 변환
                 const aiImageBlob = base64ToBlob(base64Image);

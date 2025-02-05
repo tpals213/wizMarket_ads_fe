@@ -8,6 +8,7 @@ import "./../../../styles/swiper.css";
 import { Pagination } from "swiper/modules"; // pagination 모듈 추가
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
 import AdsAllInstructionByUseOption from './AdsAllInstructionByUseOption';
+import GoogleTranslator from '../../../assets/components/GoogleTranslator/GoogleTranslator'
 // import * as fabric from 'fabric';
 
 
@@ -38,12 +39,31 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [uploading, setUploading] = useState(false)   // 이미지 업로드 로딩 처리
 
     const [selectedImages, setSelectedImages] = useState([]); // 기존 이미지 파일 업로드 
-
+    const [isMenuOpen, setIsMenuOpen] = useState(false); // 사진 선택 메뉴 열기
 
     // 영상 처리
     const [selectedMedia, setSelectedMedia] = useState("사진");
     const [videoPath, setVideoPath] = useState(null);
     const [videoUploading, setVideoUploading] = useState(false)   // 이미지 업로드 로딩 처리
+
+    // 메뉴 클릭 처리
+    const handleMenuClick = (type) => {
+        setIsMenuOpen(false); // 메뉴 닫기
+        if (type === "file") {
+            document.getElementById("fileInput").click(); // 파일 선택 input 트리거
+        } else if (type === "camera") {
+            document.getElementById("cameraInput").click(); // 카메라 촬영 input 트리거
+        } else if (type === "gallery") {
+            document.getElementById("fileInput").click(); // 카메라 촬영 input 트리거
+        }
+    };
+
+    // 아무곳 클릭해도 메뉴 닫기
+    const closeMenu = () => {
+        if (isMenuOpen) {
+            setIsMenuOpen(false);
+        }
+    }
 
     const resetModalState = () => {
         setLoading(false);
@@ -71,6 +91,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         setGptRole('');
         setVideoPath(null);
         setVideoUploading(false)
+        setIsMenuOpen(false);
     };
 
     const maleMap = useMemo(() => ({
@@ -143,7 +164,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                         maxSalesFemaleValue,
                     };
                     setData(updatedData);
-
                 } catch (err) {
                     console.error("초기 데이터 로드 중 오류 발생:", err);
                     setError("초기 데이터 로드 중 오류가 발생했습니다.");
@@ -185,7 +205,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             }
         }
     };
-    
+
 
 
     // 광고 채널 추천
@@ -520,11 +540,12 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     return (
         <div className="inset-0 flex z-50 bg-opacity-50 h-full">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full overflow-auto">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full overflow-auto" onClick={closeMenu}>
                 <div className="flex justify-between items-center mb-4">
-                    <div className="flex flex-col pt-5 space-y-2">
+                    <div className="flex flex-col pt-5 w-full space-y-2">
                         {/* 이미지 영역 */}
-                        <div className="flex items-center space-x-4">
+                        <div className='flex justify-between items-center'>
+                            <div className="flex items-center space-x-4">
                             <img
                                 src={require("../../../assets/icon/wiz_icon.png")}
                                 alt="위즈 아이콘"
@@ -535,6 +556,10 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 alt="위즈 마켓 아이콘"
                                 className="w-[72px] h-[21px]"
                             />
+                            </div>
+                            <div>
+                                <GoogleTranslator />
+                            </div>
                         </div>
                         {/* 텍스트 영역 */}
                         <h5 className="text-lg font-medium">
@@ -609,7 +634,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                             <AdsAllInstructionByUseOption selectedOption={useOption} />
                         </div>
 
-                        {/* 버튼 영역 */}
+                        {/* 사진 영상 선택 버튼 */}
                         <div className="items-center justify-center flex-row mt-4 hidden">
                             {useOption === "인스타그램 스토리" || useOption === "인스타그램 피드" ? (
                                 <>
@@ -634,7 +659,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 </>
                             ) : null}
                         </div>
-
 
                         {/* 광고 채널 추천 받기 */}
                         <div className="mb-6 flex flex-col justify-center">
@@ -705,9 +729,101 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                         <AdsAIInstructionByTitle useOption={useOption} title={title} setGptRole={setGptRole} />
 
                         {/* 광고 생성 버튼 영역 */}
-                        <div className="mb-6">
-                            <div className="flex flex-row justify-center items-center space-x-4">
-                                {/* 파일 업로드 인풋 */}
+                        <div className="mb-4">
+                            <div className="flex flex-row justify-center items-center space-x-4 relative">
+                                {/* 드롭 메뉴 열기 버튼 */}
+                                <button
+                                    id="selectMenu"
+                                    onClick={() => setIsMenuOpen((prev) => !prev)} // 토글
+                                    className="cursor-pointer inline-block p-5 hover:bg-gray-300 transition-all duration-300"
+                                >
+                                    <img
+                                        src={require("../../../assets/icon/camera_icon.png")}
+                                        alt="파일 선택"
+                                        className="w-10 h-10"
+                                    />
+                                </button>
+
+                                {/* 드롭 메뉴들 */}
+                                {isMenuOpen && (
+                                    <div
+                                        className="absolute bottom-full w-1/2 h-auto text-black bg-gray-100 border border-gray-100 rounded-lg shadow-lg z-10 mb-2"
+                                        style={{
+                                            flexShrink: "0",
+                                            borderRadius: "0.625rem", // 약 10px
+                                        }}
+                                    >
+                                        <ul>
+                                            <li
+                                                className="cursor-pointer p-2 hover:bg-[#2196F3] border-b flex justify-between items-center"
+                                                onClick={() => handleMenuClick("gallery")}
+                                            >
+                                                <span className="mr-2">사진 보관함</span>
+                                                <img
+                                                    src={require("../../../assets/icon/gallery_icon.png")}
+                                                    alt="파일 선택"
+                                                    className="w-6 h-6"
+                                                />
+                                            </li>
+                                            <li
+                                                className="cursor-pointer p-2 hover:bg-[#2196F3] border-b flex justify-between items-center"
+                                                onClick={() => handleMenuClick("camera")}
+                                            >
+                                                <span className="mr-2">사진 찍기</span>
+                                                <img
+                                                    src={require("../../../assets/icon/camera_black_icon.png")}
+                                                    alt="사진 찍기"
+                                                    className="w-6 h-6"
+                                                />
+                                            </li>
+                                            <li
+                                                className="cursor-pointer p-2 hover:bg-[#2196F3] border-b flex justify-between items-center"
+                                                onClick={() => handleMenuClick("file")}
+                                            >
+                                                <span className="mr-2">파일 선택</span>
+                                                <img
+                                                    src={require("../../../assets/icon/file_icon.png")}
+                                                    alt="파일 선택"
+                                                    className="w-6 h-6"
+                                                />
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                )}
+
+                                {/* 숨겨진 파일 및 이미지 처리 버튼 */}
+                                {/* 사진 찍기 버튼 */}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    className="hidden"
+                                    id="cameraInput"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            const img = new Image();
+                                            img.src = URL.createObjectURL(file);
+                                            img.onload = () => {
+                                                const imageData = {
+                                                    type: "file",
+                                                    file,
+                                                    previewUrl: img.src,
+                                                    width: img.width,
+                                                    height: img.height,
+                                                };
+                                                // 상태 업데이트
+                                                setSelectedImages([imageData]);
+
+                                                // 바로 함수 호출
+                                                gernerateImageWithText(imageData);
+                                            };
+                                        }
+                                    }}
+                                />
+
+                                {/* 파일 선택 버튼 */}
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -726,7 +842,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                     width: img.width,
                                                     height: img.height,
                                                 };
-
                                                 // 상태 업데이트
                                                 setSelectedImages([imageData]);
 
@@ -737,14 +852,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     }}
                                 />
 
-                                {/* 클릭 가능한 카메라 아이콘 */}
-                                <label
-                                    htmlFor="fileInput"
-                                    className="cursor-pointer inline-block p-5 hover:bg-gray-300 transition-all duration-300"
-                                >
-                                    <img src={require("../../../assets/icon/camera_icon.png")} alt="파일 선택" className="w-10 h-10" />
-                                </label>
-
+                                {/* 광고 생성하기 버튼 */}
                                 <button
                                     type="button"
                                     className="flex flex-row justify-center items-center w-[218px] px-[20px] py-[8px] text-white rounded transition-all duration-300"
@@ -822,14 +930,14 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                         )}
 
                         {/* 영상 및 이미지 영역 */}
-                        <div className="flex flex-col justify-center items-center rounded-[16px] text-white pt-4 pb-4">
+                        <div className="flex flex-col justify-center items-center rounded-[16px] text-white pb-4">
                             {videoPath ? (
                                 // 비디오 표시
-                                <div className="w-full h-full flex justify-center items-center">
+                                <div className="w-full h-full flex justify-center items-center pt-4 pb-4">
                                     <video
                                         src={`${process.env.REACT_APP_FASTAPI_ADS_URL}${videoPath}`}
                                         controls
-                                        className="rounded-[16px] max-w-full max-h-[600px] object-cover"
+                                        className="max-w-full max-h-[600px] object-cover"
                                     >
                                         Your browser does not support the video tag.
                                     </video>
@@ -850,12 +958,12 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         >
                                             {combineImageTexts.map((image, index) => (
                                                 <SwiperSlide key={index}>
-                                                    <div className="flex justify-center items-center relative">
+                                                    <div className="flex justify-center items-center relative pt-4 pb-4">
                                                         {/* 이미지 표시 */}
                                                         <img
                                                             src={image}
                                                             alt={`Slide ${index + 1}`}
-                                                            className="rounded-[16px] max-w-full max-h-[600px] object-cover"
+                                                            className="max-w-full max-h-[600px] object-cover"
                                                         />
 
                                                         {/* 체크 아이콘 */}
@@ -887,7 +995,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
 
                         {/* 공유하기 버튼 */}
-                        {uploadImages && (
+                        {uploadImages.length > 0 && (
                             <button
                                 className={`flex flex-col justify-center items-center self-stretch px-[22px] py-[8px] rounded-[4px] 
                                             ${uploading ? "bg-[#2196F3] cursor-not-allowed" : "bg-[#2196F3] hover:bg-[#1976D2]"} 
