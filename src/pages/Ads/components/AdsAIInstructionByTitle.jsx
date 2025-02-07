@@ -100,7 +100,7 @@ const AdsAIInstructionByTitle = ({ useOption, title, setGptRole }) => {
             }
         }
 
-        else if (useOption === "카카오톡"){
+        else if (useOption === "네이버 블로그"){
             if (title === "매장 소개") {
                 setGptRole(`다음과 같은 내용을 바탕으로 온라인 광고 콘텐츠를 제작하려고 합니다. 
 잘 어울리는 광고 문구를 생성해주세요.

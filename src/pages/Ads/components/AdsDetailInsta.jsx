@@ -33,18 +33,18 @@ const AdsDetailInsta = () => {
             <div className="p-2 rounded-[10px] border border-[rgba(0,0,0,0.12)] flex justify-between items-center w-full max-w-sm mb-7">
                 <img src={require("../../../assets/sns/insta_feed.png")} alt="Instagram" className="w-11 h-11 mb-1" />
                 <div className="flex flex-col items-center">
-                    <p className="text-lg font-bold">{instaCount}</p>
-                    <p className="text-lg font-bold">게시물</p>
+                    <p className="text-base font-bold">{instaCount}</p>
+                    <p className="text-sm">게시물</p>
                 </div>
                 <div className="flex flex-col items-center">
-                    <p className="text-lg font-bold">{instaFollowers}</p>
-                    <p className="text-lg font-bold">팔로워</p>
+                    <p className="text-base font-bold">{instaFollowers}</p>
+                    <p className="text-sm">팔로워</p>
                 </div>
                 <div className="flex flex-col items-center">
-                    <p className="text-lg font-bold">{(instaFollowers / instaCount).toFixed(2)}</p>
-                    <p className="text-lg font-bold">참여도</p>
+                    <p className="text-base font-bold">{(instaFollowers / instaCount).toFixed(2)}</p>
+                    <p className="text-sm">참여도</p>
                 </div>
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center pr-1">
                     {instaFollowers / instaCount > 1 ? (
                         <span className="text-red-500">▲</span>
                     ) : (

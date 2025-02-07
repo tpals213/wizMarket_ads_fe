@@ -6,6 +6,7 @@ const AdsPromoteModal = () => {
     const title = urlParams.get("title"); // "라이프미용실 이벤트"
     const content = urlParams.get("content"); // "제목: 겨울철 스타일 변신!\n\n이벤트 내용: 40대 맞춤 스타일링 할인 진행 중!"
     const storeName = urlParams.get("storeName"); // "라이프미용실"
+    const roadName = urlParams.get("roadName") || "경기도 안양시 평의길 8";
     const imageUrl = urlParams.get("imageUrl"); // "https://example.com/image.png"
 
     return (
@@ -15,25 +16,28 @@ const AdsPromoteModal = () => {
                     <>
                         {/* 이미지 영역 */}
                         <div>
-                            <div className="flex justify-center items-center rounded-lg p-4 mb-6">
+                            <div className="flex justify-center items-center rounded-lg ">
                                 <img
-                                    className="max-w-full h-auto rounded shadow-md"
+                                    className="max-h-[700px] w-auto rounded shadow-md"
                                     src={`${imageUrl}`}
                                     alt="홍보 이미지"
                                 />
                             </div>
                         </div>
                         {/* 디테일 정보 영역 */}
-                        <div className="space-y-4">
-                            <p className="pb-6 text-8xl font-semibold text-gray-600">
-                                 {title}
+                        <div>
+                            <p className="pb-2 text-xl font-semibold text-gray-600">
+                                {title}
                             </p>
-                            <hr className="border-gray-500 my-6" />
-                            <p className="text-6xl pt-6 pb-6 font-semibold text-gray-600">
+                            <hr className="border-gray-500" />
+                            <p className="text-2xl pt-2 font-semibold text-gray-600">
                                 {storeName}
                             </p>
-                            <p className="text-5xl font-semibold text-gray-400">
+                            <p className="text-xl font-semibold text-gray-600">
                                 {content}
+                            </p>
+                            <p className="text-l font-semibold text-gray-400 pt-4">
+                                {roadName}
                             </p>
                         </div>
                     </>

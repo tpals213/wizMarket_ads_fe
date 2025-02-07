@@ -9,6 +9,8 @@ import { Pagination } from "swiper/modules"; // pagination 모듈 추가
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
 import AdsAllInstructionByUseOption from './AdsAllInstructionByUseOption';
 import GoogleTranslator from '../../../assets/components/GoogleTranslator/GoogleTranslator'
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import { Clipboard, ClipboardCheck } from "lucide-react"; // 아이콘 추가
 // import * as fabric from 'fabric';
 
 
@@ -46,7 +48,11 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [videoPath, setVideoPath] = useState(null);
     const [videoUploading, setVideoUploading] = useState(false)   // 이미지 업로드 로딩 처리
 
-    // 메뉴 클릭 처리
+    // 문구 복사 처리
+    const [copied, setCopied] = useState(false);
+
+
+    // 드롭 메뉴 클릭 처리
     const handleMenuClick = (type) => {
         setIsMenuOpen(false); // 메뉴 닫기
         if (type === "file") {
@@ -176,6 +182,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     }, [isOpen, storeBusinessNumber]);
 
 
+    // 이미지 선택 되게끔
     const handleImageClick = (index) => {
         if (useOption === "인스타그램 피드") {
             // 다수 선택 가능
@@ -205,8 +212,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             }
         }
     };
-
-
 
     // 광고 채널 추천
     const generateAdsChan = async () => {
@@ -398,6 +403,15 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             return; // 카카오톡 처리 후 다른 로직 실행 방지
         }
 
+        if (useOption === "네이버 블로그") {
+            window.open(
+                "https://nid.naver.com/nidlogin.login?url=https%3A%2F%2Fsection.blog.naver.com%2FBlogHome.naver",
+                "_blank",
+                `width=${window.screen.availWidth},height=${window.screen.availHeight},top=0,left=0,noopener,noreferrer`
+            );
+            return;
+        }
+        
         setUploading(true)
 
         const updatedUseOption = useOption === "" ? "인스타그램 피드" : useOption;
@@ -414,9 +428,9 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                 formData.append("upload_images", blob, `image.${extension}`); // 동일한 키로 추가
             });
         }
-        for (const [key, value] of formData.entries()) {
-            console.log(`Key: ${key}, Value:`, value);
-        }
+        // for (const [key, value] of formData.entries()) {
+        //     console.log(`Key: ${key}, Value:`, value);
+        // }
 
         try {
             const response = await axios.post(
@@ -492,13 +506,18 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             const uploadedImageUrl = response.infos.original.url;
 
             // adsInfo URL 생성
-            const adsInfoUrl = `?title=${encodeURIComponent(content || "기본 제목")}&content=${encodeURIComponent(content || "기본 내용")}&storeName=${encodeURIComponent(data.store_name || "기본 매장명")}&imageUrl=${encodeURIComponent(uploadedImageUrl || "기본 내용")}`;
+            const adsInfoUrl = `
+                ?title=${encodeURIComponent(title || "기본 제목")}
+                &content=${encodeURIComponent(content || "기본 내용")}
+                &storeName=${encodeURIComponent(data.store_name || "기본 매장명")}
+                &roadName=${encodeURIComponent(data.road_name || "기본 매장 주소")}
+                &imageUrl=${encodeURIComponent(uploadedImageUrl || "기본 내용")}`;
 
             // 카카오톡 공유
             window.Kakao.Share.sendCustom({
                 templateId: 115008, // 생성한 템플릿 ID
                 templateArgs: {
-                    title: content || "기본 제목",
+                    title: title || "기본 제목",
                     imageUrl: uploadedImageUrl,
                     storeName: data.store_name || "기본 매장명",
                     content: content || "기본 내용",
@@ -507,7 +526,6 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                 },
             });
 
-            console.log("카카오톡 공유 완료");
         } catch (error) {
             console.error("카카오톡 공유 중 오류 발생:", error);
         }
@@ -546,16 +564,16 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                         {/* 이미지 영역 */}
                         <div className='flex justify-between items-center'>
                             <div className="flex items-center space-x-4">
-                            <img
-                                src={require("../../../assets/icon/wiz_icon.png")}
-                                alt="위즈 아이콘"
-                                className="w-[39px] h-[26px]"
-                            />
-                            <img
-                                src={require("../../../assets/icon/wizAD_icon.png")}
-                                alt="위즈 마켓 아이콘"
-                                className="w-[72px] h-[21px]"
-                            />
+                                <img
+                                    src={require("../../../assets/icon/wiz_icon.png")}
+                                    alt="위즈 아이콘"
+                                    className="w-[39px] h-[26px]"
+                                />
+                                <img
+                                    src={require("../../../assets/icon/wizAD_icon.png")}
+                                    alt="위즈 마켓 아이콘"
+                                    className="w-[72px] h-[21px]"
+                                />
                             </div>
                             <div>
                                 <GoogleTranslator />
@@ -661,7 +679,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                         </div>
 
                         {/* 광고 채널 추천 받기 */}
-                        <div className="mb-6 flex flex-col justify-center">
+                        <div className="mb-6 flex flex-col justify-center pt-2">
                             {adsChanLoading ? (
                                 // 로딩 상태
                                 <div className="flex items-center justify-center">
@@ -669,7 +687,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 </div>
                             ) : (
                                 <div
-                                    className={`flex flex-col items-start pt-4 rounded-md ${adsChan && adsChanVisible ? "border-2 border-gray-300" : ""
+                                    className={`flex flex-col items-start rounded-md ${adsChan && adsChanVisible ? "border-2 border-gray-300" : ""
                                         }`}
                                 >
                                     {/* 기본 상태: 이미지와 텍스트 */}
@@ -697,7 +715,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     </div>
                                     {/* 결과 표시 (생성 후 펼쳐진 상태 기본) */}
                                     {adsChan && adsChanVisible && (
-                                        <div className="text-[#333333] text-base leading-relaxed mt-2">
+                                        <div className="text-[#333333] text-base leading-relaxed">
                                             {adsChan.split(". ").map((sentence, index) => (
                                                 <p key={index} className="mt-2">
                                                     {sentence.trim()}.
@@ -895,39 +913,61 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
                         </div>
 
+                        
+
+
                         {/* 문구 영역 */}
                         {content && (
                             <div
-                                className="flex flex-col justify-center items-center p-4 rounded-[16px] text-white"
+                                className="relative flex flex-col justify-center items-center p-4 rounded-[16px] text-white min-h-7 w-full"
                                 style={{
-                                    background: 'var(--Primary-primary_gradient, linear-gradient(270deg, #C67AF7 0%, #6B78E8 100%))',
-                                    fontSize: '20px', // 텍스트 크기를 20px로 설정
+                                    background:
+                                        "var(--Primary-primary_gradient, linear-gradient(270deg, #C67AF7 0%, #6B78E8 100%))",
+                                    fontSize: "20px",
+                                    minHeight: "56px",
+                                    position: "relative"
                                 }}
                             >
-                                {title === '이벤트' ? (
+                                {/* 📋 클립보드 복사 버튼 */}
+                                <CopyToClipboard text={content} onCopy={() => setCopied(true)}>
+                                    <button
+                                        className="absolute top-2 right-3 text-white hover:opacity-80 transition-opacity"
+                                        title="내용 복사"
+                                    >
+                                        {copied ? (
+                                            <ClipboardCheck size={20} strokeWidth={2.5} className="text-green-400" />
+                                        ) : (
+                                            <Clipboard size={20} strokeWidth={2.5} />
+                                        )}
+                                    </button>
+                                </CopyToClipboard>
+
+                                {/* 이벤트 텍스트 렌더링 */}
+                                {title === "이벤트" ? (
                                     (() => {
-                                        // ':'을 기준으로 제목과 내용을 분리
-                                        const parts = content.split(':');
-                                        const extractedTitle = parts[1]?.split('이벤트 내용')[0]?.trim() || "제목 없음";
-                                        const extractedContent = parts[2]?.trim() || "내용 없음";
+                                        const parts = content.split(":");
+                                        const extractedTitle = parts[1]?.split("이벤트 내용")[0]?.trim() || "";
+                                        const extractedContent = parts[2]?.trim() || "";
 
-                                        return (
+                                        return extractedTitle || extractedContent ? (
                                             <>
-                                                <p className="mb-2 text-xl">
-                                                    제목: {extractedTitle}
-                                                </p>
-                                                <p className="mb-2 text-xl">
-                                                    내용: {extractedContent}
-                                                </p>
-
+                                                {extractedTitle && (
+                                                    <p className="mb-2 text-xl">제목: {extractedTitle}</p>
+                                                )}
+                                                {extractedContent && (
+                                                    <p className="mb-2 text-xl">내용: {extractedContent}</p>
+                                                )}
                                             </>
+                                        ) : (
+                                            <span>&nbsp;</span>
                                         );
                                     })()
                                 ) : (
-                                    <p className='text-xl'>{content}</p> // 이벤트가 아닌 경우 content 그대로 출력
+                                    content ? <p className="text-xl">{content}</p> : <span>&nbsp;</span>
                                 )}
                             </div>
                         )}
+
 
                         {/* 영상 및 이미지 영역 */}
                         <div className="flex flex-col justify-center items-center rounded-[16px] text-white pb-4">
@@ -963,7 +1003,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                         <img
                                                             src={image}
                                                             alt={`Slide ${index + 1}`}
-                                                            className="max-w-full max-h-[600px] object-cover"
+                                                            className="max-w-full  object-cover"
                                                         />
 
                                                         {/* 체크 아이콘 */}
