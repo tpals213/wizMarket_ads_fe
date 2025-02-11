@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback  } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -7,14 +7,14 @@ import "swiper/css/pagination"; // pagination 스타일 추가
 import "./../../../styles/swiper.css";
 import { Pagination } from "swiper/modules"; // pagination 모듈 추가
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
-import AdsAllInstructionByUseOption from './AdsAllInstructionByUseOption';
 import GoogleTranslator from '../../../assets/components/GoogleTranslator/GoogleTranslator'
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Clipboard, ClipboardCheck } from "lucide-react"; // 아이콘 추가
+import "./../../../styles/drag.css";
 // import * as fabric from 'fabric';
 
 
-const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
+const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -24,7 +24,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [data, setData] = useState(null); // 모달창 열릴 때 가져오는 기본 정보
 
     const [useOption, setUseOption] = useState("");  // 사이즈 용도
-    const [title, setTitle] = useState("");    // 주제 용도
+    const [title, setTitle] = useState("매장 소개");    // 주제 용도
     const [detailContent, setDetailContent] = useState('');   // 실제 적용할 문구 ex)500원 할인
 
     const [adsChan, setAdsChan] = useState(''); // gpt가 생성한 추천 광고 채널
@@ -50,6 +50,74 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     // 문구 복사 처리
     const [copied, setCopied] = useState(false);
+
+
+    // 디자인 스타일 드래그 처리
+    const scrollRef = useRef(null);
+    const isDragging = useRef(false);
+    const startX = useRef(0);
+    const scrollLeft = useRef(0);
+
+    const startDragging = useCallback((e) => {
+        isDragging.current = true;
+        startX.current = e.pageX - scrollRef.current.offsetLeft;
+        scrollLeft.current = scrollRef.current.scrollLeft;
+    }, []);
+
+    const onDrag = useCallback((e) => {
+        if (!isDragging.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX.current) * 2; // 이동 거리 조절
+        scrollRef.current.scrollLeft = scrollLeft.current - walk;
+    }, []);
+
+    const stopDragging = useCallback(() => {
+        isDragging.current = false;
+    }, []);
+
+    // 템플릿 선택되게끔
+    const [exampleImage, setExampleImage] = useState(null);
+
+    const allImages = [
+        "image_1.png",
+        "image_2.png",
+        "image_3.png",
+        "image_4.png",
+        "image_5.png",
+        "image_6.png",
+    ];
+
+    // 선택한 스타일에 따라 이미지 필터링
+    const filteredImages = (() => {
+        switch (title) {
+            case "포토실사":
+                return []; // 이미지 없음
+            case "캐릭터만화":
+                return ["image_2.png"];
+            case "AI모델":
+                return ["image_1.png", "image_2.png", "image_4.png", "image_6.png"];
+            default:
+                return allImages; // 3D감성(기본) 선택 시 모든 이미지 표시
+        }
+    })();
+
+    useEffect(() => {
+        const scrollContainer = scrollRef.current;
+        if (!scrollContainer) return;
+
+        scrollContainer.addEventListener("mousedown", startDragging);
+        scrollContainer.addEventListener("mousemove", onDrag);
+        scrollContainer.addEventListener("mouseup", stopDragging);
+        scrollContainer.addEventListener("mouseleave", stopDragging);
+
+        return () => {
+            scrollContainer.removeEventListener("mousedown", startDragging);
+            scrollContainer.removeEventListener("mousemove", onDrag);
+            scrollContainer.removeEventListener("mouseup", stopDragging);
+            scrollContainer.removeEventListener("mouseleave", stopDragging);
+        };
+    }, [filteredImages, onDrag, startDragging, stopDragging]); // 🎯 `filteredImages` 변경될 때도 드래그 유지
 
 
     // 드롭 메뉴 클릭 처리
@@ -295,7 +363,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const generateAds = async () => {
         // 기본 값 부여
         const updatedTitle = title === "" ? "매장 소개" : title;
-        const updatedUseOption = useOption === "" ? "인스타그램 피드" : useOption;
+        const updatedUseOption = useOption === "" ? "인스타그램 스토리" : useOption;
         const aiModelOption = "imagen3"; // 이미지 생성 모델 옵션
         setContentLoading(true)
         const basicInfo = {
@@ -411,7 +479,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             );
             return;
         }
-        
+
         setUploading(true)
 
         const updatedUseOption = useOption === "" ? "인스타그램 피드" : useOption;
@@ -579,7 +647,7 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
                         </div>
                         {/* 텍스트 영역 */}
-                        <h5 className="text-lg font-medium">
+                        <h5 className="text-lg font-bold">
                             간편한 고객 맞춤형 자동 AI 광고 만들기
                         </h5>
                         <h5 className="text-lg font-medium">
@@ -604,316 +672,368 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                 )}
 
                 {data && (
-                    <div className="w-full">
-
-                        {/* 주제 선택 영역 */}
-                        <div className="mb-6">
-                            <fieldset className="border border-gray-300 rounded w-full px-3 py-2">
-                                <legend className="text-xl text-gray-700 px-2">주제 선택</legend>
-                                <select
-                                    className={`border-none w-full focus:outline-none ${title === "" ? "text-gray-400" : "text-gray-700"
-                                        }`}
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                >
-                                    <option value="" disabled>
-                                        어떤 주제로 홍보하실 건가요?
-                                    </option>
-                                    <option value="매장 소개">매장 홍보</option>
-                                    <option value="이벤트">이벤트</option>
-                                    <option value="상품소개">상품소개</option>
-                                    <option value="인사">인사</option>
-                                    <option value="명함">명함</option>
-                                </select>
-                            </fieldset>
-                        </div>
-
-                        {/* 광고 채널 선택 영역 */}
-                        <div className="">
-                            <fieldset className="border border-gray-300 rounded w-full px-3 py-2">
-                                <legend className="text-xl text-gray-700 px-2">광고 채널</legend>
-                                <select
-                                    className={`border-none w-full focus:outline-none ${useOption === "" ? "text-gray-400" : "text-gray-700"
-                                        }`}
-                                    value={useOption}
-                                    onChange={(e) => setUseOption(e.target.value)}
-                                >
-                                    <option value="" disabled>
-                                        광고를 게시할 채널을 선택해 주세요.
-                                    </option>
-                                    <option value="인스타그램 스토리">인스타그램 스토리 (9:16)</option>
-                                    <option value="인스타그램 피드">인스타그램 피드 (1:1)</option>
-                                    <option value="문자메시지">문자메시지 (9:16)</option>
-                                    <option value="네이버 블로그">네이버 블로그 (16:9)</option>
-                                    <option value="카카오톡">카카오톡 (9:16)</option>
-                                </select>
-                            </fieldset>
-                            <AdsAllInstructionByUseOption selectedOption={useOption} />
-                        </div>
-
-                        {/* 사진 영상 선택 버튼 */}
-                        <div className="items-center justify-center flex-row mt-4 hidden">
-                            {useOption === "인스타그램 스토리" || useOption === "인스타그램 피드" ? (
-                                <>
-                                    <button
-                                        onClick={() => setSelectedMedia("사진")}
-                                        className={`px-5 py-2 mr-2 border rounded cursor-pointer ${selectedMedia === "사진"
-                                            ? "bg-blue-500 text-white border-blue-500"
-                                            : "bg-gray-100 text-black border-gray-300"
-                                            }`}
-                                    >
-                                        사진
-                                    </button>
-                                    <button
-                                        onClick={() => setSelectedMedia("영상")}
-                                        className={`px-5 py-2 border rounded cursor-pointer ${selectedMedia === "영상"
-                                            ? "bg-blue-500 text-white border-blue-500"
-                                            : "bg-gray-100 text-black border-gray-300"
-                                            }`}
-                                    >
-                                        영상
-                                    </button>
-                                </>
-                            ) : null}
-                        </div>
-
-                        {/* 광고 채널 추천 받기 */}
-                        <div className="mb-6 flex flex-col justify-center pt-2">
-                            {adsChanLoading ? (
-                                // 로딩 상태
-                                <div className="flex items-center justify-center">
-                                    <div className="w-6 h-6 border-4 border-[#FF1664] border-solid border-t-transparent rounded-full animate-spin"></div>
-                                </div>
-                            ) : (
-                                <div
-                                    className={`flex flex-col items-start rounded-md ${adsChan && adsChanVisible ? "border-2 border-gray-300" : ""
-                                        }`}
-                                >
-                                    {/* 기본 상태: 이미지와 텍스트 */}
-                                    <div className="flex items-center" >
-                                        <img
-                                            src={require("../../../assets/icon/star_icon.png")}
-                                            alt="채널 선택"
-                                            className="w-6 h-6"
-                                        />
-                                        <p className="text-[#FF1664] font-[Pretendard] cursor-pointer text-[16px] font-bold leading-normal ml-2" onClick={generateAdsChan}>
-                                            지금 나에게 가장 효과가 좋은 광고채널은?
-                                        </p>
-                                        {/* ▼ 버튼 (결과 생성 후) */}
-                                        {adsChan && (
-                                            <span
-                                                className="ml-2 cursor-pointer"
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // 부모 클릭 이벤트 방지
-                                                    setAdsChanVisible((prev) => !prev);
-                                                }}
+                    <div className="w-full justify-center flex-col flex">
+                        <div>
+                            {/* 주제 선택 영역 */}
+                            <div className="pt-6">
+                                <p className="text-xl text-black font-medium mb-2">어떠한 홍보를 원하세요?</p>
+                                <div className="flex w-full bg-gray-100 rounded-lg pt-1 pb-1">
+                                    {[
+                                        { label: "매장홍보", value: "매장 소개" },
+                                        { label: "이벤트", value: "이벤트" },
+                                        { label: "상품소개", value: "상품소개" },
+                                        { label: "감사인사", value: "인사" },
+                                        { label: "명함", value: "명함" },
+                                    ].map((option, index, array) => (
+                                        <div key={option.value} className="flex items-center flex-1">
+                                            <button
+                                                className={`flex-1 py-2 rounded-lg text-center transition ${title === option.value ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700"
+                                                    }`}
+                                                onClick={() => setTitle(option.value)}
                                             >
-                                                {adsChanVisible ? "▼" : "▶"}
-                                            </span>
+                                                {option.label}
+                                            </button>
+                                            {/* 마지막 요소가 아닐 때만 | 구분자 추가 */}
+                                            {index < array.length - 1 && <span className="text-gray-500">|</span>}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+
+                            {/* 광고 채널 선택 영역 */}
+                            <div className="hidden">
+                                <fieldset className="border border-gray-300 rounded w-full px-3 py-2">
+                                    <legend className="text-xl text-gray-700 px-2">광고 채널</legend>
+                                    <select
+                                        className={`border-none w-full focus:outline-none ${useOption === "" ? "text-gray-400" : "text-gray-700"
+                                            }`}
+                                        value={useOption}
+                                        onChange={(e) => setUseOption(e.target.value)}
+                                    >
+                                        <option value="" disabled>
+                                            광고를 게시할 채널을 선택해 주세요.
+                                        </option>
+                                        <option value="인스타그램 스토리">인스타그램 스토리 (9:16)</option>
+                                        <option value="인스타그램 피드">인스타그램 피드 (1:1)</option>
+                                        <option value="문자메시지">문자메시지 (9:16)</option>
+                                        <option value="네이버 블로그">네이버 블로그 (16:9)</option>
+                                        <option value="카카오톡">카카오톡 (9:16)</option>
+                                    </select>
+                                </fieldset>
+                            </div>
+
+                            {/* 사진 영상 선택 버튼 */}
+                            <div className="hidden items-center justify-center flex-row mt-4">
+                                {useOption === "인스타그램 스토리" || useOption === "인스타그램 피드" ? (
+                                    <>
+                                        <button
+                                            onClick={() => setSelectedMedia("사진")}
+                                            className={`px-5 py-2 mr-2 border rounded cursor-pointer ${selectedMedia === "사진"
+                                                ? "bg-blue-500 text-white border-blue-500"
+                                                : "bg-gray-100 text-black border-gray-300"
+                                                }`}
+                                        >
+                                            사진
+                                        </button>
+                                        <button
+                                            onClick={() => setSelectedMedia("영상")}
+                                            className={`px-5 py-2 border rounded cursor-pointer ${selectedMedia === "영상"
+                                                ? "bg-blue-500 text-white border-blue-500"
+                                                : "bg-gray-100 text-black border-gray-300"
+                                                }`}
+                                        >
+                                            영상
+                                        </button>
+                                    </>
+                                ) : null}
+                            </div>
+
+                            {/* 광고 채널 추천 받기 */}
+                            <div className="hidden mb-6 flex-col justify-center pt-2">
+                                {adsChanLoading ? (
+                                    // 로딩 상태
+                                    <div className="flex items-center justify-center">
+                                        <div className="w-6 h-6 border-4 border-[#FF1664] border-solid border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                ) : (
+                                    <div
+                                        className={`flex flex-col items-start rounded-md ${adsChan && adsChanVisible ? "border-2 border-gray-300" : ""
+                                            }`}
+                                    >
+                                        {/* 기본 상태: 이미지와 텍스트 */}
+                                        <div className="flex items-center" >
+                                            <img
+                                                src={require("../../../assets/icon/star_icon.png")}
+                                                alt="채널 선택"
+                                                className="w-6 h-6"
+                                            />
+                                            <p className="text-[#FF1664] font-[Pretendard] cursor-pointer text-[16px] font-bold leading-normal ml-2" onClick={generateAdsChan}>
+                                                지금 나에게 가장 효과가 좋은 광고채널은?
+                                            </p>
+                                            {/* ▼ 버튼 (결과 생성 후) */}
+                                            {adsChan && (
+                                                <span
+                                                    className="ml-2 cursor-pointer"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // 부모 클릭 이벤트 방지
+                                                        setAdsChanVisible((prev) => !prev);
+                                                    }}
+                                                >
+                                                    {adsChanVisible ? "▼" : "▶"}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {/* 결과 표시 (생성 후 펼쳐진 상태 기본) */}
+                                        {adsChan && adsChanVisible && (
+                                            <div className="text-[#333333] text-base leading-relaxed">
+                                                {adsChan.split(". ").map((sentence, index) => (
+                                                    <p key={index} className="mt-2">
+                                                        {sentence.trim()}.
+                                                    </p>
+                                                ))}
+                                            </div>
                                         )}
                                     </div>
-                                    {/* 결과 표시 (생성 후 펼쳐진 상태 기본) */}
-                                    {adsChan && adsChanVisible && (
-                                        <div className="text-[#333333] text-base leading-relaxed">
-                                            {adsChan.split(". ").map((sentence, index) => (
-                                                <p key={index} className="mt-2">
-                                                    {sentence.trim()}.
-                                                </p>
-                                            ))}
-                                        </div>
+                                )}
+                            </div>
+
+                            {/* 디자인 스타일 선택 영역 */}
+                            <div className="pt-6">
+                                {/* 제목 & 아이콘 */}
+                                <div className="flex items-center gap-2 pb-4">
+                                    <p className="text-xl text-black font-medium">디자인 스타일을 선택해주세요.</p>
+                                    <img
+                                        src={require("../../../assets/icon/ai_gen_icon2.png")}
+                                        alt="파일 선택"
+                                        className="w-6 h-6"
+                                    />
+                                </div>
+
+                                {/* 디자인 스타일 선택 버튼 */}
+                                <div
+                                    ref={scrollRef}
+                                    className="w-full overflow-x-auto whitespace-nowrap no-scrollbar flex gap-2 px-2 pb-4 rounded-lg"
+                                >
+                                    {[
+                                        { label: "내 사진", value: "내 사진", icon: "📷" },
+                                        { label: "3D감성", value: "3D감성" },
+                                        { label: "포토실사", value: "포토실사" },
+                                        { label: "캐릭터·만화", value: "캐릭터만화" },
+                                        { label: "레트로", value: "레트로" },
+                                        { label: "AI모델", value: "AI모델" },
+                                        { label: "예술", value: "예술" },
+                                    ].map((option) => (
+                                        <button
+                                            key={option.value}
+                                            className={`flex-shrink-0 px-4 py-2 rounded-full border transition ${title === option.value ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-500 border-gray-300"
+                                                }`}
+                                            onClick={() => setTitle(option.value)}
+                                        >
+                                            {option.icon ? (
+                                                <span className="flex items-center gap-1">
+                                                    {option.label} {option.icon}
+                                                </span>
+                                            ) : (
+                                                option.label
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* 이미지 선택 영역 */}
+                                <div className="grid grid-cols-3 gap-4 pb-2">
+                                    {filteredImages.length > 0 ? (
+                                        filteredImages.map((img, index) => (
+                                            <div
+                                                key={index}
+                                                className={`relative border-4 rounded-lg transition ${exampleImage === img ? "border-[#FF029A]" : "border-transparent"
+                                                    }`}
+                                                onClick={() => setExampleImage(img)} // 클릭 시 선택/해제 토글
+                                            >
+                                                <img
+                                                    src={require(`../../../assets/template/${img}`)}
+                                                    alt={`이미지 ${index + 1}`}
+                                                    className="w-full h-auto object-cover cursor-pointer"
+                                                />
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="col-span-3 text-gray-500 text-center">해당하는 이미지가 없습니다.</p>
                                     )}
                                 </div>
-                            )}
+                            </div>
+
+                            {/* 주제 세부 정보 선택 영역 */}
+                            <div className="w-full">
+                                <fieldset className="border border-gray-300 rounded w-full px-3">
+                                    <legend className="text-xl text-gray-700 px-2">세부정보입력</legend>
+                                    <input
+                                        type="text"
+                                        value={detailContent}
+                                        onChange={(e) => setDetailContent(e.target.value)}
+                                        className="rounded w-full px-3 py-2"
+                                        placeholder="추가하실 세부정보 내용이 있다면 입력해주세요."
+                                    />
+                                </fieldset>
+                                <p className="flex items-center justify-between mb-2 pl-4 text-gray-400">
+                                    예 : 오늘 방문하신 고객들에게 테이블당 소주 1병 서비스!!
+                                </p>
+                            </div>
+
+                            {/* gpt 역할 영역 */}
+                            <AdsAIInstructionByTitle useOption={useOption} title={title} setGptRole={setGptRole} />
                         </div>
 
-                        {/* 주제 세부 정보 선택 영역 */}
-                        <div className="w-full">
-                            <fieldset className="border border-gray-300 rounded w-full px-3 py-2">
-                                <legend className="text-xl text-gray-700 px-2">주제 세부 정보 입력</legend>
-                                <input
-                                    type="text"
-                                    value={detailContent}
-                                    onChange={(e) => setDetailContent(e.target.value)}
-                                    className="rounded w-full px-3 py-2"
-                                />
-                            </fieldset>
-                            <p className="flex items-center justify-between mb-2 pl-4 text-gray-400">
-                                예 : 오늘 방문하신 고객들에게 테이블당 소주 1병 서비스!!
-                            </p>
-                        </div>
-
-                        {/* gpt 역할 영역 */}
-                        <AdsAIInstructionByTitle useOption={useOption} title={title} setGptRole={setGptRole} />
 
                         {/* 광고 생성 버튼 영역 */}
-                        <div className="mb-4">
-                            <div className="flex flex-row justify-center items-center space-x-4 relative">
-                                {/* 드롭 메뉴 열기 버튼 */}
-                                <button
-                                    id="selectMenu"
-                                    onClick={() => setIsMenuOpen((prev) => !prev)} // 토글
-                                    className="cursor-pointer inline-block p-5 hover:bg-gray-300 transition-all duration-300"
-                                >
-                                    <img
-                                        src={require("../../../assets/icon/camera_icon.png")}
-                                        alt="파일 선택"
-                                        className="w-10 h-10"
-                                    />
-                                </button>
-
-                                {/* 드롭 메뉴들 */}
-                                {isMenuOpen && (
-                                    <div
-                                        className="absolute bottom-full w-1/2 h-auto text-black bg-gray-100 border border-gray-100 rounded-lg shadow-lg z-10 mb-2"
-                                        style={{
-                                            flexShrink: "0",
-                                            borderRadius: "0.625rem", // 약 10px
-                                        }}
+                        <div className="w-full justify-center items-center flex-col flex pb-4">
+                            <div className="mb-4 pt-6 w-1/3 justify-center items-center">
+                                <div className="flex justify-center items-center bg-[#2196F3] rounded-full px-4 py-2 w-auto shadow-md">
+                                    {/* 드롭 메뉴 열기 버튼 */}
+                                    <button
+                                        id="selectMenu"
+                                        onClick={() => setIsMenuOpen((prev) => !prev)}
+                                        className="flex justify-center items-center w-16 h-12"
                                     >
-                                        <ul>
-                                            <li
-                                                className="cursor-pointer p-2 hover:bg-[#2196F3] border-b flex justify-between items-center"
-                                                onClick={() => handleMenuClick("gallery")}
-                                            >
-                                                <span className="mr-2">사진 보관함</span>
-                                                <img
-                                                    src={require("../../../assets/icon/gallery_icon.png")}
-                                                    alt="파일 선택"
-                                                    className="w-6 h-6"
-                                                />
-                                            </li>
-                                            <li
-                                                className="cursor-pointer p-2 hover:bg-[#2196F3] border-b flex justify-between items-center"
-                                                onClick={() => handleMenuClick("camera")}
-                                            >
-                                                <span className="mr-2">사진 찍기</span>
-                                                <img
-                                                    src={require("../../../assets/icon/camera_black_icon.png")}
-                                                    alt="사진 찍기"
-                                                    className="w-6 h-6"
-                                                />
-                                            </li>
-                                            <li
-                                                className="cursor-pointer p-2 hover:bg-[#2196F3] border-b flex justify-between items-center"
-                                                onClick={() => handleMenuClick("file")}
-                                            >
-                                                <span className="mr-2">파일 선택</span>
-                                                <img
-                                                    src={require("../../../assets/icon/file_icon.png")}
-                                                    alt="파일 선택"
-                                                    className="w-6 h-6"
-                                                />
-                                            </li>
-                                        </ul>
-                                    </div>
+                                        <img
+                                            src={require("../../../assets/icon/camera_icon.png")}
+                                            alt="파일 선택"
+                                            className="w-11 h-11"
+                                        />
+                                    </button>
+                                    <div className="h-11 w-[1px] bg-white mx-2"></div>
+                                    {/* 드롭 메뉴들 */}
+                                    {isMenuOpen && (
+                                        <div
+                                            className="absolute bottom-24 h-auto text-black bg-gray-100 border border-gray-100 rounded-lg shadow-lg z-10 mb-2"
+                                            style={{
+                                                flexShrink: "0",
+                                                borderRadius: "0.625rem", // 약 10px
+                                            }}
+                                        >
+                                            <ul>
+                                                <li
+                                                    className="cursor-pointer p-2 hover:bg-[#2196F3] border-b flex justify-between items-center"
+                                                    onClick={() => handleMenuClick("gallery")}
+                                                >
+                                                    <span className="mr-2">사진 보관함</span>
+                                                    <img
+                                                        src={require("../../../assets/icon/gallery_icon.png")}
+                                                        alt="파일 선택"
+                                                        className="w-6 h-6"
+                                                    />
+                                                </li>
+                                                <li
+                                                    className="cursor-pointer p-2 hover:bg-[#2196F3] border-b flex justify-between items-center"
+                                                    onClick={() => handleMenuClick("camera")}
+                                                >
+                                                    <span className="mr-2">사진 찍기</span>
+                                                    <img
+                                                        src={require("../../../assets/icon/camera_black_icon.png")}
+                                                        alt="사진 찍기"
+                                                        className="w-6 h-6"
+                                                    />
+                                                </li>
+                                                <li
+                                                    className="cursor-pointer p-2 hover:bg-[#2196F3] border-b flex justify-between items-center"
+                                                    onClick={() => handleMenuClick("file")}
+                                                >
+                                                    <span className="mr-2">파일 선택</span>
+                                                    <img
+                                                        src={require("../../../assets/icon/file_icon.png")}
+                                                        alt="파일 선택"
+                                                        className="w-6 h-6"
+                                                    />
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    )}
 
-                                )}
+                                    {/* 숨겨진 파일 및 이미지 처리 버튼 */}
+                                    {/* 사진 찍기 버튼 */}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        capture="environment"
+                                        className="hidden"
+                                        id="cameraInput"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                const img = new Image();
+                                                img.src = URL.createObjectURL(file);
+                                                img.onload = () => {
+                                                    const imageData = {
+                                                        type: "file",
+                                                        file,
+                                                        previewUrl: img.src,
+                                                        width: img.width,
+                                                        height: img.height,
+                                                    };
+                                                    // 상태 업데이트
+                                                    setSelectedImages([imageData]);
 
-                                {/* 숨겨진 파일 및 이미지 처리 버튼 */}
-                                {/* 사진 찍기 버튼 */}
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    capture="environment"
-                                    className="hidden"
-                                    id="cameraInput"
-                                    onChange={(e) => {
-                                        const file = e.target.files[0];
-                                        if (file) {
-                                            const img = new Image();
-                                            img.src = URL.createObjectURL(file);
-                                            img.onload = () => {
-                                                const imageData = {
-                                                    type: "file",
-                                                    file,
-                                                    previewUrl: img.src,
-                                                    width: img.width,
-                                                    height: img.height,
+                                                    // 바로 함수 호출
+                                                    gernerateImageWithText(imageData);
                                                 };
-                                                // 상태 업데이트
-                                                setSelectedImages([imageData]);
+                                            }
+                                        }}
+                                    />
 
-                                                // 바로 함수 호출
-                                                gernerateImageWithText(imageData);
-                                            };
-                                        }
-                                    }}
-                                />
+                                    {/* 파일 선택 버튼 */}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden" // input을 숨김
+                                        id="fileInput"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                const img = new Image();
+                                                img.src = URL.createObjectURL(file);
+                                                img.onload = () => {
+                                                    const imageData = {
+                                                        type: "file",
+                                                        file,
+                                                        previewUrl: img.src,
+                                                        width: img.width,
+                                                        height: img.height,
+                                                    };
+                                                    // 상태 업데이트
+                                                    setSelectedImages([imageData]);
 
-                                {/* 파일 선택 버튼 */}
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden" // input을 숨김
-                                    id="fileInput"
-                                    onChange={(e) => {
-                                        const file = e.target.files[0];
-                                        if (file) {
-                                            const img = new Image();
-                                            img.src = URL.createObjectURL(file);
-                                            img.onload = () => {
-                                                const imageData = {
-                                                    type: "file",
-                                                    file,
-                                                    previewUrl: img.src,
-                                                    width: img.width,
-                                                    height: img.height,
+                                                    // 바로 함수 호출
+                                                    gernerateImageWithText(imageData);
                                                 };
-                                                // 상태 업데이트
-                                                setSelectedImages([imageData]);
+                                            }
+                                        }}
+                                    />
 
-                                                // 바로 함수 호출
-                                                gernerateImageWithText(imageData);
-                                            };
-                                        }
-                                    }}
-                                />
-
-                                {/* 광고 생성하기 버튼 */}
-                                <button
-                                    type="button"
-                                    className="flex flex-row justify-center items-center w-[218px] px-[20px] py-[8px] text-white rounded transition-all duration-300"
-                                    onClick={generateAds}
-                                    style={{
-                                        borderRadius: 'var(--borderRadius, 4px)',
-                                        background: 'var(--primary-main, #2196F3)',
-                                        boxShadow: `
-                                            0px 1px 18px 0px rgba(0, 0, 0, 0.12),
-                                            0px 6px 10px 0px rgba(0, 0, 0, 0.14),
-                                            0px 3px 5px -1px rgba(0, 0, 0, 0.20)
-                                        `,
-                                    }}
-                                    disabled={contentLoading} // 로딩 중 버튼 비활성화
-                                >
-                                    {contentLoading ? (
-                                        <div className="w-6 h-6 border-4 border-white border-solid border-t-transparent rounded-full animate-spin"></div>
-                                    ) : (
-                                        <>
+                                    {/* 광고 생성하기 버튼 */}
+                                    <button
+                                        type="button"
+                                        className="flex justify-center items-center w-16 h-12 text-white rounded transition-all duration-300"
+                                        onClick={generateAds}
+                                        disabled={contentLoading}
+                                    >
+                                        {contentLoading ? (
+                                            <div className="w-6 h-6 border-4 border-white border-solid border-t-transparent rounded-full animate-spin"></div>
+                                        ) : (
                                             <img
                                                 src={
                                                     combineImageTexts && combineImageTexts.length > 0
-                                                        ? require("../../../assets/icon/retry_icon.png") // Retry 아이콘 경로
-                                                        : require("../../../assets/icon/ai_gen_icon.png") // 기본 AI 생성 아이콘 경로
+                                                        ? require("../../../assets/icon/retry_icon.png")
+                                                        : require("../../../assets/icon/ai_gen_icon.png")
                                                 }
-                                                alt={
-                                                    combineImageTexts && combineImageTexts.length > 0
-                                                        ? "Retry Icon"
-                                                        : "AI 광고 생성 아이콘"
-                                                }
-                                                className="w-6 h-6 mr-2"
+                                                alt="AI 광고 생성 아이콘"
+                                                className="w-6 h-6"
                                             />
-                                            <p className='font-medium text-[16px]'>
-                                                {combineImageTexts && combineImageTexts.length > 0 ? "AI 다시생성하기" : "AI 광고 생성"}
-                                            </p>
-                                        </>
-                                    )}
-
-                                </button>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         </div>
-
-                        
-
 
                         {/* 문구 영역 */}
                         {content && (
@@ -1072,4 +1192,4 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     );
 };
 
-export default AdsModalLightVer;
+export default AdsModalTemVer;

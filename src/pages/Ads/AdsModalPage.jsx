@@ -5,6 +5,7 @@ import AdsDetailModal from "./components/AdsDetailModal";
 import AdsPromoteModal from "./components/AdsPromoteModal";
 import AdsShareYoutube from "./components/AdsShareYoutube";
 import AdsDetailInsta from "./components/AdsDetailInsta";
+import AdsModalTemVer from "./components/AdsModalTemVer";
 
 import { useParams } from "react-router-dom";
 
@@ -33,6 +34,12 @@ const AdsModalPage = ({ type }) => {
                 />
             ) : type === "light" ? (
                 <AdsModalLightVer
+                    isOpen={true}
+                    onClose={handleClose}
+                    storeBusinessNumber={storeBusinessNumber}
+                />
+            ): type === "temp" ? (
+                <AdsModalTemVer
                     isOpen={true}
                     onClose={handleClose}
                     storeBusinessNumber={storeBusinessNumber}
