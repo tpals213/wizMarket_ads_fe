@@ -321,7 +321,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         setContentLoading(true)
 
         const updatedTitle = title === "" ? "매장 소개" : title;
-        const updatedUseOption = useOption === "" ? "인스타그램 피드" : useOption;
+        const updatedUseOption = useOption === "" ? "인스타그램 스토리" : useOption;
 
         const formData = new FormData();
         formData.append('store_name', data.store_name);
@@ -341,7 +341,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/exist/image`,
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/exist/image/remove/background`,
                 formData,
                 {
                     headers: {
@@ -849,7 +849,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                 key={index}
                                                 className={`relative border-4 rounded-lg transition ${exampleImage === img ? "border-[#FF029A]" : "border-transparent"
                                                     }`}
-                                                onClick={() => setExampleImage(img)} // 클릭 시 선택/해제 토글
+                                                onClick={() => setExampleImage(exampleImage === img ? null : img)} // 클릭 시 선택/해제 토글
                                             >
                                                 <img
                                                     src={require(`../../../assets/template/${img}`)}
