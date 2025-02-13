@@ -55,14 +55,17 @@ const AdsDetailInsta = () => {
 
             {/* Return to Start Button */}
             <button
-                className="px-6 py-3 border border-[rgba(0,0,0,0.12)] bg-white text-pink-500 font-bold rounded-full hover:bg-pink-500 transition flex items-center space-x-2"
-                onClick={() => (window.location.href = `/ads/light/${storeBusinessNumber}`)}
+                className="px-6 py-3 border border-[rgba(0,0,0,0.12)] bg-white text-pink-500 font-bold rounded-full 
+               hover:bg-pink-500 hover:text-white transition flex items-center space-x-2"
+                onClick={() => (window.location.href = `/ads/temp/${storeBusinessNumber}`)}
             >
                 <img
                     src={require("../../../assets/icon/retry_icon.png")}
                     alt="Retry"
                     className="w-6 h-6"
-                    style={{ filter: 'invert(26%) sepia(83%) saturate(5123%) hue-rotate(330deg) brightness(91%) contrast(106%)' }}
+                    style={{
+                        filter: 'invert(26%) sepia(83%) saturate(5123%) hue-rotate(330deg) brightness(91%) contrast(106%)'
+                    }}
                 />
                 <span className="text-lg font-bold">처음으로</span>
             </button>

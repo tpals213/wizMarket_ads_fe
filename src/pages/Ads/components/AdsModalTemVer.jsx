@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback  } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -7,10 +7,11 @@ import "swiper/css/pagination"; // pagination 스타일 추가
 import "./../../../styles/swiper.css";
 import { Pagination } from "swiper/modules"; // pagination 모듈 추가
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
-import GoogleTranslator from '../../../assets/components/GoogleTranslator/GoogleTranslator'
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Clipboard, ClipboardCheck } from "lucide-react"; // 아이콘 추가
 import "./../../../styles/drag.css";
+
+import AdsSeedPrompt from './AdsSeedPrompt';
 // import * as fabric from 'fabric';
 
 
@@ -43,14 +44,32 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [selectedImages, setSelectedImages] = useState([]); // 기존 이미지 파일 업로드 
     const [isMenuOpen, setIsMenuOpen] = useState(false); // 사진 선택 메뉴 열기
 
-    // 영상 처리
-    const [selectedMedia, setSelectedMedia] = useState("사진");
-    const [videoPath, setVideoPath] = useState(null);
-    const [videoUploading, setVideoUploading] = useState(false)   // 이미지 업로드 로딩 처리
-
     // 문구 복사 처리
     const [copied, setCopied] = useState(false);
 
+
+    // 디자인 스타일 선택 값
+    const [designStyle, setDesignStyle] = useState('3D감성');
+
+    // 이미지에 맞는 시드 프롬프트 값들
+    const [seedPrompt, setSeedPrompt] = useState("");
+
+    // 템플릿 선택되게끔
+    const [exampleImage, setExampleImage] = useState(null);
+
+    // 시드 템플릿 선택
+    const handleTemplateClick = (imgObj) => {
+        if (exampleImage === imgObj.src) {
+            // 현재 선택된 이미지라면 선택 해제
+            setExampleImage(null);
+            setSeedPrompt("");
+        } else {
+            // 새로운 이미지 선택
+            setExampleImage(imgObj.src);
+            setSeedPrompt(AdsSeedPrompt[imgObj.src] || "");
+        }
+        console.log(seedPrompt)
+    };
 
     // 디자인 스타일 드래그 처리
     const scrollRef = useRef(null);
@@ -76,31 +95,57 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         isDragging.current = false;
     }, []);
 
-    // 템플릿 선택되게끔
-    const [exampleImage, setExampleImage] = useState(null);
 
-    const allImages = [
-        "image_1.png",
-        "image_2.png",
-        "image_3.png",
-        "image_4.png",
-        "image_5.png",
-        "image_6.png",
-    ];
 
     // 선택한 스타일에 따라 이미지 필터링
     const filteredImages = (() => {
-        switch (title) {
+        const baseURL = "/assets/template"; // public 폴더 내 정적 파일 경로
+        switch (designStyle) {
+            case "3D감성":
+                return [
+                    { src: `${baseURL}/3D/3D_image_1.png` },
+                    { src: `${baseURL}/3D/3D_image_2.png` },
+                    { src: `${baseURL}/3D/3D_image_3.png` },
+                    { src: `${baseURL}/3D/3D_image_4.png` },
+                    { src: `${baseURL}/3D/3D_image_5.png` },
+                    { src: `${baseURL}/3D/3D_image_6.png` },
+                    { src: `${baseURL}/3D/3D_image_7.png` },
+                    { src: `${baseURL}/3D/3D_image_8.png` },
+                    { src: `${baseURL}/3D/3D_image_9.png` },
+                    { src: `${baseURL}/3D/3D_image_10.png` },
+                ];
             case "포토실사":
-                return []; // 이미지 없음
+                return [
+                    { src: `${baseURL}/photo/photo_image_1.png` },
+                    { src: `${baseURL}/photo/photo_image_2.png` },
+                    { src: `${baseURL}/photo/photo_image_3.png` },
+                    { src: `${baseURL}/photo/photo_image_4.png` },
+                    { src: `${baseURL}/photo/photo_image_5.png` },
+                    { src: `${baseURL}/photo/photo_image_6.png` },
+                ];
             case "캐릭터만화":
-                return ["image_2.png"];
+                return [
+                    { src: `${baseURL}/character/character_image_1.png` },
+                    { src: `${baseURL}/character/character_image_2.png` },
+                ];
+            case "레트로":
+                return [
+                    { src: `${baseURL}/retro/retro_image_1.png` },
+                ];
             case "AI모델":
-                return ["image_1.png", "image_2.png", "image_4.png", "image_6.png"];
+                return [
+                    { src: `${baseURL}/aiModel/aiModel_image_1.png`},
+                ];
+            case "예술":
+                return [
+                    { src: `${baseURL}/art/art_image_1.png`},
+                    { src: `${baseURL}/art/art_image_2.png`},
+                ];
             default:
-                return allImages; // 3D감성(기본) 선택 시 모든 이미지 표시
+                return [];
         }
     })();
+
 
     useEffect(() => {
         const scrollContainer = scrollRef.current;
@@ -117,7 +162,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             scrollContainer.removeEventListener("mouseup", stopDragging);
             scrollContainer.removeEventListener("mouseleave", stopDragging);
         };
-    }, [filteredImages, onDrag, startDragging, stopDragging]); // 🎯 `filteredImages` 변경될 때도 드래그 유지
+    }, [filteredImages, onDrag, startDragging, stopDragging]);
 
 
     // 드롭 메뉴 클릭 처리
@@ -163,8 +208,6 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         setUploading(false)
 
         setGptRole('');
-        setVideoPath(null);
-        setVideoUploading(false)
         setIsMenuOpen(false);
     };
 
@@ -238,6 +281,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                         maxSalesFemaleValue,
                     };
                     setData(updatedData);
+                    setTitle('매장 소개')
                 } catch (err) {
                     console.error("초기 데이터 로드 중 오류 발생:", err);
                     setError("초기 데이터 로드 중 오류가 발생했습니다.");
@@ -313,11 +357,6 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     // 업로드한 파일로 생성
     const gernerateImageWithText = async (imageData) => {
-        if (selectedMedia === "영상") {
-            gernerateVideoWithText(imageData);
-            return;
-        }
-
         setContentLoading(true)
 
         const updatedTitle = title === "" ? "매장 소개" : title;
@@ -379,56 +418,17 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             use_option: updatedUseOption,
             title: updatedTitle,
             ai_model_option: aiModelOption,
+            seed_prompt: seedPrompt
         };
 
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/upload/content`,
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/template`,
                 basicInfo,
                 { headers: { 'Content-Type': 'application/json' } }
             );
             setContent(response.data.copyright); // 성공 시 서버에서 받은 데이터를 상태에 저장
             setCombineImageTexts(response.data.images)
-            setContentLoading(false)
-        } catch (err) {
-            console.error('저장 중 오류 발생:', err);
-        } finally {
-            setContentLoading(false)
-        }
-    };
-
-    // 업로드한 파일로 영상 생성
-    const gernerateVideoWithText = async (imageData) => {
-        setContentLoading(true)
-
-        const formData = new FormData();
-        formData.append('store_name', data.store_name);
-        formData.append('road_name', data.road_name);
-        formData.append('tag', data.detail_category_name);
-        formData.append('weather', data.main);
-        formData.append('temp', data.temp);
-        formData.append('male_base', maleMap[data.maxSalesMale] || data.maxSalesMale || "값 없음");
-        formData.append('female_base', femaleMap[data.maxSalesFemale] || data.maxSalesFemale || "값 없음");
-        formData.append('gpt_role', gptRole);
-        formData.append('detail_content', detailContent || detailContent || "값 없음");
-
-        if (imageData && imageData.file) {
-            formData.append("image", imageData.file);
-        }
-        try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/video/image`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data", // 중요: FastAPI가 이 형식을 기대
-                    },
-                }
-            );
-            setContent(response.data.copyright); // 성공 시 서버에서 받은 데이터를 상태에 저장
-            const videoPath = response.data.result_url
-            const staticIndex = videoPath.indexOf("/static/");
-            setVideoPath(videoPath.substring(staticIndex));
             setContentLoading(false)
         } catch (err) {
             console.error('저장 중 오류 발생:', err);
@@ -482,7 +482,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
         setUploading(true)
 
-        const updatedUseOption = useOption === "" ? "인스타그램 피드" : useOption;
+        const updatedUseOption = useOption === "" ? "인스타그램 스토리" : useOption;
         const formData = new FormData();
         formData.append('use_option', updatedUseOption); // 용도 추가
         formData.append('content', content); // 컨텐츠 추가
@@ -598,35 +598,14 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
     };
 
-    // 비디오 업로드 함수
-    const videoUpload = async () => {
-        setVideoUploading(true)
-        const basicInfo = {
-            video_path: videoPath,
-            content: content || "기본 내용" // 기본값 설정
-        };
 
-        try {
-            await axios.post(
-                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/upload/video`,
-                basicInfo,
-                { headers: { 'Content-Type': 'application/json' } }
-            );
-            setVideoUploading(false)
-        } catch (error) {
-            console.error("Error during video path upload:", error);
-            setVideoUploading(false)
-        } finally {
-            setVideoUploading(false)
-        }
-    };
 
     if (!isOpen) return null;
 
     return (
         <div className="inset-0 flex z-50 bg-opacity-50 h-full">
             <div className="bg-white p-6 rounded-lg shadow-lg w-full overflow-auto" onClick={closeMenu}>
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center">
                     <div className="flex flex-col w-full">
                         {/* 이미지 영역 */}
                         <div className='flex justify-between items-center'>
@@ -642,15 +621,12 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     className="w-[72px] h-[21px]"
                                 />
                             </div>
-                            <div>
-                                <GoogleTranslator />
-                            </div>
                         </div>
                         {/* 텍스트 영역 */}
-                        <h5 className="text-lg font-bold">
+                        <h5 className="text-base font-bold">
                             간편한 고객 맞춤형 자동 AI 광고 만들기
                         </h5>
-                        <h5 className="text-lg font-medium">
+                        <h5 className="text-base font-medium">
                             Create easy, personalized, automated AI ads
                         </h5>
                     </div>
@@ -675,8 +651,11 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                     <div className="w-full justify-center flex-col flex">
                         <div>
                             {/* 주제 선택 영역 */}
-                            <div className="pt-6">
-                                <p className="text-xl text-black font-medium mb-2">어떠한 홍보를 원하세요?</p>
+                            <div className="pt-6 pb-6">
+                                <p className="text-[16px] text-black font-bold leading-normal tracking-[-0.154px] font-pretendard pb-2">
+                                    어떤 홍보를 원하세요?
+                                </p>
+
                                 <div className="flex w-full bg-gray-100 rounded-lg pt-1 pb-1">
                                     {[
                                         { label: "매장홍보", value: "매장 소개" },
@@ -687,7 +666,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     ].map((option, index, array) => (
                                         <div key={option.value} className="flex items-center flex-1">
                                             <button
-                                                className={`flex-1 py-2 rounded-lg text-center transition ${title === option.value ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700"
+                                                className={`flex-1 py-2 rounded-lg font-[Pretendard] font-semibold text-center text-sm transition ${title === option.value ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700"
                                                     }`}
                                                 onClick={() => setTitle(option.value)}
                                             >
@@ -700,57 +679,8 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 </div>
                             </div>
 
-
-                            {/* 광고 채널 선택 영역 */}
-                            <div className="hidden">
-                                <fieldset className="border border-gray-300 rounded w-full px-3 py-2">
-                                    <legend className="text-xl text-gray-700 px-2">광고 채널</legend>
-                                    <select
-                                        className={`border-none w-full focus:outline-none ${useOption === "" ? "text-gray-400" : "text-gray-700"
-                                            }`}
-                                        value={useOption}
-                                        onChange={(e) => setUseOption(e.target.value)}
-                                    >
-                                        <option value="" disabled>
-                                            광고를 게시할 채널을 선택해 주세요.
-                                        </option>
-                                        <option value="인스타그램 스토리">인스타그램 스토리 (9:16)</option>
-                                        <option value="인스타그램 피드">인스타그램 피드 (1:1)</option>
-                                        <option value="문자메시지">문자메시지 (9:16)</option>
-                                        <option value="네이버 블로그">네이버 블로그 (16:9)</option>
-                                        <option value="카카오톡">카카오톡 (9:16)</option>
-                                    </select>
-                                </fieldset>
-                            </div>
-
-                            {/* 사진 영상 선택 버튼 */}
-                            <div className="hidden items-center justify-center flex-row mt-4">
-                                {useOption === "인스타그램 스토리" || useOption === "인스타그램 피드" ? (
-                                    <>
-                                        <button
-                                            onClick={() => setSelectedMedia("사진")}
-                                            className={`px-5 py-2 mr-2 border rounded cursor-pointer ${selectedMedia === "사진"
-                                                ? "bg-blue-500 text-white border-blue-500"
-                                                : "bg-gray-100 text-black border-gray-300"
-                                                }`}
-                                        >
-                                            사진
-                                        </button>
-                                        <button
-                                            onClick={() => setSelectedMedia("영상")}
-                                            className={`px-5 py-2 border rounded cursor-pointer ${selectedMedia === "영상"
-                                                ? "bg-blue-500 text-white border-blue-500"
-                                                : "bg-gray-100 text-black border-gray-300"
-                                                }`}
-                                        >
-                                            영상
-                                        </button>
-                                    </>
-                                ) : null}
-                            </div>
-
                             {/* 광고 채널 추천 받기 */}
-                            <div className="hidden mb-6 flex-col justify-center pt-2">
+                            <div className="flex-col justify-center">
                                 {adsChanLoading ? (
                                     // 로딩 상태
                                     <div className="flex items-center justify-center">
@@ -768,9 +698,13 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                 alt="채널 선택"
                                                 className="w-6 h-6"
                                             />
-                                            <p className="text-[#FF1664] font-[Pretendard] cursor-pointer text-[16px] font-bold leading-normal ml-2" onClick={generateAdsChan}>
-                                                지금 나에게 가장 효과가 좋은 광고채널은?
+                                            <p
+                                                className="text-[#FF1664] font-pretendard cursor-pointer text-[16px] font-bold leading-normal tracking-[-0.154px] ml-2"
+                                                onClick={generateAdsChan}
+                                            >
+                                                지금 나에게 가장 효과가 좋은 광고는?
                                             </p>
+
                                             {/* ▼ 버튼 (결과 생성 후) */}
                                             {adsChan && (
                                                 <span
@@ -802,18 +736,13 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                             <div className="pt-6">
                                 {/* 제목 & 아이콘 */}
                                 <div className="flex items-center gap-2 pb-4">
-                                    <p className="text-xl text-black font-medium">디자인 스타일을 선택해주세요.</p>
-                                    <img
-                                        src={require("../../../assets/icon/ai_gen_icon2.png")}
-                                        alt="파일 선택"
-                                        className="w-6 h-6"
-                                    />
+                                    <p className="text-base text-black font-bold">디자인 스타일을 선택해주세요.</p>
                                 </div>
 
                                 {/* 디자인 스타일 선택 버튼 */}
                                 <div
                                     ref={scrollRef}
-                                    className="w-full overflow-x-auto whitespace-nowrap no-scrollbar flex gap-2 px-2 pb-4 rounded-lg"
+                                    className="w-full overflow-x-auto whitespace-nowrap no-scrollbar flex gap-2 pb-4 rounded-lg"
                                 >
                                     {[
                                         { label: "내 사진", value: "내 사진", icon: "📷" },
@@ -826,12 +755,12 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     ].map((option) => (
                                         <button
                                             key={option.value}
-                                            className={`flex-shrink-0 px-4 py-2 rounded-full border transition ${title === option.value ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-500 border-gray-300"
+                                            className={`flex-shrink-0 px-4 py-1 rounded-full border transition ${designStyle === option.value ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-500 border-gray-300"
                                                 }`}
-                                            onClick={() => setTitle(option.value)}
+                                            onClick={() => setDesignStyle(option.value)}
                                         >
                                             {option.icon ? (
-                                                <span className="flex items-center gap-1">
+                                                <span className="flex items-center gap-1 text-sm">
                                                     {option.label} {option.icon}
                                                 </span>
                                             ) : (
@@ -842,54 +771,77 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 </div>
 
                                 {/* 이미지 선택 영역 */}
-                                <div className="grid grid-cols-3 gap-4 pb-2">
+                                <div className="grid grid-cols-3 gap-2 pb-2">
                                     {filteredImages.length > 0 ? (
                                         filteredImages.map((img, index) => (
                                             <div
-                                                key={index}
-                                                className={`relative border-4 rounded-lg transition ${exampleImage === img ? "border-[#FF029A]" : "border-transparent"
-                                                    }`}
-                                                onClick={() => setExampleImage(exampleImage === img ? null : img)} // 클릭 시 선택/해제 토글
+                                                key={img.src}
+                                                className={`relative border-4 rounded-lg transition ${exampleImage === img.src ? "border-[#FF029A]" : "border-transparent"}`}
+                                                onClick={() => handleTemplateClick(img)}
                                             >
                                                 <img
-                                                    src={require(`../../../assets/template/${img}`)}
+                                                    src={img.src}
                                                     alt={`이미지 ${index + 1}`}
-                                                    className="w-full h-auto object-cover cursor-pointer"
+                                                    className="w-[114px] h-[114px] object-cover cursor-pointer"
                                                 />
                                             </div>
                                         ))
                                     ) : (
-                                        <p className="col-span-3 text-gray-500 text-center">해당하는 이미지가 없습니다.</p>
+                                        <p key="no-images" className="col-span-3 text-gray-500 text-center">
+                                            해당하는 이미지가 없습니다.
+                                        </p>
                                     )}
                                 </div>
                             </div>
 
                             {/* 주제 세부 정보 선택 영역 */}
-                            <div className="w-full">
-                                <fieldset className="border border-gray-300 rounded w-full px-3">
-                                    <legend className="text-xl text-gray-700 px-2">세부정보입력</legend>
+                            <div className="w-full pt-6">
+                                <fieldset className="border border-gray-300 rounded  w-full px-3">
+                                    <legend className="text-[14px] font-bold text-[#1D1B20] px-2 font-pretendard">세부정보입력</legend>
                                     <input
                                         type="text"
                                         value={detailContent}
                                         onChange={(e) => setDetailContent(e.target.value)}
-                                        className="rounded w-full px-3 py-2"
+                                        className="rounded w-full px-3 py-2 text-sm"
                                         placeholder="추가하실 세부정보 내용이 있다면 입력해주세요."
                                     />
                                 </fieldset>
-                                <p className="flex items-center justify-between mb-2 pl-4 text-gray-400">
+                                <p className="flex items-center justify-between mb-2 pl-4 text-gray-400 text-sm">
                                     예 : 오늘 방문하신 고객들에게 테이블당 소주 1병 서비스!!
                                 </p>
                             </div>
 
                             {/* gpt 역할 영역 */}
                             <AdsAIInstructionByTitle useOption={useOption} title={title} setGptRole={setGptRole} />
+
+                            {/* 광고 채널 선택 영역 */}
+                            <div className="">
+                                <fieldset className="border border-gray-300 rounded w-full px-3 py-2">
+                                    <legend className="text-[14px] font-bold text-[#1D1B20] px-2 font-pretendard">광고채널</legend>
+                                    <select
+                                        className={`border-none w-full focus:outline-none ${useOption === "" ? "text-gray-400" : "text-gray-700"
+                                            }`}
+                                        value={useOption}
+                                        onChange={(e) => setUseOption(e.target.value)}
+                                    >
+                                        <option value="" disabled>
+                                            광고를 게시할 채널을 선택해 주세요.
+                                        </option>
+                                        <option value="인스타그램 스토리">인스타그램 스토리 (9:16)</option>
+                                        <option value="인스타그램 피드">인스타그램 피드 (1:1)</option>
+                                        <option value="문자메시지">문자메시지 (9:16)</option>
+                                        <option value="네이버 블로그">네이버 블로그 (16:9)</option>
+                                        <option value="카카오톡">카카오톡 (9:16)</option>
+                                    </select>
+                                </fieldset>
+                            </div>
                         </div>
 
 
-                        {/* 광고 생성 버튼 영역 */}
+                        {/* 생성 버튼 영역 */}
                         <div className="w-full justify-center items-center flex-col flex pb-4">
                             <div className="mb-4 pt-6 w-1/3 justify-center items-center">
-                                <div className="flex justify-center items-center bg-[#2196F3] rounded-full px-4 py-2 w-auto shadow-md">
+                                <div className="flex justify-center items-center bg-[#2196F3] rounded-full px-4 py-2 w-auto shadow-md relative">
                                     {/* 드롭 메뉴 열기 버튼 */}
                                     <button
                                         id="selectMenu"
@@ -906,7 +858,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     {/* 드롭 메뉴들 */}
                                     {isMenuOpen && (
                                         <div
-                                            className="absolute bottom-24 h-auto text-black bg-gray-100 border border-gray-100 rounded-lg shadow-lg z-10 mb-2"
+                                            className="absolute bottom-16 h-auto text-black bg-gray-100 border border-gray-300 rounded-lg shadow-lg z-10 mb-2"
                                             style={{
                                                 flexShrink: "0",
                                                 borderRadius: "0.625rem", // 약 10px
@@ -936,7 +888,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                     />
                                                 </li>
                                                 <li
-                                                    className="cursor-pointer p-2 hover:bg-[#2196F3] border-b flex justify-between items-center"
+                                                    className="cursor-pointer p-2 hover:bg-[#2196F3] flex justify-between items-center"
                                                     onClick={() => handleMenuClick("file")}
                                                 >
                                                     <span className="mr-2">파일 선택</span>
@@ -1088,68 +1040,55 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                         )}
 
 
-                        {/* 영상 및 이미지 영역 */}
+                        {/* 이미지 영역 */}
                         <div className="flex flex-col justify-center items-center rounded-[16px] text-white pb-4">
-                            {videoPath ? (
-                                // 비디오 표시
-                                <div className="w-full h-full flex justify-center items-center pt-4 pb-4">
-                                    <video
-                                        src={`${process.env.REACT_APP_FASTAPI_ADS_URL}${videoPath}`}
-                                        controls
-                                        className="max-w-full max-h-[600px] object-cover"
+                            {combineImageTexts && combineImageTexts.length > 0 && (
+                                <>
+                                    <Swiper
+                                        spaceBetween={10}
+                                        slidesPerView={1}
+                                        pagination={{
+                                            clickable: true, // 페이지네이션 클릭 활성화
+                                            el: '.custom-pagination', // 페이지네이션 커스텀 클래스 설정
+                                        }}
+                                        modules={[Pagination]}
+                                        className="w-full h-full relative"
                                     >
-                                        Your browser does not support the video tag.
-                                    </video>
-                                </div>
-                            ) : (
-                                // 이미지 슬라이더 표시
-                                combineImageTexts && combineImageTexts.length > 0 && (
-                                    <>
-                                        <Swiper
-                                            spaceBetween={10}
-                                            slidesPerView={1}
-                                            pagination={{
-                                                clickable: true, // 페이지네이션 클릭 활성화
-                                                el: '.custom-pagination', // 페이지네이션 커스텀 클래스 설정
-                                            }}
-                                            modules={[Pagination]}
-                                            className="w-full h-full relative"
-                                        >
-                                            {combineImageTexts.map((image, index) => (
-                                                <SwiperSlide key={index}>
-                                                    <div className="flex justify-center items-center relative pt-4 pb-4">
-                                                        {/* 이미지 표시 */}
+                                        {combineImageTexts.map((image, index) => (
+                                            <SwiperSlide key={index}>
+                                                <div className="flex justify-center items-center relative pt-4 pb-4">
+                                                    {/* 이미지 표시 */}
+                                                    <img
+                                                        src={image}
+                                                        alt={`Slide ${index + 1}`}
+                                                        className="max-w-full  object-cover"
+                                                    />
+
+                                                    {/* 체크 아이콘 */}
+                                                    <div
+                                                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center cursor-pointer w-16 h-16"
+                                                        onClick={() => handleImageClick(index)}
+                                                    >
                                                         <img
-                                                            src={image}
-                                                            alt={`Slide ${index + 1}`}
-                                                            className="max-w-full  object-cover"
+                                                            src={
+                                                                checkImages.includes(index)
+                                                                    ? require("../../../assets/icon/check_icon.png") // 체크된 상태
+                                                                    : require("../../../assets/icon/non_check_icon.png") // 체크되지 않은 상태
+                                                            }
+                                                            alt={checkImages.includes(index) ? "Checked" : "Non-checked"}
+                                                            className="w-full h-full"
                                                         />
-
-                                                        {/* 체크 아이콘 */}
-                                                        <div
-                                                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center cursor-pointer w-16 h-16"
-                                                            onClick={() => handleImageClick(index)}
-                                                        >
-                                                            <img
-                                                                src={
-                                                                    checkImages.includes(index)
-                                                                        ? require("../../../assets/icon/check_icon.png") // 체크된 상태
-                                                                        : require("../../../assets/icon/non_check_icon.png") // 체크되지 않은 상태
-                                                                }
-                                                                alt={checkImages.includes(index) ? "Checked" : "Non-checked"}
-                                                                className="w-full h-full"
-                                                            />
-                                                        </div>
                                                     </div>
-                                                </SwiperSlide>
-                                            ))}
-                                        </Swiper>
+                                                </div>
+                                            </SwiperSlide>
+                                        ))}
+                                    </Swiper>
 
-                                        {/* 페이지네이션 */}
-                                        <div className="custom-pagination mt-4 flex justify-center items-center"></div>
-                                    </>
-                                )
-                            )}
+                                    {/* 페이지네이션 */}
+                                    <div className="custom-pagination mt-4 flex justify-center items-center"></div>
+                                </>
+                            )
+                            }
                         </div>
 
 
@@ -1165,23 +1104,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 {uploading ? (
                                     <div className="w-6 h-6 border-4 border-white border-solid border-t-transparent rounded-full animate-spin"></div>
                                 ) : (
-                                    `${useOption !== "" ? useOption : "인스타그램 피드"}에 업로드하기`
-                                )}
-                            </button>
-                        )}
-                        {/* 비디오 공유하기 버튼 */}
-                        {videoPath && (
-                            <button
-                                className={`flex flex-col justify-center items-center self-stretch px-[22px] py-[8px] rounded-[4px] 
-                                            ${videoUploading ? "bg-[#2196F3] cursor-not-allowed" : "bg-[#2196F3] hover:bg-[#1976D2]"} 
-                                            text-white text-[16px] transition-all w-full`} // text-[16px] 추가
-                                onClick={videoUpload}
-                                disabled={videoUploading} // 로딩 중일 때 클릭 비활성화
-                            >
-                                {videoUploading ? (
-                                    <div className="w-6 h-6 border-4 border-white border-solid border-t-transparent rounded-full animate-spin"></div>
-                                ) : (
-                                    `${useOption !== "" ? useOption : "인스타그램 피드"}에 업로드하기`
+                                    `${useOption !== "" ? useOption : "인스타그램 스토리"}에 업로드하기`
                                 )}
                             </button>
                         )}
