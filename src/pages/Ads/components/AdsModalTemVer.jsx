@@ -68,7 +68,6 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             setExampleImage(imgObj.src);
             setSeedPrompt(AdsSeedPrompt[imgObj.src] || "");
         }
-        console.log(seedPrompt)
     };
 
     // 디자인 스타일 드래그 처리
@@ -1030,10 +1029,12 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     <Swiper
                                         spaceBetween={10}
                                         slidesPerView={1}
+                                        loop={true}
                                         pagination={{
                                             clickable: true, // 페이지네이션 클릭 활성화
                                             el: '.custom-pagination', // 페이지네이션 커스텀 클래스 설정
                                         }}
+                                        onSlideChange={(swiper) => handleImageClick(swiper.realIndex)} 
                                         modules={[Pagination]}
                                         className="w-full h-full relative"
                                     >
@@ -1044,7 +1045,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                     <img
                                                         src={image}
                                                         alt={`Slide ${index + 1}`}
-                                                        className="max-w-full  object-cover"
+                                                        className="max-w-full max-h-[658px] object-cover"
                                                     />
 
                                                     {/* 체크 아이콘 */}
