@@ -111,8 +111,8 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                     { src: `${baseURL}/3D/3D_image_6.png` },
                     { src: `${baseURL}/3D/3D_image_7.png` },
                     { src: `${baseURL}/3D/3D_image_8.png` },
-                    { src: `${baseURL}/3D/3D_image_9.png` },
-                    { src: `${baseURL}/3D/3D_image_10.png` },
+                    // { src: `${baseURL}/3D/3D_image_9.png` },
+                    // { src: `${baseURL}/3D/3D_image_10.png` },
                 ];
             case "포토실사":
                 return [
@@ -428,7 +428,9 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                 { headers: { 'Content-Type': 'application/json' } }
             );
             setContent(response.data.copyright); // 성공 시 서버에서 받은 데이터를 상태에 저장
-            setCombineImageTexts(response.data.images)
+            // setOriginImage(response.data.origin_image)
+            const formattedOriginImage = `data:image/png;base64,${response.data.origin_image[0]}`;
+            setCombineImageTexts([formattedOriginImage, ...response.data.images]);
             setContentLoading(false)
         } catch (err) {
             console.error('저장 중 오류 발생:', err);
@@ -812,7 +814,9 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
 
                             {/* gpt 역할 영역 */}
-                            <AdsAIInstructionByTitle useOption={useOption} title={title} setGptRole={setGptRole} />
+                            <AdsAIInstructionByTitle 
+                                useOption={useOption} title={title} setGptRole={setGptRole} 
+                            />
 
                             {/* 광고 채널 선택 영역 */}
                             <div className="">
@@ -1002,7 +1006,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 {/* 📋 클립보드 복사 버튼 */}
                                 <CopyToClipboard text={content} onCopy={() => setCopied(true)}>
                                     <button
-                                        className="absolute top-2 right-3 text-white hover:opacity-80 transition-opacity"
+                                        className="absolute top-2 right-3 text-white hover:opacity-80 transition-opacity hidden"
                                         title="내용 복사"
                                     >
                                         {copied ? (
@@ -1014,28 +1018,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                 </CopyToClipboard>
 
                                 {/* 이벤트 텍스트 렌더링 */}
-                                {title === "이벤트" ? (
-                                    (() => {
-                                        const parts = content.split(":");
-                                        const extractedTitle = parts[1]?.split("이벤트 내용")[0]?.trim() || "";
-                                        const extractedContent = parts[2]?.trim() || "";
-
-                                        return extractedTitle || extractedContent ? (
-                                            <>
-                                                {extractedTitle && (
-                                                    <p className="mb-2 text-xl">제목: {extractedTitle}</p>
-                                                )}
-                                                {extractedContent && (
-                                                    <p className="mb-2 text-xl">내용: {extractedContent}</p>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <span>&nbsp;</span>
-                                        );
-                                    })()
-                                ) : (
-                                    content ? <p className="text-xl">{content}</p> : <span>&nbsp;</span>
-                                )}
+                                {content ? <p className="text-xl">{content}</p> : <span>&nbsp;</span>}
                             </div>
                         )}
 

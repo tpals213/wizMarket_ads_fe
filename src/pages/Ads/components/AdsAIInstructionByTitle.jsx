@@ -5,12 +5,10 @@ const AdsAIInstructionByTitle = ({ useOption, title, setGptRole }) => {
     // 공통 광고 문구 템플릿을 생성하는 함수
     const generateAdRole = (title, details) => {
         return `다음과 같은 내용을 바탕으로 온라인 광고 콘텐츠를 제작하려고 합니다. 
-    잘 어울리는 광고 문구를 생성해주세요.
-    - 현재 날짜, 날씨, 시간, 계절 등의 상황에 어울릴 것
-    - 핵심고객 연령대에 잘 어울릴 것
-    ${details}
-    - 특수기호, 이모티콘은 제외할 것
-    - 주제 : ${title} 형태로 작성할 것`;
+                잘 어울리는 광고 문구를 생성해주세요.
+                ${details}
+                - 특수기호, 이모티콘은 제외할 것
+                `;
     };
 
     // useOption이 특정 값인지 확인하는 함수
@@ -31,34 +29,34 @@ const AdsAIInstructionByTitle = ({ useOption, title, setGptRole }) => {
     useEffect(() => {
         switch (title) {
             case "":
-                setGptRole(generateAdRole("매장 소개", "- 주제 세부 정보 내용을 바탕으로 15자 이내로 작성할 것"));
+                setGptRole(generateAdRole("매장 소개", "- 제목 : 15자 내외 간결하고 호기심을 유발할 수 있는 제목"));
                 break;
         
             case "매장 소개":
                 if (useOption === "") {
-                    setGptRole(generateAdRole(title, "- 주제 세부 정보 내용을 바탕으로 15자 이내로 작성할 것"));
+                    setGptRole(generateAdRole(title, "- 제목 : 15자 내외 간결하고 호기심을 유발할 수 있는 제목"));
                 } else if (isTallTemplate(useOption)) {
-                    setGptRole(generateAdRole(title, "- 주제 세부 정보 내용을 바탕으로 15자 이내로 작성할 것"));
+                    setGptRole(generateAdRole(title, "- 제목 : 15자 내외 간결하고 호기심을 유발할 수 있는 제목"));
                 } else if (isWideTemplate(useOption)) {
-                    setGptRole(generateAdRole(title, "- 주제 세부 정보 내용을 바탕으로 15자 이내로 작성할 것"));
+                    setGptRole(generateAdRole(title, "- 제목 : 15자 내외 간결하고 호기심을 유발할 수 있는 제목"));
                 } else if (isSquareTemplate(useOption)) {
-                    setGptRole(generateAdRole(title, "- 주제 세부 정보 내용을 바탕으로 15자 이내로 작성할 것"));
+                    setGptRole(generateAdRole(title, "- 제목 : 15자 내외 간결하고 호기심을 유발할 수 있는 제목"));
                 }
                 break;
         
             case "이벤트":
                 if (useOption === "") {
-                    setGptRole(generateAdRole(title, `- 제목 작성 : 주제 세부 내용에 어울리는 제목을 8자 이내로 작성할 것
-                        \n- 이벤트 내용 작성 : 주제 세부 정보 내용을 포함하는 홍보문구를 30자 이내로 작성할 것`));
+                    setGptRole(generateAdRole(title, `- 제목 : 15자 내외 간결하고 호기심을 유발할 수 있는 제목 
+                        \n내용 : 30자 내외 간결하고 함축적인 내용`));
                 } else if (isTallTemplate(useOption)) {
-                    setGptRole(generateAdRole(title, `- 제목 작성 : 주제 세부 내용에 어울리는 제목을 8자 이내로 작성할 것
-                        \n- 이벤트 내용 작성 : 주제 세부 정보 내용을 포함하는 홍보문구를 30자 이내로 작성할 것`));
+                    setGptRole(generateAdRole(title, `- 제목 : 15자 내외 간결하고 호기심을 유발할 수 있는 제목 
+                        \n내용 : 30자 내외 간결하고 함축적인 내용`));
                 } else if (isWideTemplate(useOption)) {
-                    setGptRole(generateAdRole(title, `- 제목 작성 : 주제 세부 내용에 어울리는 제목을 5자 이내로 작성할 것
-                        \n- 이벤트 내용 작성 : 주제 세부 정보 내용을 포함하는 홍보문구를 30자 이내로 작성할 것`));
+                    setGptRole(generateAdRole(title, `- 제목 : 15자 내외 간결하고 호기심을 유발할 수 있는 제목 
+                        \n내용 : 30자 내외 간결하고 함축적인 내용`));
                 } else if (isSquareTemplate(useOption)) {
-                    setGptRole(generateAdRole(title, `- 제목 작성 : 주제 세부 내용에 어울리는 제목을 5자 이내로 작성할 것
-                        \n- 이벤트 내용 작성 : 주제 세부 정보 내용을 포함하는 홍보문구를 30자 이내로 작성할 것`));
+                    setGptRole(generateAdRole(title, `- 제목 : 15자 내외 간결하고 호기심을 유발할 수 있는 제목 
+                        \n내용 : 30자 내외 간결하고 함축적인 내용`));
                 }
                 break;
         
