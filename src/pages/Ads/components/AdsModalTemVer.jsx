@@ -45,7 +45,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false); // 사진 선택 메뉴 열기
 
     const [instaCopytight, setInstaCopyright] = useState('')
-    
+
 
     // 문구 복사 처리
     const [copied, setCopied] = useState(false);
@@ -124,24 +124,36 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                     { src: `${baseURL}/photo/photo_image_4.png` },
                     { src: `${baseURL}/photo/photo_image_5.png` },
                     { src: `${baseURL}/photo/photo_image_6.png` },
+                    { src: `${baseURL}/photo/photo_image_7.png` },
                 ];
             case "캐릭터만화":
                 return [
                     { src: `${baseURL}/character/character_image_1.png` },
                     { src: `${baseURL}/character/character_image_2.png` },
+                    { src: `${baseURL}/character/character_image_3.png` },
+                    { src: `${baseURL}/character/character_image_4.png` },
                 ];
             case "레트로":
                 return [
                     { src: `${baseURL}/retro/retro_image_1.png` },
+                    { src: `${baseURL}/retro/retro_image_2.png` },
+                    { src: `${baseURL}/retro/retro_image_3.png` },
+                    { src: `${baseURL}/retro/retro_image_4.png` },
                 ];
             case "AI모델":
                 return [
                     { src: `${baseURL}/aiModel/aiModel_image_1.png` },
+                    { src: `${baseURL}/aiModel/aiModel_image_2.png` },
+                    { src: `${baseURL}/aiModel/aiModel_image_3.png` },
+                    { src: `${baseURL}/aiModel/aiModel_image_4.png` },
                 ];
             case "예술":
                 return [
                     { src: `${baseURL}/art/art_image_1.png` },
                     { src: `${baseURL}/art/art_image_2.png` },
+                    { src: `${baseURL}/art/art_image_3.png` },
+                    { src: `${baseURL}/art/art_image_4.png` },
+                    { src: `${baseURL}/art/art_image_5.png` },
                 ];
             default:
                 return [];
@@ -1047,8 +1059,9 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                     <img
                                                         src={image}
                                                         alt={`Slide ${index + 1}`}
-                                                        className="max-w-full object-cover"
+                                                        className="max-w-full object-cover border-4 border-black"
                                                     />
+
 
                                                     {/* 체크 아이콘 */}
                                                     <div

@@ -58,6 +58,15 @@ const AdsSeedPrompt = {
     `,
 
 
+    "/assets/template/photo/photo_image_7.png": `
+        Close-up of sizzling samgyeopsal (Korean pork belly) on a traditional grill, with crispy golden-brown edges and melting fat. 
+        The meat is juicy, tender, and has grill marks. Surrounding it are fresh lettuce, garlic, and a bowl of ssamjang. 
+        The smoky grill and lighting highlight the texture of the pork. 
+        Blurred background. 
+        Add text: 'Perfectly Grilled Samgyeopsal. #JuicyAndCrispy #KoreanBBQ'
+    `,
+
+
     // 캐릭터 시드 프롬프트
     "/assets/template/character/character_image_1.png": `
         A cute, chibi-style white bear with a round body and short limbs is lifting a heavy barbell overhead. 
@@ -74,12 +83,65 @@ const AdsSeedPrompt = {
         The composition balances traditional Japanese art with playful and modern vibes
     `,
 
+    "/assets/template/character/character_image_3.png": `
+        A stylish retro anime illustration capturing the essence of the 80s and 90s. 
+        The scene features a captivating young woman with long, voluminous wavy hair, elegantly styled into two charming high twin-tails. 
+        Her deep, striking purple eyes are accentuated by delicate eyeliner and a small beauty mark under one eye, adding to her distinctive and mesmerizing look. 
+        Holding a red heart-shaped lollipop between her lips, she exudes a playful yet alluring charm. 
+        She wears a stylish purple crop-top blouse with a prominent neckline, adorned with delicate frills and a thin yellow ribbon tied at the center, 
+        enhancing the vintage aesthetic. 
+        Large golden hoop earrings dangle from her ears, catching the reflections of the neon glow in the background and adding a touch of glamor. 
+        The color palette harmonizes bold shades of purple, pink, and teal, creating a retro yet vibrant atmosphere. 
+        A circular teal background contrasts with the warm pink surroundings, further highlighting the character and amplifying the nostalgic pop-art aesthetic. 
+        Clean, bold linework, strong contrast shading, and a slightly grainy texture add to the vintage charm, reminiscent of late 20th-century anime posters or album covers, 
+        bringing the retro fantasy to life.
+    `,
+
+    "/assets/template/character/character_image_4.png": `
+        An anime-style illustration inspired by Studio Ghibli’s warm and nostalgic aesthetic. 
+        The scene takes place in a cozy, vintage-style bakery or small shop, filled with an array of freshly baked goods and handwritten signs in Japanese. 
+        A young girl with braided black hair, wide expressive eyes, and a curious expression is wearing a red jacket over a white blouse. 
+        She is about to take a bite of a freshly made sandwich, her gaze locked with a young man in a blue worker's uniform and cap, 
+        who is handing her the food with a gentle yet focused expression.
+        The background is rich in detail, showcasing an old-fashioned weighing scale, shelves filled with baked goods, and a softly lit, inviting atmosphere. 
+        The art style is meticulously hand-drawn, featuring soft colors, warm lighting, and subtle film grain effects, enhancing the nostalgic feel. 
+        The composition captures a moment of simple yet heartfelt interaction, evoking the charm of classic Ghibli films such as Whisper of the Heart and From Up on Poppy Hill.
+    `,
+
     // AI 모델 시드 프롬프트
     "/assets/template/aiModel/aiModel_image_1.png": `
         A high-quality advertisement flyer image featuring a Korean woman in her late 20s with a radiant, close-up smile. 
         Her face is illuminated with soft, natural lighting, emphasizing her clear and beautiful skin. 
         The focus is on highlighting a women’s skincare lotion product, which is elegantly displayed in the composition. 
         The background subtly blends with lush green nature elements, such as delicate leaves, creating a fresh and organic atmosphere that enhances the product’s natural essence
+    `,
+
+    "/assets/template/aiModel/aiModel_image_2.png": `
+        A high-quality advertisement flyer image featuring a Korean woman in her late 20s with a radiant, close-up smile. 
+        She is on a tennis court, dressed in stylish and sporty tennis attire, holding a racket with a confident and energetic expression. 
+        The soft, natural lighting highlights her toned physique and fresh, glowing skin. 
+        The focus is on promoting a premium women's sportswear or athletic skincare product, elegantly displayed in the composition. 
+        The background subtly blends with the tennis court environment, incorporating elements such as a clean court, net, and lush greenery, 
+        creating a vibrant and dynamic atmosphere that enhances the product’s active and refreshing essence.
+    `,
+
+    "/assets/template/aiModel/aiModel_image_3.png": `
+        A high-quality advertisement image featuring a late-20s Korean male barista with a bright, radiant smile. 
+        He is wearing a stylish apron over a neat, white shirt and stands behind the café counter, holding a perfectly brewed cup of coffee. 
+        The coffee is beautifully presented with delicate latte art on top, showcasing the barista's skill. 
+        The café's interior is cozy and modern, with warm lighting, plants, and a relaxed atmosphere. 
+        The background emphasizes the inviting ambiance of the café and the barista's friendly charm. 
+        The overall atmosphere is professional yet warm and welcoming, making it the perfect advertisement to promote a cozy and high-quality coffee experience
+    `,
+
+    "/assets/template/aiModel/aiModel_image_4.png": `
+        A bright and lively advertisement image features a cheerful Korean woman with short, curly hair, enjoying a delicious Korean meal with a warm smile. 
+        She is wearing a vintage-style blouse with a large white collar and a plain design. 
+        In her left hand, she holds a pair of chopsticks, while in her right hand, she holds a spoon.
+        The table, covered with vibrant blue tiles, is filled with an abundance of traditional Korean dishes. 
+        A steaming hot pot bubbles on a portable gas stove, a sizzling stir-fry dish is generously topped with melted cheese, 
+        and a neatly rolled omelet sits alongside a variety of fresh side dishes, including kimchi, pickled radish, and perilla leaves.
+        The overall atmosphere is bright and inviting, emphasizing the joy of Korean cuisine and the warmth of sharing a meal.
     `,
 
     // 예술 스타일 시드 프롬프트
@@ -111,6 +173,42 @@ const AdsSeedPrompt = {
         The overall artistic style should maintain fluid brushstrokes, soft color blending, and organic pigment diffusion typical of traditional watercolor paintings. 
         Use a warm color palette to ensure that the golden-brown pork belly, deep red kimchi, and vibrant green scallions harmonize naturally.
     `,
+
+    "/assets/template/art/art_image_3.png": `
+        A traditional Korean folk painting (minhwa) featuring a serene and mystical landscape in delicate blue and earthy tones. 
+        Majestic pine trees with intricate branches and lush foliage frame the scene, while rolling mist drapes over towering mountains in the background. 
+        A radiant red sun glows softly in the sky, illuminating a tranquil waterfall that cascades gracefully into a flowing river. 
+        In the foreground, two elegant deer with spotted fur graze among vibrant pink and red mushrooms, symbolizing longevity and harmony. 
+        ranes with graceful wings soar above the trees, embodying wisdom and peace. 
+        The river teems with mythical turtles, their shells adorned with intricate patterns as they navigate the swirling waves. 
+        The entire composition is rendered in the refined and detailed brushwork of traditional Korean minhwa, evoking a timeless sense of beauty, nature, and balance
+    `,
+
+    "/assets/template/art/art_image_4.png": `
+        A heavily textured oil pastel painting of a freshly baked loaf of bread and a selection of fluffy, golden donuts, depicted with rich, deep strokes of warm browns, 
+        creamy whites, and soft golden hues. 
+        The crisp, flaky crust of the bread is highlighted with thick, buttery pastel layers, creating a sense of depth and warmth, 
+        while the soft interior peeks through with delicate, impasto-like strokes. 
+        The donuts glisten with a sugary glaze, applied in thick, creamy textures that capture their pillowy softness. 
+        In the background, a cozy café setting emerges with a steaming cup of coffee, its wisps of steam softly smudged into the composition, 
+        blending harmoniously into the warm and inviting atmosphere. 
+        The pastels are applied generously, giving the artwork a sculpted, almost three-dimensional feel, 
+        with bold, visible strokes enhancing the comforting and indulgent essence of freshly baked treats. 
+        The overall painting has a rustic yet cozy impressionistic style, making the bread and donuts look irresistibly warm and inviting.
+    `,
+
+    "/assets/template/art/art_image_5.png": `
+        A finely detailed pencil drawing of a delicious bakery display, capturing the warmth and richness of an inviting café filled with freshly baked bread and donuts. 
+        Delicate yet expressive pencil strokes bring each pastry to life, from the intricate shading of the crisp, golden crust of a rustic baguette to the soft, 
+        pillowy texture of a glazed donut, highlighted with precise hatching techniques. 
+        The flaky layers of a buttery croissant are depicted with subtle, carefully layered strokes, enhancing depth and realism. 
+        Soft gradients and cross-hatching techniques emphasize the gentle sheen of powdered sugar on a cream-filled pastry and the delicate swirls of icing on a cinnamon roll, 
+        blending seamlessly into the composition. 
+        The background suggests a cozy yet bustling bakery, with faintly sketched details of wooden shelves lined with artisanal loaves and steaming cups of coffee, 
+        adding to the inviting ambiance. 
+        The overall drawing has a classic yet dynamic impressionistic style, 
+        making the assortment of bread and donuts feel rich in texture and visually captivating while maintaining the elegance and depth of a monochrome pencil illustration.
+    `,
     
     // 레트로 시드 프롬프트
     "/assets/template/retro/retro_image_1.png": `
@@ -119,9 +217,46 @@ const AdsSeedPrompt = {
         The design includes a grainy texture, evoking the look of old posters. 
         Two cheerful characters, a young man and woman, hold traditional Korean beverages and snacks, smiling joyfully. 
         The typography is bold and blocky, with a mix of modern and classic retro fonts. 
-        The overall composition feels like a vintage Korean commercial from the 70s or 80s, incorporating playful star motifs and a circular framing effect to enhance the nostalgic feel.
+        The overall composition feels like a vintage Korean commercial from the 70s or 80s, 
+        incorporating playful star motifs and a circular framing effect to enhance the nostalgic feel.
+    `,
+
+    "/assets/template/retro/retro_image_2.png": `
+        A vintage, aged comic-style illustration inspired by 1980s underground and indie comics. 
+        The scene depicts a chaotic fast-food drive-thru with green, zombie-like characters in a retro yellow car, overflowing with greasy fries and burgers. 
+        One zombie, wearing a red cap, hungrily munches on fries while another in the driver's seat grips the wheel with a crazed expression. 
+        A third zombie is mid-air, flying out of the car, clutching a box of fries with one hand while flailing wildly.
+        A large anthropomorphic burger mascot with cartoonish rubber hose arms and a wide, grinning face looms over the scene, holding a spatula in one hand 
+        and a bag of fries in the other. 
+        The background features a bold, colorful fast-food restaurant sign reading “BURGER” in large red letters, with a stylized fries logo on the side. 
+        The illustration is heavily textured with halftone shading, bold black outlines, and a slightly faded, yellowed paper effect, giving it an old-school, 
+        worn comic book aesthetic. The chaotic energy, exaggerated expressions, and grainy print texture add to the rebellious, punk-inspired underground comic feel.
+    `,
+
+    "/assets/template/retro/retro_image_3.png": `
+        A vintage-style, aged cartoon illustration reminiscent of classic mid-20th-century animation, featuring a nostalgic and worn-out aesthetic. 
+        The scene showcases an anthropomorphic grey cat with large, expressive yellow eyes gazing curiously at a birthday cake. 
+        The cake, designed in classic pastel blues and pinks, has “Happy Birthday Tom” written in faded, hand-drawn lettering. 
+        The texture of the cake appears slightly rough, with visible cracks and imperfections, enhancing the old, aged effect.
+        Two mischievous mice, with exaggerated rubber hose animation features, are playfully emerging from inside the cake, their fur covered in crumbs and frosting. 
+        Their joyful expressions contrast with the cat’s cautious curiosity, adding a humorous and dynamic element to the scene. 
+        Three slightly melted candles flicker with a warm, grainy glow, illuminating the worn-out background.
+        The overall color palette consists of muted, slightly desaturated pastels, with a soft, yellowed tint giving the impression of an old printed comic or aged animation cel. 
+        The texture of the image is intentionally rough, with visible paper grain, slight discoloration, and faded ink marks, evoking the look of a well-loved, 
+        timeworn vintage cartoon illustration. The edges of the image have subtle wear and tear, completing the nostalgic and retro aesthetic.
     `,
     
+    "/assets/template/retro/retro_image_4.png": `
+        An illustration in a vibrant 80s and 90s retro anime style, set inside a trendy Japanese café. 
+        The scene features a stylish young woman with a bright smile and sparkling eyes, alongside a young man with equally expressive eyes. 
+        Her skin is shaded in a bold pink tone, contrasting with her dark, glossy hair. The young man has a short, chic hairstyle with soft bangs, 
+        while the young woman has long hair tied up with a ribbon, with a few loose strands framing her face, adding a charming touch. 
+        They are dressed in fashionable casual outfits, evoking the nostalgic vibe of 80s and 90s J-pop idols.
+        The background is decorated with a gradient of teal and pink, with floating bubbles and colorful dots enhancing the lively atmosphere. 
+        Neon-colored retro café elements, such as a vintage coffee machine, delicate porcelain teacups, and a dessert display, are arranged in the background. 
+        This illustration captures the energetic and stylish essence of a late 20th-century Japanese retro café with high-contrast shading, thick expressive linework, 
+        and a neon color palette.
+    `,
     
     
     // 3D 시드 프롬프트
