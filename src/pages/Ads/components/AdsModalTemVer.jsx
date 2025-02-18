@@ -623,7 +623,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     return (
         <div className="inset-0 flex z-50 bg-opacity-50 h-full">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full overflow-auto" onClick={closeMenu}>
+            <div className="bg-white p-6 pb-24 rounded-lg shadow-lg w-full overflow-auto" onClick={closeMenu}>
                 <div className="flex justify-between items-center">
                     <div className="flex flex-col w-full">
                         {/* 이미지 영역 */}
