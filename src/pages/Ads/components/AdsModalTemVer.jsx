@@ -44,12 +44,15 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [selectedImages, setSelectedImages] = useState([]); // 기존 이미지 파일 업로드 
     const [isMenuOpen, setIsMenuOpen] = useState(false); // 사진 선택 메뉴 열기
 
+    const [instaCopytight, setInstaCopyright] = useState('')
+    
+
     // 문구 복사 처리
     const [copied, setCopied] = useState(false);
 
 
     // 디자인 스타일 선택 값
-    const [designStyle, setDesignStyle] = useState('3D감성');
+    const [designStyle, setDesignStyle] = useState('포토실사');
 
     // 이미지에 맞는 시드 프롬프트 값들
     const [seedPrompt, setSeedPrompt] = useState("");
@@ -133,12 +136,12 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                 ];
             case "AI모델":
                 return [
-                    { src: `${baseURL}/aiModel/aiModel_image_1.png`},
+                    { src: `${baseURL}/aiModel/aiModel_image_1.png` },
                 ];
             case "예술":
                 return [
-                    { src: `${baseURL}/art/art_image_1.png`},
-                    { src: `${baseURL}/art/art_image_2.png`},
+                    { src: `${baseURL}/art/art_image_1.png` },
+                    { src: `${baseURL}/art/art_image_2.png` },
                 ];
             default:
                 return [];
@@ -430,6 +433,8 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             // setOriginImage(response.data.origin_image)
             const formattedOriginImage = `data:image/png;base64,${response.data.origin_image[0]}`;
             setCombineImageTexts([formattedOriginImage, ...response.data.images]);
+            setInstaCopyright(response.data.insta_copyright)
+            console.log(response.data.insta_copyright)
             setContentLoading(false)
         } catch (err) {
             console.error('저장 중 오류 발생:', err);
@@ -489,6 +494,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
         formData.append('content', content); // 컨텐츠 추가
         formData.append('store_name', data.store_name);
         formData.append('tag', data.detail_category_name)
+        formData.append('insta_copyright', instaCopytight)
 
         if (uploadImages.length > 0) {
             uploadImages.forEach((image) => {
@@ -746,7 +752,6 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     className="w-full overflow-x-auto whitespace-nowrap no-scrollbar flex gap-2 pb-4 rounded-lg"
                                 >
                                     {[
-                                        { label: "내 사진", value: "내 사진", icon: "📷" },
                                         { label: "3D감성", value: "3D감성" },
                                         { label: "포토실사", value: "포토실사" },
                                         { label: "캐릭터·만화", value: "캐릭터만화" },
@@ -777,7 +782,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         filteredImages.map((img, index) => (
                                             <div
                                                 key={img.src}
-                                                className={`relative border-4 rounded-lg transition ${exampleImage === img.src ? "border-[#FF029A]" : "border-transparent"}`}
+                                                className={`relative border-4 w-[114px] h-[120px] rounded-lg transition ${exampleImage === img.src ? "border-[#FF029A]" : "border-transparent"}`}
                                                 onClick={() => handleTemplateClick(img)}
                                             >
                                                 <img
@@ -813,8 +818,8 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
 
                             {/* gpt 역할 영역 */}
-                            <AdsAIInstructionByTitle 
-                                useOption={useOption} title={title} setGptRole={setGptRole} 
+                            <AdsAIInstructionByTitle
+                                useOption={useOption} title={title} setGptRole={setGptRole}
                             />
 
                             {/* 광고 채널 선택 영역 */}
@@ -1015,8 +1020,6 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         )}
                                     </button>
                                 </CopyToClipboard>
-
-                                {/* 이벤트 텍스트 렌더링 */}
                                 {content ? <p className="text-xl">{content}</p> : <span>&nbsp;</span>}
                             </div>
                         )}
@@ -1034,7 +1037,6 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                             clickable: true, // 페이지네이션 클릭 활성화
                                             el: '.custom-pagination', // 페이지네이션 커스텀 클래스 설정
                                         }}
-                                        onSlideChange={(swiper) => handleImageClick(swiper.realIndex)} 
                                         modules={[Pagination]}
                                         className="w-full h-full relative"
                                     >
@@ -1045,7 +1047,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                     <img
                                                         src={image}
                                                         alt={`Slide ${index + 1}`}
-                                                        className="max-w-full max-h-[658px] object-cover"
+                                                        className="max-w-full object-cover"
                                                     />
 
                                                     {/* 체크 아이콘 */}
@@ -1074,6 +1076,18 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                             )
                             }
                         </div>
+
+                        {instaCopytight && instaCopytight.length > 0 && (
+                            <textarea
+                                value={instaCopytight} // 생성된 텍스트 표시
+                                onChange={(e) => setInstaCopyright(e.target.value)} // 수정 가능
+                                className="w-full p-4 rounded-[16px] text-black bg-transparent border border-gray-300 resize-none"
+                                style={{
+                                    fontSize: "14px",
+                                    minHeight: "150px",
+                                }}
+                            />
+                        )}
 
 
                         {/* 공유하기 버튼 */}
