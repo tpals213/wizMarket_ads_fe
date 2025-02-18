@@ -1090,17 +1090,22 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                             }
                         </div>
 
-                        {instaCopytight && instaCopytight.length > 0 && (
-                            <textarea
-                                value={instaCopytight} // 생성된 텍스트 표시
-                                onChange={(e) => setInstaCopyright(e.target.value)} // 수정 가능
-                                className="w-full p-4 rounded-[16px] text-black bg-transparent border border-gray-300 resize-none"
-                                style={{
-                                    fontSize: "14px",
-                                    minHeight: "150px",
-                                }}
-                            />
-                        )}
+                        <div className='pb-4'>
+                            {instaCopytight && instaCopytight.length > 0 && (
+                                <>
+                                    <p>인스타그램 게시물 내용</p>
+                                    <textarea
+                                        value={instaCopytight}
+                                        onChange={(e) => setInstaCopyright(e.target.value)}
+                                        className="w-full p-4 rounded-[16px] text-black bg-transparent border border-gray-300 resize-none"
+                                        style={{
+                                            fontSize: "14px",
+                                            minHeight: "150px",
+                                        }}
+                                    />
+                                </>
+                            )}
+                        </div>
 
 
                         {/* 공유하기 버튼 */}
