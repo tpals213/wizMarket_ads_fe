@@ -11,7 +11,7 @@ const AdsDetailInsta = () => {
     const uploadImage = uploadImages[0];
 
     return (
-        <div className="pt-[28px] pb-[28px] pl-[20px] pr-[20px] flex flex-col items-center bg-white w-full h-full">
+        <div className="pt-7 pb-24 px-5 flex flex-col items-center bg-white w-full h-full">
             {/* Title */}
             <h2 className="font-bold text-2xl">
                 <span className="text-2xl" style={{ color: '#FF1664' }}>{instaName}</span> {useOption}에

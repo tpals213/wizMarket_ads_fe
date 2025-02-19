@@ -404,6 +404,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             );
             setContent(response.data.copyright); // 성공 시 서버에서 받은 데이터를 상태에 저장
             setCombineImageTexts(response.data.images)
+            setInstaCopyright(response.data.insta_copyright)
             setContentLoading(false)
         } catch (err) {
             console.error('저장 중 오류 발생:', err);
@@ -446,7 +447,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
             const formattedOriginImage = `data:image/png;base64,${response.data.origin_image[0]}`;
             setCombineImageTexts([formattedOriginImage, ...response.data.images]);
             setInstaCopyright(response.data.insta_copyright)
-            console.log(response.data.insta_copyright)
+
             setContentLoading(false)
         } catch (err) {
             console.error('저장 중 오류 발생:', err);
