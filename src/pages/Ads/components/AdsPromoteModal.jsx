@@ -36,9 +36,18 @@ const AdsPromoteModal = () => {
                             <p className="text-xl font-semibold text-gray-600">
                                 {content}
                             </p>
-                            <p className="text-l font-semibold text-gray-400 pt-4">
-                                {roadName}
-                            </p>
+                            {/* roadName과 아이콘을 가로로 정렬 */}
+                            <div className="flex items-center pt-4 space-x-2">
+                                <p className="text-l font-semibold text-gray-400">
+                                    {roadName}
+                                </p>
+                                <img
+                                    src={require("../../../assets/icon/language_icon.png")}
+                                    alt="매장 검색"
+                                    className="cursor-pointer"
+                                    onClick={() => window.open(`https://map.kakao.com/?q=${encodeURIComponent(roadName)}`, "_blank")}
+                                />
+                            </div>
                         </div>
                     </>
                 </div>
