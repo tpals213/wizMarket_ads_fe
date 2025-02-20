@@ -8,6 +8,7 @@ import AdsDetailInsta from "./components/AdsDetailInsta";
 import AdsModalTemVer from "./components/AdsModalTemVer";
 
 import { useParams } from "react-router-dom";
+import AdsModalTemVer2 from "./components/AdsModalTemVer2";
 
 const AdsModalPage = ({ type }) => {
     const { storeBusinessNumber } = useParams();
@@ -38,8 +39,14 @@ const AdsModalPage = ({ type }) => {
                     onClose={handleClose}
                     storeBusinessNumber={storeBusinessNumber}
                 />
-            ): type === "temp" ? (
+            ) : type === "temp" ? (
                 <AdsModalTemVer
+                    isOpen={true}
+                    onClose={handleClose}
+                    storeBusinessNumber={storeBusinessNumber}
+                />
+            ) : type === "temp2" ? (
+                <AdsModalTemVer2
                     isOpen={true}
                     onClose={handleClose}
                     storeBusinessNumber={storeBusinessNumber}

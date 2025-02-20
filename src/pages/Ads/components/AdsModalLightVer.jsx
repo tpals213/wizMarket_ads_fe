@@ -43,6 +43,8 @@ const AdsModalLightVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [selectedImages, setSelectedImages] = useState([]); // 기존 이미지 파일 업로드 
     const [isMenuOpen, setIsMenuOpen] = useState(false); // 사진 선택 메뉴 열기
 
+    console.log(selectedImages);
+
     // 영상 처리
     const [selectedMedia, setSelectedMedia] = useState("사진");
     const [videoPath, setVideoPath] = useState(null);
