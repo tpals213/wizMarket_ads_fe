@@ -1,20 +1,22 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Swiper, SwiperSlide } from "swiper/react";
+
 import "swiper/css";
 import "swiper/css/pagination"; // pagination 스타일 추가
 import "./../../../styles/swiper.css";
-import { Pagination } from "swiper/modules"; // pagination 모듈 추가
+
 import AdsAIInstructionByTitle from './AdsAIInstructionByTitle';
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Clipboard, ClipboardCheck } from "lucide-react"; // 아이콘 추가
 import "./../../../styles/drag.css";
+import AdsSwiper from './AdsSwiper';
 
 import AdsSeedPrompt from './AdsSeedPrompt';
-import { Template1, Template2, Template3 } from '../template';
+
 // import * as fabric from 'fabric';
 import html2canvas from "html2canvas";
+
 
 const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     const navigate = useNavigate();
@@ -37,7 +39,6 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     const [content, setContent] = useState(''); // gpt 문구 생성 결과물
     const [contentLoading, setContentLoading] = useState(false) // gpt 문구 생성 로딩
-    const [combineImageTexts, setCombineImageTexts] = useState([]);  // 템플릿들
     const [checkImages, setCheckImages] = useState([]); // 선택된 이미지들의 인덱스
     const [uploadImages, setUploadImages] = useState([]); // 선택된 이미지들
     const [uploading, setUploading] = useState(false)   // 이미지 업로드 로딩 처리
@@ -46,6 +47,13 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false); // 사진 선택 메뉴 열기
 
     const [instaCopytight, setInstaCopyright] = useState('')
+
+    // 프론트 이미지 처리
+    const [convertTempImg, setConvertTempImg] = useState([]);
+    const [isReadyToUpload, setIsReadyToUpload] = useState(false);
+    const [imageTemplateList, setImageTemplateList] = useState([]);
+
+
 
 
     // 문구 복사 처리
@@ -217,7 +225,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
 
         setContent("")
         setContentLoading(false);
-        setCombineImageTexts([])
+
         setCheckImages([])
         setUploadImages([])
         setUploading(false)
@@ -243,11 +251,11 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     }), []);
 
 
-    useEffect(() => {
-        if (isOpen) {
-            resetModalState();
-        }
-    }, [isOpen]);
+    // useEffect(() => {
+    //     if (isOpen) {
+    //         resetModalState();
+    //     }
+    // }, [isOpen]);
 
 
     useEffect(() => {
@@ -324,7 +332,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             } else {
                 // 새로운 이미지를 추가로 선택
                 setCheckImages([...checkImages, index]);
-                setUploadImages([...uploadImages, combineImageTexts[index]]);
+                setUploadImages([...uploadImages, imageTemplateList[index]]);
             }
         } else {
             // 단일 선택만 가능
@@ -335,7 +343,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             } else {
                 // 새로운 이미지를 선택
                 setCheckImages([index]);
-                setUploadImages([combineImageTexts[index]]);
+                setUploadImages([imageTemplateList[index]]);
             }
         }
     };
@@ -404,7 +412,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                 }
             );
             setContent(response.data.copyright); // 성공 시 서버에서 받은 데이터를 상태에 저장
-            setCombineImageTexts(response.data.images)
+            
             setContentLoading(false)
         } catch (err) {
             console.error('저장 중 오류 발생:', err);
@@ -446,7 +454,8 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             // setOriginImage(response.data.origin_image)
             const formattedOriginImage = `data:image/png;base64,${response.data.origin_image[0]}`;
             // console.log(response.data);
-            setCombineImageTexts([formattedOriginImage, ...response.data.images]);
+            
+            setImageTemplateList([formattedOriginImage])
             setInstaCopyright(response.data.insta_copyright)
             setContentLoading(false)
         } catch (err) {
@@ -457,97 +466,116 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
     };
 
-    // 선택 이미지 해당 체널에 업로드
+    // 선택한 템플릿 업로드
     const onUpload = async () => {
-        // 카카오 업로드
-        if (useOption === "카카오톡") {
-            console.log("카카오톡이 선택되었습니다.");
-
-            // 카카오톡 공유 로직
-            const kakaoJsKey = process.env.REACT_APP_KAKAO_JS_API_KEY;
-            if (!kakaoJsKey) {
-                console.error("Kakao JavaScript Key가 설정되지 않았습니다.");
-                return;
-            }
-
-            if (!window.Kakao) {
-                const script = document.createElement("script");
-                script.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
-                script.async = true;
-                script.onload = () => {
-                    if (!window.Kakao.isInitialized()) {
-                        window.Kakao.init(kakaoJsKey);
-                    }
-                    shareOnKakao();
-                };
-                document.body.appendChild(script);
-            } else {
-                if (!window.Kakao.isInitialized()) {
-                    window.Kakao.init(kakaoJsKey);
-                }
-                shareOnKakao();
-            }
-
-            return; // 카카오톡 처리 후 다른 로직 실행 방지
+        const index = checkImages[0];
+    
+        let useOptionPath = '';
+        let titlePath = '';
+    
+        if (title === "매장 소개") {
+            titlePath = 'intro';
+        } else if (title === "이벤트") {
+            titlePath = 'event';
         }
-
-        if (useOption === "네이버 블로그") {
-            window.open(
-                "https://nid.naver.com/nidlogin.login?url=https%3A%2F%2Fsection.blog.naver.com%2FBlogHome.naver",
-                "_blank",
-                `width=${window.screen.availWidth},height=${window.screen.availHeight},top=0,left=0,noopener,noreferrer`
-            );
-            return;
+    
+        if (useOption === "인스타그램 스토리" || useOption === "카카오톡" || useOption === "") {
+            useOptionPath = '4to7';
+        } else if (useOption === "인스타그램 피드") {
+            useOptionPath = '1to1';
         }
-
-        setUploading(true)
-
+        console.log(123)
+        const templateElement = document.getElementById(`template_${titlePath}_${useOptionPath}_${index}`);
+        console.log(templateElement)
+        if (templateElement) {
+            const canvas = await html2canvas(templateElement);
+            const imageData = canvas.toDataURL("image/png");
+            setConvertTempImg(imageData);
+            // ✅ 카카오톡 공유는 `shareOnKakao`에서 처리하도록 이동
+            if (useOption === "카카오톡") {
+                console.log("카카오톡이 선택되었습니다.");
+                shareOnKakao(imageData);
+                return; // 카카오톡 처리 후 다른 로직 실행 방지
+            }
+            // ✅ 상태 업데이트 후 업로드를 기다리기 위해 `isReadyToUpload`를 true로 변경
+            setIsReadyToUpload(true);
+        }
+    };
+    
+    
+    // ✅ `uploadData`를 `useCallback`으로 감싸서 의존성 배열 문제 해결
+    const uploadData = useCallback(async () => {
+        if (!isReadyToUpload || !convertTempImg) return;
+    
+        console.log("업로드 시작...");
+    
+        setUploading(true);
+    
         const updatedUseOption = useOption === "" ? "인스타그램 스토리" : useOption;
         const formData = new FormData();
-        formData.append('use_option', updatedUseOption); // 용도 추가
-        formData.append('content', content); // 컨텐츠 추가
-        formData.append('store_name', data.store_name);
-        formData.append('tag', data.detail_category_name)
-        formData.append('insta_copyright', instaCopytight)
-
-        if (uploadImages.length > 0) {
-            uploadImages.forEach((image) => {
-                const extension = getBase64Extension(image); // 확장자 추출
-                const blob = base64ToBlob(image, `image/${extension}`); // Base64 → Blob 변환
-                formData.append("upload_images", blob, `image.${extension}`); // 동일한 키로 추가
-            });
+        formData.append("use_option", updatedUseOption);
+        formData.append("content", content);
+        formData.append("store_name", data.store_name);
+        formData.append("tag", data.detail_category_name);
+        formData.append("insta_copyright", instaCopytight);
+    
+        if (convertTempImg) {
+            const extension = getBase64Extension(convertTempImg);
+            const blob = base64ToBlob(convertTempImg, `image/${extension}`);
+            formData.append("upload_images", blob, `image.${extension}`);
         }
-        // for (const [key, value] of formData.entries()) {
-        //     console.log(`Key: ${key}, Value:`, value);
-        // }
-
+    
+        for (const [key, value] of formData.entries()) {
+            console.log(`Key: ${key}, Value:`, value);
+        }
+    
         try {
             const response = await axios.post(
                 `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/upload`,
                 formData,
-                { headers: { 'Content-Type': 'multipart/form-data' } }
+                { headers: { "Content-Type": "multipart/form-data" } }
             );
-            // 페이지 이동
+    
             if (useOption === "" || useOption === "인스타그램 피드" || useOption === "인스타그램 스토리") {
                 const [instaName, instaFollowers, instaCount] = response.data;
-                navigate('/ads/detail/insta', {
+                navigate("/ads/detail/insta", {
                     state: {
                         instaName,
                         instaFollowers,
                         instaCount,
-                        uploadImages,
+                        convertTempImg,
                         updatedUseOption,
-                        storeBusinessNumber
-                    }
+                        storeBusinessNumber,
+                    },
                 });
             }
         } catch (err) {
-            setUploading(false)
-            console.error("업로드 중 오류 발생:", err); // 발생한 에러를 콘솔에 출력
+            console.error("업로드 중 오류 발생:", err);
         } finally {
-            setUploading(false)
+            setUploading(false);
+            setIsReadyToUpload(false); // 업로드 완료 후 초기화
         }
-    };
+    }, [
+        convertTempImg,
+        isReadyToUpload,
+        content,
+        instaCopytight,
+        data,
+        navigate,
+        storeBusinessNumber,
+        useOption,
+    ]);
+    
+    // ✅ `uploadData` 실행 `useEffect` (data가 `null`이 아닐 때만 실행)
+
+    useEffect(() => {
+        if (!isReadyToUpload || !convertTempImg || !data) return; 
+        uploadData();
+    }, [isReadyToUpload, convertTempImg, data, uploadData]); 
+
+    
+    
+
 
     // Base64 데이터를 Blob으로 변환하는 유틸리티 함수
     const base64ToBlob = (base64, contentType = "image/png") => {
@@ -568,13 +596,42 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     };
 
     // 카카오톡 공유 함수
-    const shareOnKakao = async () => {
-        if (!uploadImages) {
+    const shareOnKakao = async (imageData) => {
+        if (!imageData) {
             console.error("업로드할 이미지가 없습니다.");
             return;
         }
-
+    
+        console.log("카카오톡 공유 시작...");
+    
+        // ✅ 카카오 SDK가 정상적으로 로드되었는지 확인 후 초기화
+        const kakaoJsKey = process.env.REACT_APP_KAKAO_JS_API_KEY;
+        if (!kakaoJsKey) {
+            console.error("Kakao JavaScript Key가 설정되지 않았습니다.");
+            return;
+        }
+    
+        if (!window.Kakao) {
+            console.log("카카오 SDK 로드 중...");
+            const script = document.createElement("script");
+            script.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
+            script.async = true;
+            script.onload = () => {
+                if (!window.Kakao.isInitialized()) {
+                    window.Kakao.init(kakaoJsKey);
+                }
+                shareOnKakao(imageData); // ✅ 스크립트 로드 후 공유 실행
+            };
+            document.body.appendChild(script);
+            return;
+        }
+    
+        if (!window.Kakao.isInitialized()) {
+            window.Kakao.init(kakaoJsKey);
+        }
+    
         try {
+            // ✅ 이미지 변환 후 Blob 형태로 변환
             const base64ToBlob = (base64Data) => {
                 const byteString = atob(base64Data.split(",")[1]);
                 const mimeString = base64Data.split(",")[0].split(":")[1].split(";")[0];
@@ -584,57 +641,58 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                 }
                 return new Blob([byteArray], { type: mimeString });
             };
-
-            const blob = base64ToBlob(uploadImages[0]);
+    
+            const blob = base64ToBlob(imageData);
             const file = new File([blob], "uploaded_image.png", { type: "image/png" });
-
-            const response = await window.Kakao.Share.uploadImage({
-                file: [file],
-            });
-
+    
+            // ✅ 카카오 이미지 업로드
+            const response = await window.Kakao.Share.uploadImage({ file: [file] });
+    
+            if (!response || !response.infos || !response.infos.original || !response.infos.original.url) {
+                console.error("카카오 이미지 업로드 실패:", response);
+                return;
+            }
+    
             const uploadedImageUrl = response.infos.original.url;
-
-            // adsInfo URL 생성
+    
+            // ✅ 공유할 광고 정보 URL 생성
             const adsInfoUrl = `?title=${encodeURIComponent(title || "기본 제목")}
                 &content=${encodeURIComponent(content || "기본 내용")}
-                &storeName=${encodeURIComponent(data.store_name || "기본 매장명")}
-                &roadName=${encodeURIComponent(data.road_name || "기본 매장 주소")}
+                &storeName=${encodeURIComponent(data?.store_name || "기본 매장명")}
+                &roadName=${encodeURIComponent(data?.road_name || "기본 매장 주소")}
                 &imageUrl=${encodeURIComponent(uploadedImageUrl || "기본 내용")}`;
-
-            // 카카오톡 공유
+    
+            // ✅ 카카오톡 공유 실행
             window.Kakao.Share.sendCustom({
                 templateId: 115008, // 생성한 템플릿 ID
                 templateArgs: {
                     title: title || "기본 제목",
                     imageUrl: uploadedImageUrl,
-                    storeName: data.store_name || "기본 매장명",
+                    storeName: data?.store_name || "기본 매장명",
                     content: content || "기본 내용",
                     adsInfo: adsInfoUrl,
                     store_business_id: storeBusinessNumber,
                 },
             });
-
+    
         } catch (error) {
             console.error("카카오톡 공유 중 오류 발생:", error);
         }
     };
+    
+    
 
-    const [convertTempImg, setConvertTempImg] = useState(null);
+    // const convertTempToImg = async (index) => {
+    //     console.log(index)
+    //     const templateElement = document.getElementById(`template-${index}`);
+    //     if (templateElement) {
+    //         const canvas = await html2canvas(templateElement);
+    //         const imageData = canvas.toDataURL("image/png");
+    //         console.log("템플릿 캡처된 이미지 리스트:", imageData);
+    //         setConvertTempImg(imageData);
 
-    const convertTempToImg = async (index) => {
-        console.log(index)
-
-        const templateElement = document.getElementById(`template-${index}`);
-
-        if (templateElement) {
-            const canvas = await html2canvas(templateElement);
-            const imageData = canvas.toDataURL("image/png");
-            console.log("템플릿 캡처된 이미지 리스트:", imageData);
-            setConvertTempImg(imageData);
-
-        }
-
-    };
+    //     }
+    // };
 
     if (!isOpen) return null;
 
@@ -1011,7 +1069,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         ) : (
                                             <img
                                                 src={
-                                                    combineImageTexts && combineImageTexts.length > 0
+                                                    imageTemplateList && imageTemplateList.length > 0
                                                         ? require("../../../assets/icon/retry_icon.png")
                                                         : require("../../../assets/icon/ai_gen_icon.png")
                                                 }
@@ -1055,126 +1113,25 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
 
 
                         {/* 이미지 영역 */}
-                        <div className="flex flex-col justify-center items-center rounded-[16px] text-white pb-4">
-                            {combineImageTexts && combineImageTexts.length > 0 && (
-                                <>
-                                    <Swiper
-                                        spaceBetween={10}
-                                        slidesPerView={1}
-                                        loop={true}
-                                        pagination={{
-                                            clickable: true, // 페이지네이션 클릭 활성화
-                                            el: '.custom-pagination', // 페이지네이션 커스텀 클래스 설정
-                                        }}
-                                        modules={[Pagination]}
-                                        className="w-full h-full relative"
-                                    >
-                                        {/* 원본 */}
-                                        <SwiperSlide key={1}>
-                                            <div className="flex justify-center items-center relative pt-4 pb-4">
-                                                <img
-                                                    src={combineImageTexts[0]}
-                                                    alt={"원본"}
-                                                    className="max-w-full object-cover border-4 border-black"
-                                                />
+                        <AdsSwiper
+                            imageTemplateList={imageTemplateList}
+                            content={content}
+                            title={title}
+                            useOption={useOption}
+                            checkImages={checkImages}
+                            handleImageClick={handleImageClick}
+                            storeName={data.store_name}
+                            roadName={data.road_name}
+                        />
 
-
-                                                {/* 체크 아이콘 */}
-                                                <div
-                                                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center cursor-pointer w-16 h-16"
-                                                    onClick={() => handleImageClick(1)}
-                                                >
-                                                    <img
-                                                        src={
-                                                            checkImages.includes(1)
-                                                                ? require("../../../assets/icon/check_icon.png")
-                                                                : require("../../../assets/icon/non_check_icon.png")
-                                                        }
-                                                        alt={checkImages.includes(1) ? "Checked" : "Non-checked"}
-                                                        className="w-full h-full"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </SwiperSlide>
-
-                                        {/* 템플릿 적용 */}
-                                        <SwiperSlide key={2}>
-                                            <div className="flex justify-center items-center relative pt-4 pb-4">
-                                                <Template1 imageUrl={combineImageTexts[0]} text={content} />
-
-                                                <div
-                                                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center cursor-pointer w-16 h-16"
-                                                    onClick={() => handleImageClick(2)}
-                                                >
-                                                    <img
-                                                        src={
-                                                            checkImages.includes(2)
-                                                                ? require("../../../assets/icon/check_icon.png")
-                                                                : require("../../../assets/icon/non_check_icon.png")
-                                                        }
-                                                        alt={checkImages.includes(2) ? "Checked" : "Non-checked"}
-                                                        className="w-full h-full"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </SwiperSlide>
-                                        <SwiperSlide key={3}>
-                                            <div className="flex justify-center items-center relative pt-4 pb-4">
-                                                <Template2 imageUrl={combineImageTexts[0]} text={content} />
-
-                                                <div
-                                                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center cursor-pointer w-16 h-16"
-                                                    onClick={() => handleImageClick(3)}
-                                                >
-                                                    <img
-                                                        src={
-                                                            checkImages.includes(3)
-                                                                ? require("../../../assets/icon/check_icon.png")
-                                                                : require("../../../assets/icon/non_check_icon.png")
-                                                        }
-                                                        alt={checkImages.includes(4) ? "Checked" : "Non-checked"}
-                                                        className="w-full h-full"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </SwiperSlide>
-                                        <SwiperSlide key={4}>
-                                            <div className="flex justify-center items-center relative pt-4 pb-4">
-                                                <Template3 imageUrl={combineImageTexts[0]} text={content} />
-
-                                                <div
-                                                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center cursor-pointer w-16 h-16"
-                                                    onClick={() => handleImageClick(4)}
-                                                >
-                                                    <img
-                                                        src={
-                                                            checkImages.includes(4)
-                                                                ? require("../../../assets/icon/check_icon.png")
-                                                                : require("../../../assets/icon/non_check_icon.png")
-                                                        }
-                                                        alt={checkImages.includes(4) ? "Checked" : "Non-checked"}
-                                                        className="w-full h-full"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </SwiperSlide>
-                                    </Swiper>
-
-                                    {/* 페이지네이션 */}
-                                    <div className="custom-pagination mt-4 flex justify-center items-center"></div>
-                                </>
-                            )
-                            }
-                        </div>
-
-                        <div className="flex justify-center">
+                        {/* <div className="flex justify-center">
                             <button onClick={() => convertTempToImg(1)} className='p-4 bg-slate-600'>변환하기</button>
                         </div>
                         {!!convertTempImg && (
                             <div className="flex justify-center items-center relative pt-4 pb-4">
                                 <img src={convertTempImg} alt='변환된 템플릿 이미지'></img>
                             </div>
-                        )}
+                        )} */}
 
                         <div className='pb-4'>
                             {instaCopytight && instaCopytight.length > 0 && (

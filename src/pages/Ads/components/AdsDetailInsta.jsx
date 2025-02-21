@@ -8,7 +8,7 @@ const AdsDetailInsta = () => {
     if (!instaName || !instaFollowers || !instaCount) {
         return <p className="text-red-500">데이터를 불러오지 못했습니다.</p>;
     }
-    const uploadImage = uploadImages[0];
+    const uploadImage = uploadImages;
 
     return (
         <div className="pt-7 pb-24 px-5 flex flex-col items-center bg-white w-full h-full">
@@ -73,7 +73,7 @@ const AdsDetailInsta = () => {
             <button
                 className="px-6 py-3 border border-[rgba(0,0,0,0.12)] bg-white text-pink-500 font-bold rounded-full 
             hover:bg-pink-500 hover:text-white transition flex items-center space-x-2 w-full max-w-xs sm:max-w-sm md:max-w-md"
-                onClick={() => (window.location.href = `/ads/temp/${storeBusinessNumber}`)}
+                onClick={() => (window.location.href = `/ads/temp2/${storeBusinessNumber}`)}
             >
                 <img
                     src={require("../../../assets/icon/retry_icon.png")}

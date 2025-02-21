@@ -1,6 +1,6 @@
 export const Template2 = ({ imageUrl, text }) => {
     return (
-        <div className="template-2">
+        <div id="template-2">
             <img
                 src={imageUrl}
                 alt="Template 2"
