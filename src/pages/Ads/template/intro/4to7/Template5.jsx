@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-const Template5 = ({ imageUrl, text, storeName, roadName }) => {
+const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
 
@@ -62,13 +62,34 @@ const Template5 = ({ imageUrl, text, storeName, roadName }) => {
                 cropX, cropY, targetWidth, targetHeight, // 크롭된 부분
                 0, 0, targetWidth, targetHeight // 최종 캔버스에 배치
             );
-    
-            // 최종 이미지 저장
+
+            // ✅ 선 추가 (roadName 기준)
+            const roadNameTop = Math.round(1650 / 1792 * canvasHeight); // roadName 위치 계산
+            const leftPadding = 200; // roadName에서 10px 떨어진 거리
+            const rightPadding = 200; // 오른쪽 끝에서 10px 떨어진 거리
+
+            ctx.strokeStyle = "black"; // 선 색상
+            ctx.lineWidth = 2; // 선 두께
+
+            // 왼쪽 선: 이미지 왼쪽에서 roadName 왼쪽 - 10까지
+            const roadNameLeft = canvas.width / 2 - ctx.measureText(roadName).width/2 ;
+            ctx.beginPath();
+            ctx.moveTo(0, roadNameTop);
+            ctx.lineTo(roadNameLeft - leftPadding, roadNameTop);
+            ctx.stroke();
+
+            // 오른쪽 선: roadName 오른쪽 + 10에서 이미지 오른쪽 - 10까지
+            const roadNameRight = canvas.width / 2 + ctx.measureText(roadName).width/2 ;
+            ctx.beginPath();
+            ctx.moveTo(roadNameRight + rightPadding, roadNameTop);
+            ctx.lineTo(canvas.width - 10, roadNameTop);
+            ctx.stroke();
+
+            // ✅ 최종 이미지 저장
             const finalImageUrl = canvas.toDataURL("image/png");
             setFinalImage(finalImageUrl);
         };
-    }, [imageUrl]);
-    
+    }, [imageUrl, roadName]);
 
     return (
         <div id="template_intro_4to7_5" className="relative">
@@ -85,18 +106,29 @@ const Template5 = ({ imageUrl, text, storeName, roadName }) => {
 
             {/* ✅ 텍스트 오버레이 */}
             <div className="absolute"
-                style={{ top: `${(1418 / 1720) * 100}%`, left: `${(88 / 1024) * 100}%`}}>
-                <p className="text-black text-[24px] text-center">{text}</p>
+                style={{ top: `${(1418 / 1792) * 100}%`, left: `${(88 / 1024) * 100}%`}}>
+                <p className="text-white text-left overflow-hidden text-ellipsis"
+                style={{
+                    color: "#000",
+                    fontFeatureSettings: "'case' on",
+                    fontFamily: "Pretendard",
+                    fontSize: "24px",
+                    fontStyle: "normal",
+                    fontWeight: 200,
+                    lineHeight: "55px",
+                    
+                }}>
+                    {text}
+                </p>
             </div>
             <div className="absolute"
-                style={{ top: `${(1218 / 1720) * 100}%`, left: `${(88 / 1024) * 100}%`}}>
+                style={{ top: `${(1218 / 1792) * 100}%`, left: `${(88 / 1024) * 100}%`}}>
                 <p className="text-black text-[64px] text-center">{storeName}</p>
             </div>
-            <div className="absolute"
-                style={{ top: `${(1620 / 1720) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-black text-lg text-center">{roadName}</p>
+            <div className="absolute w-full"
+                style={{ top: `${(1620 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
+                <p className="text-black text-opacity-40 text-lg text-center">{roadName}</p>
             </div>
-
 
             {/* ✅ Canvas (숨김 처리) */}
             <canvas ref={canvasRef} style={{ display: "none" }} />

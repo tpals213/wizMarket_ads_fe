@@ -47,6 +47,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false); // 사진 선택 메뉴 열기
 
     const [instaCopytight, setInstaCopyright] = useState('')
+    const [weekday, setWeekday] = useState(''); // 요일
 
     // 프론트 이미지 처리
     const [convertTempImg, setConvertTempImg] = useState([]);
@@ -305,6 +306,12 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                     };
                     setData(updatedData);
                     setTitle('매장 소개')
+
+                    // ✅ 오늘의 요일 설정
+                    const daysOfWeek = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+                    const today = new Date().getDay(); // 0(일) ~ 6(토)
+                    setWeekday(daysOfWeek[today]);
+
                 } catch (err) {
                     console.error("초기 데이터 로드 중 오류 발생:", err);
                     setError("초기 데이터 로드 중 오류가 발생했습니다.");
@@ -484,9 +491,9 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         } else if (useOption === "인스타그램 피드") {
             useOptionPath = '1to1';
         }
-        console.log(123)
+
         const templateElement = document.getElementById(`template_${titlePath}_${useOptionPath}_${index}`);
-        console.log(templateElement)
+
         if (templateElement) {
             const canvas = await html2canvas(templateElement);
             const imageData = canvas.toDataURL("image/png");
@@ -1122,6 +1129,9 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                             handleImageClick={handleImageClick}
                             storeName={data.store_name}
                             roadName={data.road_name}
+                            weather={data.main}
+                            tag={data.detail_category_name}
+                            weekday={weekday}
                         />
 
                         {/* <div className="flex justify-center">
@@ -1143,7 +1153,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         className="w-full p-4 rounded-[16px] text-black bg-transparent border border-gray-300 resize-none"
                                         style={{
                                             fontSize: "14px",
-                                            minHeight: "150px",
+                                            minHeight: "200px",
                                         }}
                                     />
                                 </>

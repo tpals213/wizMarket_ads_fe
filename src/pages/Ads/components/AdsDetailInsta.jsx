@@ -3,12 +3,12 @@ import { useLocation } from 'react-router-dom';
 
 const AdsDetailInsta = () => {
     const location = useLocation();
-    const { instaName, instaFollowers, instaCount, uploadImages, useOption, storeBusinessNumber } = location.state || {};
+    const { instaName, instaFollowers, instaCount, convertTempImg, useOption, storeBusinessNumber } = location.state || {};
 
     if (!instaName || !instaFollowers || !instaCount) {
         return <p className="text-red-500">데이터를 불러오지 못했습니다.</p>;
     }
-    const uploadImage = uploadImages;
+
 
     return (
         <div className="pt-7 pb-24 px-5 flex flex-col items-center bg-white w-full h-full">
@@ -26,7 +26,7 @@ const AdsDetailInsta = () => {
             {/* Uploaded Image */}
             <div className="mt-6 w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl h-auto mb-7 flex flex-col items-center">
                 <img
-                    src={uploadImage}
+                    src={convertTempImg}
                     alt="Uploaded Content"
                     className="w-full max-w-lg h-auto rounded-lg shadow-md"
                 />
