@@ -11,11 +11,10 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Clipboard, ClipboardCheck } from "lucide-react"; // 아이콘 추가
 import "./../../../styles/drag.css";
 import AdsSwiper from './AdsSwiper';
-
+import "../../../styles/templateFont.css"
 import AdsSeedPrompt from './AdsSeedPrompt';
+import { toPng } from "html-to-image";
 
-// import * as fabric from 'fabric';
-import html2canvas from "html2canvas";
 
 
 const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
@@ -38,6 +37,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [gptRole, setGptRole] = useState(''); // gpt 역할 부여 - 지시 내용
 
     const [content, setContent] = useState(''); // gpt 문구 생성 결과물
+    const [withoutSign, setWithoutSign] = useState(''); // "gpt 문구 생성 결과물"에서 "" 제거
     const [contentLoading, setContentLoading] = useState(false) // gpt 문구 생성 로딩
     const [checkImages, setCheckImages] = useState([]); // 선택된 이미지들의 인덱스
     const [uploadImages, setUploadImages] = useState([]); // 선택된 이미지들
@@ -387,7 +387,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     // 업로드한 파일로 생성
     const gernerateImageWithText = async (imageData) => {
-        setContentLoading(true)
+        setContentLoading(true);
 
         const updatedTitle = title === "" ? "매장 소개" : title;
         const updatedUseOption = useOption === "" ? "인스타그램 스토리" : useOption;
@@ -401,32 +401,41 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         formData.append('male_base', maleMap[data.maxSalesMale] || data.maxSalesMale || "값 없음");
         formData.append('female_base', femaleMap[data.maxSalesFemale] || data.maxSalesFemale || "값 없음");
         formData.append('gpt_role', gptRole);
-        formData.append('detail_content', detailContent || detailContent || "값 없음");
+        formData.append('detail_content', detailContent || "값 없음");
         formData.append('use_option', updatedUseOption);
         formData.append('title', updatedTitle);
 
-        if (imageData && imageData.file) {
-            formData.append("image", imageData.file);
-        }
+
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/exist/image/remove/background`,
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/exist/image/template2`,
                 formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data", // 중요: FastAPI가 이 형식을 기대
-                    },
-                }
+                { headers: { "Content-Type": "multipart/form-data" } }
             );
-            setContent(response.data.copyright); // 성공 시 서버에서 받은 데이터를 상태에 저장
-            
-            setContentLoading(false)
+
+            setContent(response.data.copyright); // 성공 시 데이터 저장
+            setInstaCopyright(response.data.insta_copyright);
+            setWithoutSign(response.data.copyright.replace(/["']/g, "").trim());
+            // 🔥 파일을 Base64로 변환해서 저장
+            const fileToBase64 = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = (error) => reject(error);
+                });
+            };
+
+            const base64Image = await fileToBase64(imageData.file);
+            setImageTemplateList([base64Image]); // 🔥 Base64 데이터 저장
+
         } catch (err) {
             console.error('저장 중 오류 발생:', err);
         } finally {
-            setContentLoading(false)
+            setContentLoading(false);
         }
     };
+
 
     // AI 로생성
     const generateAds = async () => {
@@ -461,7 +470,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             // setOriginImage(response.data.origin_image)
             const formattedOriginImage = `data:image/png;base64,${response.data.origin_image[0]}`;
             // console.log(response.data);
-            
+            setWithoutSign(response.data.copyright.replace(/["']/g, "").trim());
             setImageTemplateList([formattedOriginImage])
             setInstaCopyright(response.data.insta_copyright)
             setContentLoading(false)
@@ -476,16 +485,16 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     // 선택한 템플릿 업로드
     const onUpload = async () => {
         const index = checkImages[0];
-    
+
         let useOptionPath = '';
         let titlePath = '';
-    
+
         if (title === "매장 소개") {
             titlePath = 'intro';
         } else if (title === "이벤트") {
             titlePath = 'event';
         }
-    
+
         if (useOption === "인스타그램 스토리" || useOption === "카카오톡" || useOption === "") {
             useOptionPath = '4to7';
         } else if (useOption === "인스타그램 피드") {
@@ -495,9 +504,13 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         const templateElement = document.getElementById(`template_${titlePath}_${useOptionPath}_${index}`);
 
         if (templateElement) {
-            const canvas = await html2canvas(templateElement);
-            const imageData = canvas.toDataURL("image/png");
+            // html-to-image를 사용하여 PNG 이미지로 변환
+            const imageData = await toPng(templateElement, {
+                cacheBust: true, // 캐시 방지 (이미지 변경 감지)
+                quality: 1,      // 이미지 품질 (0~1)
+            });
             setConvertTempImg(imageData);
+            
             // ✅ 카카오톡 공유는 `shareOnKakao`에서 처리하도록 이동
             if (useOption === "카카오톡") {
                 console.log("카카오톡이 선택되었습니다.");
@@ -508,16 +521,16 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             setIsReadyToUpload(true);
         }
     };
-    
-    
+
+
     // ✅ `uploadData`를 `useCallback`으로 감싸서 의존성 배열 문제 해결
     const uploadData = useCallback(async () => {
         if (!isReadyToUpload || !convertTempImg) return;
-    
+
         console.log("업로드 시작...");
-    
+
         setUploading(true);
-    
+
         const updatedUseOption = useOption === "" ? "인스타그램 스토리" : useOption;
         const formData = new FormData();
         formData.append("use_option", updatedUseOption);
@@ -525,24 +538,24 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         formData.append("store_name", data.store_name);
         formData.append("tag", data.detail_category_name);
         formData.append("insta_copyright", instaCopytight);
-    
+
         if (convertTempImg) {
             const extension = getBase64Extension(convertTempImg);
             const blob = base64ToBlob(convertTempImg, `image/${extension}`);
             formData.append("upload_images", blob, `image.${extension}`);
         }
-    
+
         for (const [key, value] of formData.entries()) {
             console.log(`Key: ${key}, Value:`, value);
         }
-    
+
         try {
             const response = await axios.post(
                 `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/upload`,
                 formData,
                 { headers: { "Content-Type": "multipart/form-data" } }
             );
-    
+
             if (useOption === "" || useOption === "인스타그램 피드" || useOption === "인스타그램 스토리") {
                 const [instaName, instaFollowers, instaCount] = response.data;
                 navigate("/ads/detail/insta", {
@@ -572,16 +585,16 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         storeBusinessNumber,
         useOption,
     ]);
-    
+
     // ✅ `uploadData` 실행 `useEffect` (data가 `null`이 아닐 때만 실행)
 
     useEffect(() => {
-        if (!isReadyToUpload || !convertTempImg || !data) return; 
+        if (!isReadyToUpload || !convertTempImg || !data) return;
         uploadData();
-    }, [isReadyToUpload, convertTempImg, data, uploadData]); 
+    }, [isReadyToUpload, convertTempImg, data, uploadData]);
 
-    
-    
+
+
 
 
     // Base64 데이터를 Blob으로 변환하는 유틸리티 함수
@@ -608,16 +621,16 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             console.error("업로드할 이미지가 없습니다.");
             return;
         }
-    
+
         console.log("카카오톡 공유 시작...");
-    
+
         // ✅ 카카오 SDK가 정상적으로 로드되었는지 확인 후 초기화
         const kakaoJsKey = process.env.REACT_APP_KAKAO_JS_API_KEY;
         if (!kakaoJsKey) {
             console.error("Kakao JavaScript Key가 설정되지 않았습니다.");
             return;
         }
-    
+
         if (!window.Kakao) {
             console.log("카카오 SDK 로드 중...");
             const script = document.createElement("script");
@@ -632,11 +645,11 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             document.body.appendChild(script);
             return;
         }
-    
+
         if (!window.Kakao.isInitialized()) {
             window.Kakao.init(kakaoJsKey);
         }
-    
+
         try {
             // ✅ 이미지 변환 후 Blob 형태로 변환
             const base64ToBlob = (base64Data) => {
@@ -648,27 +661,27 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                 }
                 return new Blob([byteArray], { type: mimeString });
             };
-    
+
             const blob = base64ToBlob(imageData);
             const file = new File([blob], "uploaded_image.png", { type: "image/png" });
-    
+
             // ✅ 카카오 이미지 업로드
             const response = await window.Kakao.Share.uploadImage({ file: [file] });
-    
+
             if (!response || !response.infos || !response.infos.original || !response.infos.original.url) {
                 console.error("카카오 이미지 업로드 실패:", response);
                 return;
             }
-    
+
             const uploadedImageUrl = response.infos.original.url;
-    
+
             // ✅ 공유할 광고 정보 URL 생성
             const adsInfoUrl = `?title=${encodeURIComponent(title || "기본 제목")}
                 &content=${encodeURIComponent(content || "기본 내용")}
                 &storeName=${encodeURIComponent(data?.store_name || "기본 매장명")}
                 &roadName=${encodeURIComponent(data?.road_name || "기본 매장 주소")}
                 &imageUrl=${encodeURIComponent(uploadedImageUrl || "기본 내용")}`;
-    
+
             // ✅ 카카오톡 공유 실행
             window.Kakao.Share.sendCustom({
                 templateId: 115008, // 생성한 템플릿 ID
@@ -681,23 +694,31 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                     store_business_id: storeBusinessNumber,
                 },
             });
-    
+
         } catch (error) {
             console.error("카카오톡 공유 중 오류 발생:", error);
         }
     };
-    
-    
+
+
 
     // const convertTempToImg = async (index) => {
-    //     console.log(index)
-    //     const templateElement = document.getElementById(`template-${index}`);
+    //     console.log(index);
+    //     const templateElement = document.getElementById(`template_intro_4to7_1`);
+    
     //     if (templateElement) {
-    //         const canvas = await html2canvas(templateElement);
-    //         const imageData = canvas.toDataURL("image/png");
-    //         console.log("템플릿 캡처된 이미지 리스트:", imageData);
-    //         setConvertTempImg(imageData);
-
+    //         try {
+    //             // html-to-image를 사용하여 PNG 이미지로 변환
+    //             const imageData = await toPng(templateElement, {
+    //                 cacheBust: true, // 캐시 방지 (이미지 변경 감지)
+    //                 quality: 1,      // 이미지 품질 (0~1)
+    //             });
+    
+    //             // 변환된 이미지 데이터 저장
+    //             setConvertTempImg(imageData);
+    //         } catch (error) {
+    //             console.error("이미지 변환 실패:", error);
+    //         }
     //     }
     // };
 
@@ -1114,15 +1135,24 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         )}
                                     </button>
                                 </CopyToClipboard>
-                                {content ? <p className="text-xl">{content}</p> : <span>&nbsp;</span>}
+
+                                {/* ✅ 줄바꿈된 content 표시 */}
+                                {content ? (
+                                    <p className="text-xl whitespace-pre-line">
+                                        {content.replace(/(제목:|내용:)/g, "\n$1").trim()}
+                                    </p>
+                                ) : (
+                                    <span>&nbsp;</span>
+                                )}
                             </div>
                         )}
+
 
 
                         {/* 이미지 영역 */}
                         <AdsSwiper
                             imageTemplateList={imageTemplateList}
-                            content={content}
+                            content={withoutSign}
                             title={title}
                             useOption={useOption}
                             checkImages={checkImages}
@@ -1143,6 +1173,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                             </div>
                         )} */}
 
+                        {/* 생성 된 문구 영역 */}
                         <div className='pb-4'>
                             {instaCopytight && instaCopytight.length > 0 && (
                                 <>

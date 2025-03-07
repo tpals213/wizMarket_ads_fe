@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import "../../../../../styles/templateFont.css"
 
 const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
     const canvasRef = useRef(null);
@@ -76,7 +77,7 @@ const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
             {/* ✅ 오버레이 (linear-gradient 적용) */}
             <div
-                className="absolute top-0 left-0 w-[512px] h-[315px]"
+                className="absolute top-0 left-0 w-full h-[30%]"
                 style={{
                     background: "linear-gradient(180deg, rgba(28, 28, 28, 0.00) 0%, rgba(0, 0, 0, 0.50) 50.24%, rgba(28, 28, 28, 0.00) 96.34%)"
                 }}
@@ -134,9 +135,9 @@ const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             </div>
 
 
-            <div className="absolute"
+            <div className="absolute w-full"
                 style={{ top: `${(150 / 1024) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-center overflow-hidden text-ellipsis"
+                <p className="text-white text-center break-keep"
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",

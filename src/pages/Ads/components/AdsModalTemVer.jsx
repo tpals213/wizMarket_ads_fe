@@ -41,7 +41,6 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [uploadImages, setUploadImages] = useState([]); // 선택된 이미지들
     const [uploading, setUploading] = useState(false)   // 이미지 업로드 로딩 처리
 
-    const [selectedImages, setSelectedImages] = useState([]); // 기존 이미지 파일 업로드 
     const [isMenuOpen, setIsMenuOpen] = useState(false); // 사진 선택 메뉴 열기
 
     const [instaCopytight, setInstaCopyright] = useState('')
@@ -945,7 +944,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                         height: img.height,
                                                     };
                                                     // 상태 업데이트
-                                                    setSelectedImages([imageData]);
+                                                    // setSelectedImages([imageData]);
 
                                                     // 바로 함수 호출
                                                     gernerateImageWithText(imageData);
@@ -974,7 +973,7 @@ const AdsModalTemVer = ({ isOpen, onClose, storeBusinessNumber }) => {
                                                         height: img.height,
                                                     };
                                                     // 상태 업데이트
-                                                    setSelectedImages([imageData]);
+                                                    // setSelectedImages([imageData]);
 
                                                     // 바로 함수 호출
                                                     gernerateImageWithText(imageData);

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import "../../../../../styles/templateFont.css"
 
 const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
     const canvasRef = useRef(null);
@@ -237,7 +238,6 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                 ))}
             </div>
 
-            {/* ✅ 상하좌우 50px 더 큰 배경 div */}
             <div className="absolute"
                 style={{
                     top: "50%", // ✅ 상하 중앙 정렬
@@ -261,7 +261,7 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             </div>
 
             <div className="absolute"
-                style={{ top: `${(870 / 1024) * 100}%`, left: `${(185 / 1024) * 100}%` }}>
+                style={{ top: `${(900 / 1024) * 100}%`, left: `${(185 / 1024) * 100}%` }}>
                 <p className="text-white text-left overflow-hidden text-ellipsis"
                     style={{
                         color: "#FFF",

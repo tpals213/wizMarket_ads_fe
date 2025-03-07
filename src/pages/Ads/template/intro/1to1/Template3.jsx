@@ -76,42 +76,38 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             )}
 
 
+            <div
+                className="absolute top-0 left-0 w-full h-[30%]"
+                style={{
+                    background: "linear-gradient(180deg, rgba(0, 0, 0, 0.80) 0%, rgba(41, 41, 41, 0.00) 100%)"
+                }}
+            ></div>
+
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute"
-                style={{ top: `${(151 / 1024) * 100}%`, left: `${(96 / 1024) * 100}%` }}>
-                <p className="text-white text-left overflow-hidden text-ellipsis"
-                    style={{
-                        color: "#FFF",
-                        fontFeatureSettings: "'case' on",
-                        fontFamily: "Pretendard",
-                        fontSize: "16px",
-                        fontStyle: "normal",
-                        fontWeight: 400,
-                        lineHeight: "normal",
-                    }}>
-                    {text}
-                </p>
-            </div>
-
-
-
-            {/* ✅ 상하좌우 50px 더 큰 배경 div */}
-            <div className="absolute"
-                style={{ top: `${(69 / 1024) * 100}%`, left: `${(96 / 1024) * 100}%` }}>
-                <p className="text-white text-left overflow-hidden text-ellipsis"
-                    style={{
-                        color: "#FFF",
-                        fontFeatureSettings: "'case' on",
+            <div className="absolute text-white text-left top-[7.7%] left-[9.4%]">
+                <p 
+                    className="break-words whitespace-pre-line text-[36px] font-normal leading-normal pb-8"
+                    style={{ 
                         fontFamily: "JejuHallasan, sans-serif",
-                        fontSize: "18px",
                         fontStyle: "normal",
-                        fontWeight: 400,
-                        lineHeight: "normal",
+                        color: "#FFF" // 명확하게 설정
                     }}>
                     {storeName}
                 </p>
-            </div>
 
+                <p
+                    className="break-words whitespace-pre-line font-bold"
+                    style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "32px",
+                        fontStyle: "normal",
+                        fontWeight: 700,
+                        lineHeight: "35px",
+                    }}
+                >
+                    {text}
+                </p>
+            </div>
 
             {/* ✅ Canvas (숨김 처리) */}
             <canvas ref={canvasRef} style={{ display: "none" }} />

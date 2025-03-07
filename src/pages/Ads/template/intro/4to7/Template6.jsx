@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import "../../../../../styles/templateFont.css"
 
 const Template6 = ({ imageUrl, text, storeName, roadName }) => {
     const canvasRef = useRef(null);
@@ -180,7 +181,7 @@ const Template6 = ({ imageUrl, text, storeName, roadName }) => {
 
             {/* ✅ 텍스트 오버레이 */}
             <div className="absolute"
-                style={{ top: `${(1378 / 1792) * 100}%`, right: `${(149 / 1024) * 100}%` }}>
+                style={{ top: `${(1428 / 1792) * 100}%`, right: `${(149 / 1024) * 100}%` }}>
                 <p className="text-white text-right overflow-hidden text-ellipsis"
                     style={{
                         color: "#000",
@@ -195,23 +196,21 @@ const Template6 = ({ imageUrl, text, storeName, roadName }) => {
             </div>
             <div className="absolute"
                 style={{ top: `${(1160 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-left overflow-hidden text-ellipsis"
+                <p className="text-left break-keep font-extrabold"
                     style={{
                         color: "#C4052A",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
                         fontSize: "20px",
                         fontStyle: "normal",
-                        fontWeight: 800,
                         lineHeight: "50px",
-
                     }}>
                     {storeName}
                 </p>
             </div>
             <div className="absolute"
-                style={{ top: `${(133 / 1792) * 100}%`, left: `${(119 / 1024) * 100}%` }}>
-                <p className="text-white text-left overflow-hidden text-ellipsis"
+                style={{ top: `${(163 / 1792) * 100}%`, left: `${(119 / 1024) * 100}%` }}>
+                <p className="text-white text-left break-keep"
                     style={{
                         color: "#000",
                         fontFeatureSettings: "'case' on",
@@ -227,9 +226,9 @@ const Template6 = ({ imageUrl, text, storeName, roadName }) => {
             </div>
             <div className="absolute w-full"
                 style={{ top: `${(1242 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-center overflow-hidden text-ellipsis"
+                <p className="text-white text-center break-keep"
                     style={{
-                        color: "rgba(0, 0, 0, 0.80)",
+                        color: "rgba(0, 0, 0, 0.50)",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
                         fontSize: "15px",

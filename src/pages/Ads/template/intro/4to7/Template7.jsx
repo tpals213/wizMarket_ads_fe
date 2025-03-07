@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import "../../../../../styles/templateFont.css"
 
 const Template7 = ({ imageUrl, text, storeName, roadName }) => {
     const canvasRef = useRef(null);
@@ -153,12 +154,16 @@ const Template7 = ({ imageUrl, text, storeName, roadName }) => {
             ctx.stroke();
 
             // ✅ 9. 선 추가 (위에서 1660px, 왼쪽에서 657px)
+            const storeNameX = bgWidth - (bgWidth * (138 / 1024)); // storeName의 위치
+            const lineEndX = storeNameX - 400; // storeName 왼쪽에서 70px 떨어진 위치
+
             ctx.beginPath();
-            ctx.moveTo(80, 120); // 시작점
-            ctx.lineTo(80 + 477, 120); // 끝점 (너비 189px)
+            ctx.moveTo(80, 120); // 시작점 (고정)
+            ctx.lineTo(lineEndX, 120); // 끝점 (storeName 위치에서 왼쪽으로 70px 떨어진 곳)
             ctx.lineWidth = 5; // 선 두께
             ctx.strokeStyle = "#D9D9D9"; // 선 색상
             ctx.stroke();
+
 
             ctx.beginPath();
             ctx.moveTo(80, 120); // 시작점
@@ -191,7 +196,7 @@ const Template7 = ({ imageUrl, text, storeName, roadName }) => {
 
             {/* ✅ 텍스트 오버레이 */}
             <div className="absolute w-full"
-                style={{ top: `${(1442 / 1792) * 100}%`, left: `${(157 / 1024) * 100}%`  }}>
+                style={{ top: `${(1445 / 1792) * 100}%`, left: `${(157 / 1024) * 100}%`  }}>
                 <p className="text-white text-left overflow-hidden text-ellipsis"
                     style={{
                         color: "#FFF",

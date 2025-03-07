@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import "../../../../../styles/templateFont.css"
 
 const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
     const canvasRef = useRef(null);
@@ -106,7 +107,20 @@ const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
             {/* ✅ 텍스트 오버레이 */}
             <div className="absolute"
-                style={{ top: `${(1418 / 1792) * 100}%`, left: `${(88 / 1024) * 100}%`}}>
+                style={{ top: `${(1268 / 1792) * 100}%`, left: `${(68 / 1024) * 100}%`}}>
+                <p className="text-white text-left overflow-hidden text-ellipsis pb-4"
+                style={{
+                    color: "#000",
+                    fontFeatureSettings: "'case' on",
+                    fontFamily: "Pretendard",
+                    fontSize: "64px",
+                    fontStyle: "normal",
+                    fontWeight: 300,
+                    lineHeight: "70px",
+                    
+                }}>
+                    {storeName}
+                </p>
                 <p className="text-white text-left overflow-hidden text-ellipsis"
                 style={{
                     color: "#000",
@@ -120,10 +134,6 @@ const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                 }}>
                     {text}
                 </p>
-            </div>
-            <div className="absolute"
-                style={{ top: `${(1218 / 1792) * 100}%`, left: `${(88 / 1024) * 100}%`}}>
-                <p className="text-black text-[64px] text-center">{storeName}</p>
             </div>
             <div className="absolute w-full"
                 style={{ top: `${(1620 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>

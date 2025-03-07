@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import "../../../../../styles/templateFont.css"
 
 const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
     const canvasRef = useRef(null);
@@ -22,36 +23,53 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             const canvas = canvasRef.current;
             const ctx = canvas.getContext("2d");
 
+            // ✅ 🎯 캔버스 크기 명시적으로 설정 (중요!)
+            canvas.width = wantWidth;
+            canvas.height = wantHeight;
+
             // 원본 이미지 크기
             const originalWidth = img.width;
             const originalHeight = img.height;
 
+            // 목표 크기
+            const targetWidth = wantWidth;  // 원하는 가로 크기 (1024)
+            const targetHeight = wantHeight;  // 원하는 세로 크기 (1792)
+
             // 목표 비율 계산
-            const targetRatio = wantWidth / wantHeight;
             const originalRatio = originalWidth / originalHeight;
+            const targetRatio = targetWidth / targetHeight;
 
             let newWidth, newHeight;
             if (originalRatio > targetRatio) {
-                newHeight = wantHeight;
-                newWidth = Math.round(originalWidth * (wantHeight / originalHeight));
+                // 원본 가로가 더 길면 → 세로를 기준으로 리사이징
+                newHeight = targetHeight;
+                newWidth = Math.round(originalWidth * (targetHeight / originalHeight));
             } else {
-                newWidth = wantWidth;
-                newHeight = Math.round(originalHeight * (wantWidth / originalWidth));
+                // 원본 세로가 더 길면 → 가로를 기준으로 리사이징
+                newWidth = targetWidth;
+                newHeight = Math.round(originalHeight * (targetWidth / originalWidth));
             }
 
-            // 캔버스 크기 설정
-            canvas.width = wantWidth;
-            canvas.height = wantHeight;
+            // ✅ 4. `offscreenCanvas`에서 리사이징 수행
+            const offscreenCanvas = document.createElement("canvas");
+            offscreenCanvas.width = newWidth;
+            offscreenCanvas.height = newHeight;
+            const offscreenCtx = offscreenCanvas.getContext("2d");
+            offscreenCtx.drawImage(img, 0, 0, newWidth, newHeight);
 
-            // 중앙 크롭 계산
-            const cropX = Math.round((newWidth - wantWidth) / 2);
-            const cropY = Math.round((newHeight - wantHeight) / 2);
+            // ✅ 5. 크롭 좌표 계산 (중앙 크롭)
+            const cropX = Math.max(0, Math.round((newWidth - targetWidth) / 2));
+            const cropY = Math.max(0, Math.round((newHeight - targetHeight) / 2));
 
-            // 리사이징 후 크롭하여 그리기
+            // ✅ 6. 최종 위치 계산 (배경 이미지 위에 배치)
+            const imgX = 0; // 원하는 가로 위치
+            const imgY = 0; // 원하는 세로 위치
+
+            // ✅ 7. 최종 캔버스에 그리기 (크롭 후 배경 위에 배치)
             ctx.drawImage(
-                img,
-                cropX, cropY, wantWidth, wantHeight, // 크롭된 부분
-                0, 0, wantWidth, wantHeight // 캔버스에 맞게 배치
+                offscreenCanvas,
+                cropX, cropY, targetWidth, targetHeight,  // 크롭할 영역
+                imgX, imgY, targetWidth, targetHeight  // 최종 캔버스 배치 위치
             );
 
             // ✅ 최종 이미지 저장
@@ -59,6 +77,7 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             setFinalImage(finalImageUrl);
         };
     }, [imageUrl, text]);
+
 
 
     return (
@@ -76,30 +95,33 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
             {/* ✅ 오버레이 (linear-gradient 적용) */}
             <div
-                className="absolute top-0 left-0 w-[512px] h-[512px]"
+                className="absolute top-0 left-0 w-full h-[50%]"
                 style={{
-                    background: "linear-gradient(180deg, rgba(0, 0, 0, 0.80) 0%)"
+                    background: "linear-gradient(180deg, rgba(0, 0, 0, 0.80) 0%, rgba(41, 41, 41, 0.00) 100%)"
                 }}
             ></div>
 
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute"
+            <div
+                className="absolute w-[80%] flex justify-center"
                 style={{
                     top: `${(665 / 1792) * 100}%`,
                     left: "50%",
-                    transform: "translateX(-50%)"
-                }}>
+                    transform: "translateX(-50%)",
+                }}
+            >
                 {/* ✅ 흰색 배경 박스 */}
                 <div
                     className="text-center px-4 py-2"
                     style={{
-                        backgroundColor: "#FFF", // ✅ 흰색 배경
-                        display: "inline-block", // ✅ 텍스트 크기에 맞춤
-                        padding: "8px 8px", // ✅ 여백 추가
-                    }}>
+                        backgroundColor: "#FFF",
+                        display: "inline-block",
+                        padding: "8px 8px",
+                    }}
+                >
                     {/* ✅ 텍스트 */}
                     <p
-                        className="text-black text-center overflow-hidden text-ellipsis"
+                        className="text-black text-center break-keep"
                         style={{
                             fontFeatureSettings: "'case' on",
                             fontFamily: "'Diphylleia', sans-serif",
@@ -107,18 +129,17 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                             fontStyle: "normal",
                             fontWeight: 400,
                             lineHeight: "21px",
-                        }}>
+                        }}
+                    >
                         {text}
                     </p>
                 </div>
             </div>
 
-
-
             {/* ✅ 상하좌우 50px 더 큰 배경 div */}
             <div className="absolute"
                 style={{ top: `${(472 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-center overflow-hidden text-ellipsis"
+                <p className="text-white text-center overflow-hidden text-ellipsis break-keep"
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
@@ -134,9 +155,9 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             </div>
 
 
-            <div className="absolute"
+            <div className="absolute w-[90%]"
                 style={{ top: `${(368 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-center overflow-hidden text-ellipsis"
+                <p className="text-white text-center overflow-hidden text-ellipsis break-keep"
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",

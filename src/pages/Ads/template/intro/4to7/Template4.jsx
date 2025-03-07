@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import "../../../../../styles/templateFont.css"
 
 const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
     const canvasRef = useRef(null);
@@ -10,54 +11,69 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
     useEffect(() => {
         if (!imageUrl) return;
-    
+
         const img = new Image();
         img.src = imageUrl;
         img.crossOrigin = "Anonymous"; // 크로스 도메인 문제 방지
-    
+
         img.onload = () => {
             const canvas = canvasRef.current;
             const ctx = canvas.getContext("2d");
+
+            // ✅ 🎯 캔버스 크기 명시적으로 설정 (중요!)
+            canvas.width = wantWidth;
+            canvas.height = wantHeight;
 
             // 원본 이미지 크기
             const originalWidth = img.width;
             const originalHeight = img.height;
 
+            // 목표 크기
+            const targetWidth = wantWidth;  // 원하는 가로 크기 (1024)
+            const targetHeight = wantHeight;  // 원하는 세로 크기 (1792)
+
             // 목표 비율 계산
-            const targetRatio = wantWidth / wantHeight;
             const originalRatio = originalWidth / originalHeight;
+            const targetRatio = targetWidth / targetHeight;
 
             let newWidth, newHeight;
             if (originalRatio > targetRatio) {
-                // 가로가 더 긴 경우 → 세로를 맞추고 가로를 늘림
-                newHeight = wantHeight;
-                newWidth = Math.round(originalWidth * (wantHeight / originalHeight));
+                // 원본 가로가 더 길면 → 세로를 기준으로 리사이징
+                newHeight = targetHeight;
+                newWidth = Math.round(originalWidth * (targetHeight / originalHeight));
             } else {
-                // 세로가 더 긴 경우 → 가로를 맞추고 세로를 늘림
-                newWidth = wantWidth;
-                newHeight = Math.round(originalHeight * (wantWidth / originalWidth));
+                // 원본 세로가 더 길면 → 가로를 기준으로 리사이징
+                newWidth = targetWidth;
+                newHeight = Math.round(originalHeight * (targetWidth / originalWidth));
             }
 
-            // 캔버스 크기 설정 (원본 크기 유지)
-            canvas.width = wantWidth;
-            canvas.height = wantHeight;
+            // ✅ 4. `offscreenCanvas`에서 리사이징 수행
+            const offscreenCanvas = document.createElement("canvas");
+            offscreenCanvas.width = newWidth;
+            offscreenCanvas.height = newHeight;
+            const offscreenCtx = offscreenCanvas.getContext("2d");
+            offscreenCtx.drawImage(img, 0, 0, newWidth, newHeight);
 
-            // 중앙 크롭 계산
-            const cropX = Math.round((newWidth - wantWidth) / 2);
-            const cropY = Math.round((newHeight - wantHeight) / 2);
+            // ✅ 5. 크롭 좌표 계산 (중앙 크롭)
+            const cropX = Math.max(0, Math.round((newWidth - targetWidth) / 2));
+            const cropY = Math.max(0, Math.round((newHeight - targetHeight) / 2));
 
-            // 리사이징 후 크롭하여 그리기
+            // ✅ 6. 최종 위치 계산 (배경 이미지 위에 배치)
+            const imgX = 0; // 원하는 가로 위치
+            const imgY = 0; // 원하는 세로 위치
+
+            // ✅ 7. 최종 캔버스에 그리기 (크롭 후 배경 위에 배치)
             ctx.drawImage(
-                img,
-                cropX, cropY, wantWidth, wantHeight, // 크롭된 부분
-                0, 0, wantWidth, wantHeight // 캔버스에 맞게 배치
+                offscreenCanvas,
+                cropX, cropY, targetWidth, targetHeight,  // 크롭할 영역
+                imgX, imgY, targetWidth, targetHeight  // 최종 캔버스 배치 위치
             );
 
             // ✅ 최종 이미지 저장
             const finalImageUrl = canvas.toDataURL("image/png");
             setFinalImage(finalImageUrl);
         };
-    }, [imageUrl, roadName]);
+    }, [imageUrl, text]);
 
     return (
         <div id="template_intro_4to7_4" className="relative">
@@ -74,14 +90,14 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
             {/* ✅ 오버레이 (linear-gradient 적용) */}
             <div
-                className="absolute top-0 left-0 w-[512px] h-[529px]"
+                className="absolute top-0 left-0 w-full h-[50.52%]"
                 style={{
                     background: "linear-gradient(180deg, rgba(2, 2, 2, 0.40) 0%, rgba(8, 32, 85, 0.00) 100%)"
                 }}
             ></div>
 
             <div
-                className="absolute top-[695px] left-0 w-[512px] h-[171px]"
+                className="absolute top-[83.4%] left-0 w-full h-[16.69%]"
                 style={{
                     background: "linear-gradient(180deg, rgba(41, 41, 41, 0.00) 0%, rgba(0, 0, 0, 0.40) 100%)"
                 }}
@@ -89,42 +105,49 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
 
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute w-[313px]"
-                style={{ top: `${(484 / 1792) * 100}%`, left: `${(84 / 1024) * 100}%` }}>
-                <p className="text-white text-left overflow-hidden text-ellipsis"
-                style={{
-                    color: "#FFF",
-                    fontFeatureSettings: "'case' on",
-                    fontFamily: "Pretendard",
-                    fontSize: "40px",
-                    fontStyle: "normal",
-                    fontWeight: 700,
-                    lineHeight: "42px",
-                    
-                }}>
-                    {text}
-                </p>
 
-            </div>
-            <div className="absolute w-[320px]"
+            <div className="absolute w-[60%]"
                 style={{ top: `${(200 / 1792) * 100}%`, left: `${(84 / 1024) * 100}%` }}>
-                <p className="text-white text-left overflow-hidden text-ellipsis"
-                style={{
-                    color: "#FFF",
-                    fontFeatureSettings: "'case' on",
-                    fontFamily: "Pretendard",
-                    fontSize: "55px",
-                    fontStyle: "normal",
-                    fontWeight: 900,
-                    lineHeight: "60px",
-                    
-                }}>
+                <p className="text-white text-left break-keep pb-12"
+                    style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: "55px",
+                        fontStyle: "normal",
+                        fontWeight: 900,
+                        lineHeight: "60px",
+
+                    }}>
                     {storeName}
+                </p>
+                <p className="text-white text-left break-keep"
+                    style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: "40px",
+                        fontStyle: "normal",
+                        fontWeight: 700,
+                        lineHeight: "45px",
+                    }}>
+                    {text}
                 </p>
             </div>
             <div className="absolute w-full"
                 style={{ top: `${(1598 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-[24px] text-center">{roadName}</p>
+                <p className="text-white text-center break-keep"
+                    style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: "24px",
+                        fontStyle: "normal",
+                        fontWeight: 700,
+                        lineHeight: "45px",
+                    }}>
+                    {roadName}
+                </p>
             </div>
 
             {/* ✅ Canvas (숨김 처리) */}

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import "../../../../../styles/templateFont.css"
 
 const Template1 = ({ imageUrl, text, storeName, roadName }) => {
     const canvasRef = useRef(null);
@@ -192,9 +193,9 @@ const Template1 = ({ imageUrl, text, storeName, roadName }) => {
             )}
 
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute"
-                style={{ top: `${(1161 / 1792) * 100}%`, left: `${(50 / 1024) * 100}%` }}>
-                <p className="text-white text-left overflow-hidden text-ellipsis"
+            <div className="absolute w-[80%]"
+                style={{ top: `${(1201 / 1792) * 100}%`, left: `${(50 / 1024) * 100}%` }}>
+                <p className="text-white text-left break-keep"
                     style={{
                         color: "#656565",
                         fontFeatureSettings: "'case' on",
@@ -208,8 +209,8 @@ const Template1 = ({ imageUrl, text, storeName, roadName }) => {
                 </p>
             </div>
             <div className="absolute"
-                style={{ top: `${(1330 / 1792) * 100}%`, left: `${(50 / 1024) * 100}%` }}>
-                <p className="text-white text-left overflow-hidden text-ellipsis"
+                style={{ top: `${(1380 / 1792) * 100}%`, left: `${(50 / 1024) * 100}%` }}>
+                <p className="text-white text-left"
                     style={{
                         color: "#000",
                         fontFeatureSettings: "'case' on",

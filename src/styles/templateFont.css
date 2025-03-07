@@ -4,3 +4,35 @@
     font-weight: normal;
     font-style: normal;
 }
+@font-face {
+    font-family: "JalnanGothicTTF";
+    src: url("/src/assets/font/JalnanGothicTTF.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "BlackAndWhitePicture";
+    src: url("/src/assets/font/BlackAndWhitePicture.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "Do Hyeon";
+    src: url("/src/assets/font/DoHyeon.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Diphylleia";
+    src: url("/src/assets/font/Diphylleia.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "GowunDodum";
+    src: url("/src/assets/font/GowunDodum.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}

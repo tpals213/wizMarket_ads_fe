@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import "../../../../../styles/templateFont.css"
 
 const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
     const canvasRef = useRef(null);
@@ -10,69 +11,78 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
     useEffect(() => {
         if (!imageUrl) return;
-    
+
         const img = new Image();
         img.src = imageUrl;
         img.crossOrigin = "Anonymous"; // 크로스 도메인 문제 방지
-    
+
         img.onload = () => {
             const canvas = canvasRef.current;
             const ctx = canvas.getContext("2d");
-    
+
+            // ✅ 🎯 캔버스 크기 명시적으로 설정 (중요!)
+            canvas.width = wantWidth;
+            canvas.height = wantHeight;
+
             // 원본 이미지 크기
             const originalWidth = img.width;
             const originalHeight = img.height;
-    
+
+            // 목표 크기
+            const targetWidth = wantWidth;  // 원하는 가로 크기 (1024)
+            const targetHeight = wantHeight;  // 원하는 세로 크기 (1792)
+
             // 목표 비율 계산
-            const targetRatio = wantWidth / wantHeight;
             const originalRatio = originalWidth / originalHeight;
-    
+            const targetRatio = targetWidth / targetHeight;
+
             let newWidth, newHeight;
             if (originalRatio > targetRatio) {
-                newHeight = wantHeight;
-                newWidth = Math.round(originalWidth * (wantHeight / originalHeight));
+                // 원본 가로가 더 길면 → 세로를 기준으로 리사이징
+                newHeight = targetHeight;
+                newWidth = Math.round(originalWidth * (targetHeight / originalHeight));
             } else {
-                newWidth = wantWidth;
-                newHeight = Math.round(originalHeight * (wantWidth / originalWidth));
+                // 원본 세로가 더 길면 → 가로를 기준으로 리사이징
+                newWidth = targetWidth;
+                newHeight = Math.round(originalHeight * (targetWidth / originalWidth));
             }
-    
-            // 캔버스 크기 설정
-            canvas.width = wantWidth;
-            canvas.height = wantHeight;
-    
-            // 중앙 크롭 계산
-            const cropX = Math.round((newWidth - wantWidth) / 2);
-            const cropY = Math.round((newHeight - wantHeight) / 2);
-    
-            // 리사이징 후 크롭하여 그리기
+
+            // ✅ 4. `offscreenCanvas`에서 리사이징 수행
+            const offscreenCanvas = document.createElement("canvas");
+            offscreenCanvas.width = newWidth;
+            offscreenCanvas.height = newHeight;
+            const offscreenCtx = offscreenCanvas.getContext("2d");
+            offscreenCtx.drawImage(img, 0, 0, newWidth, newHeight);
+
+            // ✅ 5. 크롭 좌표 계산 (중앙 크롭)
+            const cropX = Math.max(0, Math.round((newWidth - targetWidth) / 2));
+            const cropY = Math.max(0, Math.round((newHeight - targetHeight) / 2));
+
+            // ✅ 6. 최종 위치 계산 (배경 이미지 위에 배치)
+            const imgX = 0; // 원하는 가로 위치
+            const imgY = 0; // 원하는 세로 위치
+
+            // ✅ 7. 최종 캔버스에 그리기 (크롭 후 배경 위에 배치)
             ctx.drawImage(
-                img,
-                cropX, cropY, wantWidth, wantHeight, // 크롭된 부분
-                0, 0, wantWidth, wantHeight // 캔버스에 맞게 배치
+                offscreenCanvas,
+                cropX, cropY, targetWidth, targetHeight,  // 크롭할 영역
+                imgX, imgY, targetWidth, targetHeight  // 최종 캔버스 배치 위치
             );
-    
-            // ✅ 선 추가 (text 기준)
-            ctx.strokeStyle = "white"; // 선 색상
-            ctx.lineWidth = 4; // 선 두께
-    
-            // text 위치 계산
-            const textTop = Math.round((878 / 1792) * wantHeight);
-            const textLeft = wantWidth / 2;
-            const textWidth = ctx.measureText(text).width;
-    
-            // 선을 text 위쪽 20px에 그림
-            const lineY = textTop - 20;
+
+            // ✅ 9. 선 추가 (위에서 1660px, 왼쪽에서 657px)
             ctx.beginPath();
-            ctx.moveTo(textLeft - textWidth * 2, lineY); // 왼쪽 시작점
-            ctx.lineTo(textLeft + textWidth * 2, lineY); // 오른쪽 끝점
+            ctx.moveTo(216, 836); // 시작점
+            ctx.lineTo(216 + 549, 836); // 끝점 (너비 189px)
+            ctx.lineWidth = 4; // 선 두께
+            ctx.strokeStyle = "#FFF"; // 선 색상
             ctx.stroke();
-    
+
             // ✅ 최종 이미지 저장
             const finalImageUrl = canvas.toDataURL("image/png");
             setFinalImage(finalImageUrl);
         };
     }, [imageUrl, text]);
-    
+
 
     return (
         <div id="template_intro_4to7_3" className="relative">
@@ -91,14 +101,14 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             <div
                 className="absolute top-0 left-0 w-full h-full"
                 style={{
-                    background: "rgba(0, 0, 0, 0.5)" // 검은색 반투명 배경
+                    background: "rgba(0, 0, 0, 0.3)" // 검은색 반투명 배경
                 }}
             ></div>
 
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute w-full"
+            <div className="absolute w-[80%]"
                 style={{ top: `${(878 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-center overflow-hidden text-ellipsis"
+                <p className="text-white text-center overflow-hidden text-ellipsis break-keep"
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
@@ -116,14 +126,14 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             <div
                 className="absolute w-full flex justify-center"
                 style={{
-                    top: `${(599 / 1792) * 100}%`,
+                    top: `${(509 / 1792) * 100}%`,
                     left: "50%",
                     transform: "translateX(-50%)"
                 }}
             >
                 {/* ✅ 상하좌우 50px 더 큰 배경 div */}
                 <div
-                    className="relative px-[25px] py-[30px]"
+                    className="relative px-6 py-7"
                     style={{
                         background: "rgba(0, 0, 0, 0.50)", // 검은색 50% 투명도
                         display: "inline-block", // 텍스트 크기에 맞춤
@@ -131,11 +141,11 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                 >
                     {/* ✅ storeName 텍스트 */}
                     <p
-                        className="text-white text-center overflow-hidden text-ellipsis"
+                        className="text-white text-center overflow-hidden text-ellipsis break-keep"
                         style={{
                             color: "#FFF",
                             fontFamily: "Pretendard",
-                            fontSize: "64px",
+                            fontSize: "32px",
                             fontStyle: "normal",
                             fontWeight: 600,
                             lineHeight: "55px",
@@ -156,7 +166,7 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             >
                 {/* ✅ 상하좌우 50px 더 큰 배경 div */}
                 <div
-                    className="relative px-[40px] py-[9px]"
+                    className="relative px-[30px] py-[5px]"
                     style={{
                         background: "rgba(0, 0, 0, 0.50)", // 검은색 50% 투명도
                         display: "inline-block", // 텍스트 크기에 맞춤
