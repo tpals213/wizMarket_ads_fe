@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
+import "../../../../../styles/templateText.css"
 
 const Template1 = ({ imageUrl, text, storeName, roadName }) => {
     const canvasRef = useRef(null);
@@ -13,6 +14,12 @@ const Template1 = ({ imageUrl, text, storeName, roadName }) => {
 
     const imgTop = 55; // 메인 이미지 배치할 y 위치 (조절 가능)
     const imgLeft = 42; // 메인 이미지 배치할 x 위치 (조절 가능)
+
+    const [editText, setEditText] = useState(text)
+
+    const handleBlur = (e) => {
+        setEditText(e.target.innerText);
+    };
 
     useEffect(() => {
         if (!imageUrl) return;
@@ -149,28 +156,28 @@ const Template1 = ({ imageUrl, text, storeName, roadName }) => {
             ctx.drawImage(qrImg, qrX, qrY, qrWidth, qrHeight); // 크롭 없이 그대로 추가
 
             // ✅ 9. SEASON 코드 추가 (우측 하단)
-            const seasonWidth = 523;  
+            const seasonWidth = 523;
             const seasonHeight = 96;
             const seasonX = 289
             const seasonY = 1577
 
-            ctx.drawImage(seasonImg, seasonX, seasonY, seasonWidth, seasonHeight); 
+            ctx.drawImage(seasonImg, seasonX, seasonY, seasonWidth, seasonHeight);
 
             // ✅ 10.숫자 코드 추가 (우측 하단)
-            const numberWidth = 44;  
+            const numberWidth = 44;
             const numberHeight = 139;
             const numberX = 955
             const numberY = 55
 
-            ctx.drawImage(numberImg, numberX, numberY, numberWidth, numberHeight); 
+            ctx.drawImage(numberImg, numberX, numberY, numberWidth, numberHeight);
 
             // ✅ 11. WIZAD 코드 추가 (우측 하단)
-            const wizAdWidth = 70;  
+            const wizAdWidth = 70;
             const wizAdHeight = 790;
             const wizAdX = 870
             const wizAdY = 55
 
-            ctx.drawImage(wizAdImg, wizAdX, wizAdY, wizAdWidth, wizAdHeight); 
+            ctx.drawImage(wizAdImg, wizAdX, wizAdY, wizAdWidth, wizAdHeight);
 
             // ✅ 8. 최종 이미지 저장
             const finalImageUrl = canvas.toDataURL("image/png");
@@ -193,9 +200,15 @@ const Template1 = ({ imageUrl, text, storeName, roadName }) => {
             )}
 
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute w-[80%]"
-                style={{ top: `${(1201 / 1792) * 100}%`, left: `${(50 / 1024) * 100}%` }}>
-                <p className="text-white text-left break-keep"
+            <div
+                className="absolute w-[80%]"
+                style={{ top: `${(1201 / 1792) * 100}%`, left: `${(50 / 1024) * 100}%` }}
+            >
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBlur}
+                    className="editable-text blinking-cursor text-left break-keep relative px-2"
                     style={{
                         color: "#656565",
                         fontFeatureSettings: "'case' on",
@@ -204,8 +217,9 @@ const Template1 = ({ imageUrl, text, storeName, roadName }) => {
                         fontStyle: "normal",
                         fontWeight: 700,
                         lineHeight: "33px",
-                    }}>
-                    {text}
+                    }}
+                >
+                    {editText}
                 </p>
             </div>
             <div className="absolute"
