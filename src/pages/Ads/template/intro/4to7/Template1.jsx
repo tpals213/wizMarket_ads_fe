@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 import "../../../../../styles/templateText.css"
 
-const Template1 = ({ imageUrl, text, storeName, roadName }) => {
+const Template1 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
 
@@ -205,22 +205,25 @@ const Template1 = ({ imageUrl, text, storeName, roadName }) => {
                 style={{ top: `${(1201 / 1792) * 100}%`, left: `${(50 / 1024) * 100}%` }}
             >
                 <p
-                    contentEditable
-                    suppressContentEditableWarning
-                    onBlur={handleBlur}
-                    className="editable-text blinking-cursor text-left break-keep relative px-2"
-                    style={{
-                        color: "#656565",
-                        fontFeatureSettings: "'case' on",
-                        fontFamily: "Pretendard",
-                        fontSize: "32px",
-                        fontStyle: "normal",
-                        fontWeight: 700,
-                        lineHeight: "33px",
-                    }}
-                >
-                    {editText}
-                </p>
+      contentEditable
+      suppressContentEditableWarning
+      onBlur={handleBlur}
+      className={`editable-text blinking-cursor text-left break-keep relative px-2 ${
+        isCaptured ? "no-blinking" : "" // ✅ 캡처 중이면 커서 숨김
+      }`}
+      style={{
+        color: "#656565",
+        fontFeatureSettings: "'case' on",
+        fontFamily: "Pretendard",
+        fontSize: "32px",
+        fontStyle: "normal",
+        fontWeight: 700,
+        lineHeight: "33px",
+      }}
+      data-html2canvas-ignore={isCaptured ? "true" : "false"} // ✅ 캡처 중이면 커서 숨김
+    >
+      {editText}
+    </p>
             </div>
             <div className="absolute"
                 style={{ top: `${(1380 / 1792) * 100}%`, left: `${(50 / 1024) * 100}%` }}>

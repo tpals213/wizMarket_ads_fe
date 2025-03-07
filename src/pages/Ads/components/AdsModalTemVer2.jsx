@@ -53,7 +53,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     const [convertTempImg, setConvertTempImg] = useState([]);
     const [isReadyToUpload, setIsReadyToUpload] = useState(false);
     const [imageTemplateList, setImageTemplateList] = useState([]);
-
+    const [isCaptured, setIsCaptured] = useState(false); // ✅ 캡처 여부 상태
 
 
 
@@ -485,42 +485,50 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     // 선택한 템플릿 업로드
     const onUpload = async () => {
         const index = checkImages[0];
-
-        let useOptionPath = '';
-        let titlePath = '';
-
+    
+        let useOptionPath = "";
+        let titlePath = "";
+    
         if (title === "매장 소개") {
-            titlePath = 'intro';
+          titlePath = "intro";
         } else if (title === "이벤트") {
-            titlePath = 'event';
+          titlePath = "event";
         }
-
+    
         if (useOption === "인스타그램 스토리" || useOption === "카카오톡" || useOption === "") {
-            useOptionPath = '4to7';
+          useOptionPath = "4to7";
         } else if (useOption === "인스타그램 피드") {
-            useOptionPath = '1to1';
+          useOptionPath = "1to1";
         }
-
+    
         const templateElement = document.getElementById(`template_${titlePath}_${useOptionPath}_${index}`);
-
+    
         if (templateElement) {
-            // html-to-image를 사용하여 PNG 이미지로 변환
+          setIsCaptured(true); // ✅ 캡처 시작 (깜빡이는 커서 숨김)
+    
+          setTimeout(async () => {
+            // ✅ html-to-image를 사용하여 PNG 이미지 변환
             const imageData = await toPng(templateElement, {
-                cacheBust: true, // 캐시 방지 (이미지 변경 감지)
-                quality: 1,      // 이미지 품질 (0~1)
+              cacheBust: true, // 캐시 방지 (이미지 변경 감지)
+              quality: 1, // 이미지 품질 (0~1)
             });
+    
             setConvertTempImg(imageData);
-            
-            // ✅ 카카오톡 공유는 `shareOnKakao`에서 처리하도록 이동
+    
+            // ✅ 카카오톡 공유는 `shareOnKakao`에서 처리
             if (useOption === "카카오톡") {
-                console.log("카카오톡이 선택되었습니다.");
-                shareOnKakao(imageData);
-                return; // 카카오톡 처리 후 다른 로직 실행 방지
+              console.log("카카오톡이 선택되었습니다.");
+              shareOnKakao(imageData);
+              setIsCaptured(false); // ✅ 캡처 완료 (커서 다시 표시)
+              return; // 카카오톡 처리 후 다른 로직 실행 방지
             }
-            // ✅ 상태 업데이트 후 업로드를 기다리기 위해 `isReadyToUpload`를 true로 변경
+    
+            // ✅ 상태 업데이트 후 업로드 준비 완료
             setIsReadyToUpload(true);
+            setIsCaptured(false); // ✅ 캡처 완료 (커서 다시 표시)
+          }, 300); // ✅ 300ms 딜레이 추가 (상태 반영 후 캡처 실행)
         }
-    };
+      };
 
 
     // ✅ `uploadData`를 `useCallback`으로 감싸서 의존성 배열 문제 해결
@@ -1162,6 +1170,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                             weather={data.main}
                             tag={data.detail_category_name}
                             weekday={weekday}
+                            isCaptured={isCaptured}
                         />
 
                         {/* <div className="flex justify-center">

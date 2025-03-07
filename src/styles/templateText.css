@@ -1,26 +1,31 @@
 /* ✅ 깜빡이는 커서 효과 */
 @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
-  
-  .blinking-cursor::after {
-    content: "|";
-    position: absolute;
-    left : 0;
-    top: 0;
-    animation: blink 1s infinite;
-  }
-  
-  /* ✅ Hover 시 테두리 & 배경 강조 */
-  .editable-text {
-    border: transparent;
-    transition: all 0.3s ease;
-  }
-  
-  .editable-text:hover {
-    border: 1px solid gray;
-    background-color: #f5f5f5;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.blinking-cursor::after {
+  content: "|";
+  position: absolute;
+  left: 0;
+  top: 0;
+  animation: blink 1s infinite;
+  pointer-events: none;
+}
+
+/* ✅ Hover 시 테두리 & 배경 강조 */
+.editable-text {
+  border: transparent;
+  transition: all 0.3s ease;
+}
+
+.editable-text:hover {
+  border: 1px solid gray;
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ 캡처 중에는 깜빡이는 커서 제거 */
+.no-blinking::after {
+  content: none;
+}
