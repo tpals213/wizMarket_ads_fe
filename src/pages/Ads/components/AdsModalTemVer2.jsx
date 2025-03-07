@@ -252,11 +252,11 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     }), []);
 
 
-    // useEffect(() => {
-    //     if (isOpen) {
-    //         resetModalState();
-    //     }
-    // }, [isOpen]);
+    useEffect(() => {
+        if (isOpen) {
+            resetModalState();
+        }
+    }, [isOpen]);
 
 
     useEffect(() => {
