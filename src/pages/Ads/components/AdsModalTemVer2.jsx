@@ -680,7 +680,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
     
         try {
-            // ✅ iOS 대응: atob 대신 fetch 사용하여 Base64 -> Blob 변환
+            // ✅ 기존 방식 유지: 카카오 이미지 업로드
             const base64ToBlob = async (base64Data) => {
                 const res = await fetch(base64Data);
                 const blob = await res.blob();
@@ -689,38 +689,56 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     
             const blob = await base64ToBlob(imageData);
             const file = new File([blob], "uploaded_image.png", { type: "image/png" });
+
+            let uploadedImageUrl = null;
+
+            try {
+                const response = await window.Kakao.Share.uploadImage({ file: [file] });
+                console.log("✅ 카카오 이미지 업로드 응답:", response);
+
+                if (response && response.infos && response.infos.original && response.infos.original.url) {
+                    uploadedImageUrl = response.infos.original.url;
+                } else {
+                    console.error("❌ 카카오 이미지 업로드 실패 (응답 없음):", response);
+                    return;
+                }
+            } catch (uploadError) {
+                console.error("❌ 카카오 이미지 업로드 중 오류 발생:", uploadError);
+                return;
+            }
+
+            
+            // ✅ 1. 공유 데이터 임시 저장 (ads/temp/insert API 호출) - axios 사용
+            const saveResponse = await axios.post(
+                `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/temp/insert`,
+                {
+                    title: title || "기본 제목",
+                    content: content || "기본 내용",
+                    storeName: data?.store_name || "기본 매장명",
+                    roadName: data?.road_name || "기본 매장 주소",
+                    imageUrl: uploadedImageUrl,
+                },
+                {
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
     
-            // ✅ 기존 방식 유지: 카카오 이미지 업로드
-            const response = await window.Kakao.Share.uploadImage({ file: [file] });
-    
-            if (!response || !response.infos || !response.infos.original || !response.infos.original.url) {
-                console.error("카카오 이미지 업로드 실패:", response);
+            const { shortUrl } = saveResponse.data;
+            if (!shortUrl) {
+                console.error("단축 URL 생성 실패");
                 return;
             }
     
-            const uploadedImageUrl = response.infos.original.url;
-    
-            // ✅ Safari에서 URL 인코딩 문제 해결
-            const params = new URLSearchParams({
-                title: title || "기본 제목",
-                content: content || "기본 내용",
-                storeName: data?.store_name || "기본 매장명",
-                roadName: data?.road_name || "기본 매장 주소",
-                imageUrl: uploadedImageUrl || "기본 이미지",
-            }).toString();
-    
-            const adsInfoUrl = `?${params}`;
-    
-            // ✅ 카카오톡 공유 실행 (기존 로직 유지)
+            // ✅ 2. 카카오톡 공유 실행 (단축 URL 사용)
             window.Kakao.Share.sendCustom({
                 templateId: 115008,
                 templateArgs: {
-                    title: title || "기본 제목",
                     imageUrl: uploadedImageUrl,
-                    storeName: data?.store_name || "기본 매장명",
-                    content: content || "기본 내용",
-                    adsInfo: adsInfoUrl,
+                    storeName: data?.store_name,
+                    title: title,
                     store_business_id: storeBusinessNumber,
+                    adsInfo: shortUrl, // Redis 기반 단축 URL
+                    content: content
                 },
             });
     
@@ -728,10 +746,6 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             console.error("카카오톡 공유 중 오류 발생:", error);
         }
     };
-    
-    
-
-
 
     // const convertTempToImg = async (index) => {
     //     console.log(index);

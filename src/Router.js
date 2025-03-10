@@ -13,7 +13,7 @@ const Router = () => {
         <Route path="/ads/temp/:storeBusinessNumber" element={<AdsModalPage type="temp" />} />
         <Route path="/ads/temp2/:storeBusinessNumber" element={<AdsModalPage type="temp2" />} />
         <Route path="/ads/detail" element={<AdsModalPage type="edit" />} />
-        <Route path="/ads/promote" element={<AdsModalPage type="promote" />} />
+        <Route path="/ads/promote/:uniqueId" element={<AdsModalPage type="promote" />} />
         <Route path="/ads/auth/callback" element={<AdsModalPage type="youtube" />} />
         <Route path="/ads/detail/insta" element={<AdsModalPage type="insta" />} />
       </Routes>
