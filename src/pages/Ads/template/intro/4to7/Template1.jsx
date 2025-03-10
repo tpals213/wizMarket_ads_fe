@@ -193,7 +193,7 @@ const Template1 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
                 <img
                     src={finalImage}
                     alt="Template 5"
-                    className="w-full h-full object-cover border-4 border-black"
+                    className="w-full h-full object-cover"
                 />
             ) : (
                 <p>이미지 로딩 중...</p>

@@ -13,6 +13,7 @@ const titleMap = {
 const useOptionMap = {
   "인스타그램 스토리": "4to7",
   "카카오톡": "4to7",
+  "문자메시지":"4to7",
   "": "4to7",
   "인스타그램 피드": "1to1",
 };

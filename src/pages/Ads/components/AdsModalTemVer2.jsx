@@ -13,7 +13,7 @@ import "./../../../styles/drag.css";
 import AdsSwiper from './AdsSwiper';
 import "../../../styles/templateFont.css"
 import AdsSeedPrompt from './AdsSeedPrompt';
-import { toPng } from "html-to-image";
+import { toCanvas } from "html-to-image";
 
 
 
@@ -490,45 +490,67 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         let titlePath = "";
     
         if (title === "매장 소개") {
-          titlePath = "intro";
+            titlePath = "intro";
         } else if (title === "이벤트") {
-          titlePath = "event";
+            titlePath = "event";
         }
     
-        if (useOption === "인스타그램 스토리" || useOption === "카카오톡" || useOption === "") {
-          useOptionPath = "4to7";
+        if (useOption === "인스타그램 스토리" || useOption === "카카오톡" || useOption === "문자메시지" || useOption === "") {
+            useOptionPath = "4to7";
         } else if (useOption === "인스타그램 피드") {
-          useOptionPath = "1to1";
+            useOptionPath = "1to1";
         }
     
         const templateElement = document.getElementById(`template_${titlePath}_${useOptionPath}_${index}`);
     
         if (templateElement) {
-          setIsCaptured(true); // ✅ 캡처 시작 (깜빡이는 커서 숨김)
+            setIsCaptured(true); // ✅ 캡처 시작 (커서 숨김)
     
-          setTimeout(async () => {
-            // ✅ html-to-image를 사용하여 PNG 이미지 변환
-            const imageData = await toPng(templateElement, {
-              cacheBust: true, // 캐시 방지 (이미지 변경 감지)
-              quality: 1, // 이미지 품질 (0~1)
-            });
+            setTimeout(async () => {
+                try {
+                    // ✅ 1. HTML 요소를 캔버스로 변환
+                    const canvas = await toCanvas(templateElement, {
+                        cacheBust: true,
+                    });
     
-            setConvertTempImg(imageData);
+                    // ✅ 2. 업로드할 해상도 설정 (1024 × 1792)
+                    const newWidth = 1024;
+                    const newHeight = 1792;
     
-            // ✅ 카카오톡 공유는 `shareOnKakao`에서 처리
-            if (useOption === "카카오톡") {
-              console.log("카카오톡이 선택되었습니다.");
-              shareOnKakao(imageData);
-              setIsCaptured(false); // ✅ 캡처 완료 (커서 다시 표시)
-              return; // 카카오톡 처리 후 다른 로직 실행 방지
-            }
+                    const resizedCanvas = document.createElement("canvas");
+                    resizedCanvas.width = newWidth;
+                    resizedCanvas.height = newHeight;
+                    const ctx = resizedCanvas.getContext("2d");
     
-            // ✅ 상태 업데이트 후 업로드 준비 완료
-            setIsReadyToUpload(true);
-            setIsCaptured(false); // ✅ 캡처 완료 (커서 다시 표시)
-          }, 300); // ✅ 300ms 딜레이 추가 (상태 반영 후 캡처 실행)
+                    // ✅ 3. 고품질 필터링 적용
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = "high";
+    
+                    // ✅ 4. 원본 캔버스를 1024×1792 크기로 리사이징하여 새 캔버스에 그리기
+                    ctx.drawImage(canvas, 0, 0, newWidth, newHeight);
+    
+                    // ✅ 5. PNG로 변환 (최고 품질 유지)
+                    const imageData = resizedCanvas.toDataURL("image/png", 1.0); // 100% 품질
+    
+                    setConvertTempImg(imageData);
+    
+                    // ✅ 카카오톡 공유는 `shareOnKakao`에서 처리
+                    if (useOption === "카카오톡") {
+                        console.log("카카오톡이 선택되었습니다.");
+                        shareOnKakao(imageData);
+                        setIsCaptured(false);
+                        return;
+                    }
+    
+                    // ✅ 상태 업데이트 후 업로드 준비 완료
+                    setIsReadyToUpload(true);
+                    setIsCaptured(false);
+                } catch (error) {
+                    console.error("Error capturing high-quality image:", error);
+                }
+            }, 300);
         }
-      };
+    };
 
 
     // ✅ `uploadData`를 `useCallback`으로 감싸서 의존성 배열 문제 해결
@@ -629,16 +651,15 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             console.error("업로드할 이미지가 없습니다.");
             return;
         }
-
+    
         console.log("카카오톡 공유 시작...");
-
-        // ✅ 카카오 SDK가 정상적으로 로드되었는지 확인 후 초기화
+    
         const kakaoJsKey = process.env.REACT_APP_KAKAO_JS_API_KEY;
         if (!kakaoJsKey) {
             console.error("Kakao JavaScript Key가 설정되지 않았습니다.");
             return;
         }
-
+    
         if (!window.Kakao) {
             console.log("카카오 SDK 로드 중...");
             const script = document.createElement("script");
@@ -648,51 +669,51 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                 if (!window.Kakao.isInitialized()) {
                     window.Kakao.init(kakaoJsKey);
                 }
-                shareOnKakao(imageData); // ✅ 스크립트 로드 후 공유 실행
+                shareOnKakao(imageData);
             };
             document.body.appendChild(script);
             return;
         }
-
+    
         if (!window.Kakao.isInitialized()) {
             window.Kakao.init(kakaoJsKey);
         }
-
+    
         try {
-            // ✅ 이미지 변환 후 Blob 형태로 변환
-            const base64ToBlob = (base64Data) => {
-                const byteString = atob(base64Data.split(",")[1]);
-                const mimeString = base64Data.split(",")[0].split(":")[1].split(";")[0];
-                const byteArray = new Uint8Array(byteString.length);
-                for (let i = 0; i < byteString.length; i++) {
-                    byteArray[i] = byteString.charCodeAt(i);
-                }
-                return new Blob([byteArray], { type: mimeString });
+            // ✅ iOS 대응: atob 대신 fetch 사용하여 Base64 -> Blob 변환
+            const base64ToBlob = async (base64Data) => {
+                const res = await fetch(base64Data);
+                const blob = await res.blob();
+                return blob;
             };
-
-            const blob = base64ToBlob(imageData);
+    
+            const blob = await base64ToBlob(imageData);
             const file = new File([blob], "uploaded_image.png", { type: "image/png" });
-
-            // ✅ 카카오 이미지 업로드
+    
+            // ✅ 기존 방식 유지: 카카오 이미지 업로드
             const response = await window.Kakao.Share.uploadImage({ file: [file] });
-
+    
             if (!response || !response.infos || !response.infos.original || !response.infos.original.url) {
                 console.error("카카오 이미지 업로드 실패:", response);
                 return;
             }
-
+    
             const uploadedImageUrl = response.infos.original.url;
-
-            // ✅ 공유할 광고 정보 URL 생성
-            const adsInfoUrl = `?title=${encodeURIComponent(title || "기본 제목")}
-                &content=${encodeURIComponent(content || "기본 내용")}
-                &storeName=${encodeURIComponent(data?.store_name || "기본 매장명")}
-                &roadName=${encodeURIComponent(data?.road_name || "기본 매장 주소")}
-                &imageUrl=${encodeURIComponent(uploadedImageUrl || "기본 내용")}`;
-
-            // ✅ 카카오톡 공유 실행
+    
+            // ✅ Safari에서 URL 인코딩 문제 해결
+            const params = new URLSearchParams({
+                title: title || "기본 제목",
+                content: content || "기본 내용",
+                storeName: data?.store_name || "기본 매장명",
+                roadName: data?.road_name || "기본 매장 주소",
+                imageUrl: uploadedImageUrl || "기본 이미지",
+            }).toString();
+    
+            const adsInfoUrl = `?${params}`;
+    
+            // ✅ 카카오톡 공유 실행 (기존 로직 유지)
             window.Kakao.Share.sendCustom({
-                templateId: 115008, // 생성한 템플릿 ID
+                templateId: 115008,
                 templateArgs: {
                     title: title || "기본 제목",
                     imageUrl: uploadedImageUrl,
@@ -702,11 +723,13 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                     store_business_id: storeBusinessNumber,
                 },
             });
-
+    
         } catch (error) {
             console.error("카카오톡 공유 중 오류 발생:", error);
         }
     };
+    
+    
 
 
 
