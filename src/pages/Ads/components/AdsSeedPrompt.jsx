@@ -212,13 +212,13 @@ const AdsSeedPrompt = {
     
     // 레트로 시드 프롬프트
     "/assets/template/retro/retro_image_1.png": `
-        Create a retro-style advertisement with a nostalgic Korean aesthetic. 
-        The background features a vintage radial pattern with warm, muted pastel colors such as teal, beige, and orange. 
-        The design includes a grainy texture, evoking the look of old posters. 
-        Two cheerful characters, a young man and woman, hold traditional Korean beverages and snacks, smiling joyfully. 
-        The typography is bold and blocky, with a mix of modern and classic retro fonts. 
-        The overall composition feels like a vintage Korean commercial from the 70s or 80s, 
-        incorporating playful star motifs and a circular framing effect to enhance the nostalgic feel.
+        A retro-style image evoking nostalgia for 1970s-80s Korea. 
+        The background features a vintage radial pattern in warm, soft pastel tones such as teal, beige, and orange. 
+        A grainy texture is added to mimic the look of an old poster. 
+        Two cheerful young Korean individuals, a man and a woman, are dressed in retro-style uniforms, holding beverages and smiling brightly. 
+        Their warm and friendly expressions create a nostalgic atmosphere. 
+        The overall composition resembles vintage Korean imagery from the 70s and 80s, 
+        incorporating playful star motifs and a circular framing effect to further enhance the retro aesthetic.
     `,
 
     "/assets/template/retro/retro_image_2.png": `
