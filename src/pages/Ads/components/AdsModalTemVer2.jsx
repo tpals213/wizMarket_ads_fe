@@ -252,11 +252,11 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     }), []);
 
 
-    useEffect(() => {
-        if (isOpen) {
-            resetModalState();
-        }
-    }, [isOpen]);
+    // useEffect(() => {
+    //     if (isOpen) {
+    //         resetModalState();
+    //     }
+    // }, [isOpen]);
 
 
     useEffect(() => {
@@ -505,35 +505,34 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     
         if (templateElement) {
             setIsCaptured(true); // ✅ 캡처 시작 (커서 숨김)
-    
+        
             setTimeout(async () => {
                 try {
                     // ✅ 1. HTML 요소를 캔버스로 변환
                     const canvas = await toCanvas(templateElement, {
                         cacheBust: true,
                     });
-    
-                    // ✅ 2. 업로드할 해상도 설정 (1024 × 1792)
-                    const newWidth = 1024;
-                    const newHeight = 1792;
-    
-                    const resizedCanvas = document.createElement("canvas");
-                    resizedCanvas.width = newWidth;
-                    resizedCanvas.height = newHeight;
-                    const ctx = resizedCanvas.getContext("2d");
-    
-                    // ✅ 3. 고품질 필터링 적용
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = "high";
-    
-                    // ✅ 4. 원본 캔버스를 1024×1792 크기로 리사이징하여 새 캔버스에 그리기
-                    ctx.drawImage(canvas, 0, 0, newWidth, newHeight);
-    
-                    // ✅ 5. PNG로 변환 (최고 품질 유지)
-                    const imageData = resizedCanvas.toDataURL("image/png", 1.0); // 100% 품질
-    
+        
+                    // ❌ 2. 해상도 조정 부분 제거
+                    // const newWidth = 1024;
+                    // const newHeight = 1792;
+                    // const resizedCanvas = document.createElement("canvas");
+                    // resizedCanvas.width = newWidth;
+                    // resizedCanvas.height = newHeight;
+                    // const ctx = resizedCanvas.getContext("2d");
+        
+                    // ❌ 3. 고품질 필터링 제거
+                    // ctx.imageSmoothingEnabled = true;
+                    // ctx.imageSmoothingQuality = "high";
+        
+                    // ❌ 4. 원본 캔버스를 1024×1792 크기로 리사이징하는 부분 제거
+                    // ctx.drawImage(canvas, 0, 0, newWidth, newHeight);
+        
+                    // ✅ 5. PNG로 변환 (원본 크기 그대로 내보내기)
+                    const imageData = canvas.toDataURL("image/png", 1.0); // 100% 품질 유지
+        
                     setConvertTempImg(imageData);
-    
+        
                     // ✅ 카카오톡 공유는 `shareOnKakao`에서 처리
                     if (useOption === "카카오톡") {
                         console.log("카카오톡이 선택되었습니다.");
@@ -541,7 +540,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                         setIsCaptured(false);
                         return;
                     }
-    
+        
                     // ✅ 상태 업데이트 후 업로드 준비 완료
                     setIsReadyToUpload(true);
                     setIsCaptured(false);
@@ -549,7 +548,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                     console.error("Error capturing high-quality image:", error);
                 }
             }, 300);
-        }
+        }        
     };
 
 

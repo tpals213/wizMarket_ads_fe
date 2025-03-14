@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
+import "../../../../../styles/templateText.css"
 
-const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
     // console.log(weather)
@@ -11,6 +12,11 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
     const topText = roadName.split(" ")[1] + " | " + tag + " | " + weather + " | " + weekday;
 
+    const [editText, setEditText] = useState(text)
+    
+    const handleBlur = (e) => {
+        setEditText(e.target.innerText);
+    };
 
     useEffect(() => {
         if (!imageUrl) return;
@@ -121,17 +127,24 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                 >
                     {/* ✅ 텍스트 */}
                     <p
-                        className="text-black text-center break-keep"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={handleBlur}
+                        className={`editable-text blinking-cursor text-center break-keep relative ${
+                            isCaptured ? "no-blinking" : "" // ✅ 캡처 중이면 커서 숨김
+                        }`}
                         style={{
+                            color: "#000",
                             fontFeatureSettings: "'case' on",
-                            fontFamily: "'Diphylleia', sans-serif",
-                            fontSize: "18px",
+                            fontFamily: "Diphylleia",
+                            fontSize: `${36 * (431 / 1024)}px`,
                             fontStyle: "normal",
                             fontWeight: 400,
-                            lineHeight: "21px",
+                            lineHeight: `${42 * (431 / 1024)}px`,
                         }}
-                    >
-                        {text}
+                        data-html2canvas-ignore={isCaptured ? "true" : "false"} // ✅ 캡처 중이면 커서 숨김
+                        >
+                        {editText}
                     </p>
                 </div>
             </div>
@@ -144,7 +157,7 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Diphylleia",
-                        fontSize: "48px",
+                        fontSize: `${96 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
                         lineHeight: "84px",
@@ -162,7 +175,7 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Diphylleia",
-                        fontSize: "18px",
+                        fontSize: `${36 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
                         lineHeight: "42px",

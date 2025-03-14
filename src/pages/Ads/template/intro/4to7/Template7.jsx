@@ -125,7 +125,7 @@ const Template7 = ({ imageUrl, text, storeName, roadName }) => {
             const siteWidth = 36;
             const siteHeight = 44;
             const siteX = 99 // 중앙 정렬
-            const siteY = 1397;
+            const siteY = 1374;
         
             ctx.drawImage(siteImg, siteX, siteY, siteWidth, siteHeight);
 
@@ -219,7 +219,7 @@ const Template7 = ({ imageUrl, text, storeName, roadName }) => {
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "24px",
+                        fontSize: `${48 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
                         lineHeight: "40px",
@@ -235,10 +235,10 @@ const Template7 = ({ imageUrl, text, storeName, roadName }) => {
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "20px",
+                        fontSize: `${40 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "40px",
+                        lineHeight: `${40 * (431 / 1024)}px`,
 
                     }}>
                     {roadName}

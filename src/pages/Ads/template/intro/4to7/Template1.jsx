@@ -215,10 +215,10 @@ const Template1 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
                         color: "#656565",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "32px",
+                        fontSize: `${64 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "33px",
+                        lineHeight: `${66 * (431 / 1024)}px`,
                     }}
                     data-html2canvas-ignore={isCaptured ? "true" : "false"} // ✅ 캡처 중이면 커서 숨김
                     >
@@ -232,10 +232,10 @@ const Template1 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
                         color: "#000",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Do Hyeon",
-                        fontSize: "20px",
+                        fontSize: `${40 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
-                        lineHeight: "21px",
+                        lineHeight: `${42 * (431 / 1024)}px`,
                     }}>
                     {storeName}
                 </p>
@@ -244,10 +244,10 @@ const Template1 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
                         color: "#000",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Do Hyeon",
-                        fontSize: "20px",
+                        fontSize: `${40 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
-                        lineHeight: "21px",
+                        lineHeight: `${42 * (431 / 1024)}px`,
                     }}>
                     {roadName}
                 </p>

@@ -1,9 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
-const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
+
+    const [editText, setEditText] = useState(text)
+
+    const handleBlur = (e) => {
+        setEditText(e.target.innerText);
+    };
 
     // ✅ 크롭 영역 (원본 크기 유지)
     const wantWidth = 1024;
@@ -108,20 +114,25 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             {/* ✅ 텍스트 오버레이 */}
             <div className="absolute w-[80%]"
                 style={{ top: `${(878 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-center overflow-hidden text-ellipsis break-keep"
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBlur}
+                    className={`editable-text blinking-cursor text-center break-keep relative ${isCaptured ? "no-blinking" : "" // ✅ 캡처 중이면 커서 숨김
+                        }`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "24px",
+                        fontSize: `${48 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "42px",
-
-                    }}>
-                    {text}
+                        lineHeight: `${55 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"} // ✅ 캡처 중이면 커서 숨김
+                >
+                    {editText}
                 </p>
-
             </div>
             <div
                 className="absolute w-full flex justify-center"
@@ -133,41 +144,79 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             >
                 {/* ✅ 상하좌우 50px 더 큰 배경 div */}
                 <div
-                    className="relative px-6 py-7"
+                    className="relative inline-block text-center"
                     style={{
-                        background: "rgba(0, 0, 0, 0.50)", // 검은색 50% 투명도
-                        display: "inline-block", // 텍스트 크기에 맞춤
+                        paddingLeft: `${50 * (431 / 1024)}px`,
+                        paddingRight: `${50 * (431 / 1024)}px`,
+                        paddingTop: `${10 * (431 / 1024)}px`,
+                        paddingBottom: `${10 * (431 / 1024)}px`,
+                        background: "rgba(0, 0, 0, 0.50)",
                     }}
                 >
                     {/* ✅ storeName 텍스트 */}
-                    <p
-                        className="text-white text-center overflow-hidden text-ellipsis break-keep"
-                        style={{
-                            color: "#FFF",
-                            fontFamily: "Pretendard",
-                            fontSize: "32px",
-                            fontStyle: "normal",
-                            fontWeight: 600,
-                            lineHeight: "55px",
-                        }}
-                    >
-                        {storeName}
-                    </p>
+                    {storeName.length > 7 ? (
+                        <>
+                            <p
+                                className="text-white overflow-hidden text-ellipsis break-keep"
+                                style={{
+                                    color: "#FFF",
+                                    fontFamily: "Pretendard",
+                                    fontSize: `${96 * (431 / 1024)}px`,
+                                    fontStyle: "normal",
+                                    fontWeight: 600,
+                                    lineHeight: "normal"
+                                }}
+                            >
+                                {storeName.slice(0, 7)} {/* 첫째 줄 */}
+                            </p>
+                            <p
+                                className="text-white overflow-hidden text-ellipsis break-keep"
+                                style={{
+                                    color: "#FFF",
+                                    fontFamily: "Pretendard",
+                                    fontSize: `${96 * (431 / 1024)}px`,
+                                    fontStyle: "normal",
+                                    fontWeight: 600,
+                                    lineHeight: "normal"
+                                }}
+                            >
+                                {storeName.slice(7)} {/* 둘째 줄 */}
+                            </p>
+                        </>
+                    ) : (
+                        <p
+                            className="text-white overflow-hidden text-ellipsis break-keep"
+                            style={{
+                                color: "#FFF",
+                                fontFamily: "Pretendard",
+                                fontSize: `${96 * (431 / 1024)}px`,
+                                fontStyle: "normal",
+                                fontWeight: 600,
+                                lineHeight: "normal"
+                            }}
+                        >
+                            {storeName}
+                        </p>
+                    )}
                 </div>
             </div>
 
             <div
                 className="absolute w-full flex justify-center"
                 style={{
-                    top: `${(1506 / 1792) * 100}%`,
+                    top: `${(1606 / 1792) * 100}%`,
                     left: "50%",
                     transform: "translateX(-50%)"
                 }}
             >
                 {/* ✅ 상하좌우 50px 더 큰 배경 div */}
                 <div
-                    className="relative px-[30px] py-[5px]"
+                    className="relative "
                     style={{
+                        paddingLeft: `${81 * (431 / 1024)}px`,
+                        paddingRight: `${81 * (431 / 1024)}px`,
+                        paddingTop: `${18 * (431 / 1024)}px`,
+                        paddingBottom: `${18 * (431 / 1024)}px`,
                         background: "rgba(0, 0, 0, 0.50)", // 검은색 50% 투명도
                         display: "inline-block", // 텍스트 크기에 맞춤
                     }}
@@ -178,10 +227,10 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                         style={{
                             color: "rgba(255, 255, 255, 0.80)",
                             fontFamily: "Pretendard",
-                            fontSize: "18px",
+                            fontSize: `${36 * (431 / 1024)}px`,
                             fontStyle: "normal",
                             fontWeight: 600,
-                            lineHeight: "50px",
+                            lineHeight: `${50 * (431 / 1024)}px`,
                         }}
                     >
                         {roadName}

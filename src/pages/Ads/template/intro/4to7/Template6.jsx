@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
-const Template6 = ({ imageUrl, text, storeName, roadName }) => {
+const Template6 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
 
@@ -13,6 +13,11 @@ const Template6 = ({ imageUrl, text, storeName, roadName }) => {
 
     const imgTop = 367; // 메인 이미지 배치할 y 위치 (조절 가능)
 
+    const [editText, setEditText] = useState(text)
+    
+    const handleBlur = (e) => {
+        setEditText(e.target.innerText);
+    };
 
     useEffect(() => {
         if (!imageUrl) return;
@@ -181,60 +186,67 @@ const Template6 = ({ imageUrl, text, storeName, roadName }) => {
 
             {/* ✅ 텍스트 오버레이 */}
             <div className="absolute"
-                style={{ top: `${(1428 / 1792) * 100}%`, right: `${(149 / 1024) * 100}%` }}>
-                <p className="text-white text-right overflow-hidden text-ellipsis"
+                style={{ top: `${(1478 / 1792) * 100}%`, right: `${(149 / 1024) * 100}%` }}>
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBlur}
+                    className={`editable-text blinking-cursor text-left break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#000",
+                        fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "18px",
+                        fontSize: `${36 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
-                        lineHeight: "50px",
-                    }}>
-                    {text}
+                        lineHeight: `${50 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editText}
                 </p>
             </div>
             <div className="absolute"
-                style={{ top: `${(1160 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
+                style={{ top: `${(1177 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
                 <p className="text-left break-keep font-extrabold"
                     style={{
                         color: "#C4052A",
-                        fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "20px",
+                        fontSize: `${40 * (431 / 1024)}px`,
                         fontStyle: "normal",
-                        lineHeight: "50px",
+                        lineHeight: `${50 * (431 / 1024)}px`,
+                        fontWeight: 800,
                     }}>
                     {storeName}
                 </p>
             </div>
             <div className="absolute"
-                style={{ top: `${(163 / 1792) * 100}%`, left: `${(119 / 1024) * 100}%` }}>
+                style={{ top: `${(183 / 1792) * 100}%`, left: `${(119 / 1024) * 100}%` }}>
                 <p className="text-white text-left break-keep"
                     style={{
                         color: "#000",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "15px",
+                        fontSize: `${30 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
-                        lineHeight: "40px",
-
+                        lineHeight: `${40 * (431 / 1024)}px`,
+                        letterSpacing: `${3 * (431 / 1024)}px`,
                     }}>
                     {storeName}
                 </p>
             </div>
             <div className="absolute w-full"
-                style={{ top: `${(1242 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
+                style={{ top: `${(1262 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
                 <p className="text-white text-center break-keep"
                     style={{
-                        color: "rgba(0, 0, 0, 0.50)",
+                        color: "rgba(0, 0, 0, 0.80)",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "15px",
+                        fontSize: `${30 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 200,
-                        lineHeight: "50px",
+                        lineHeight: `${50 * (431 / 1024)}px`,
 
                     }}>
                     {roadName}

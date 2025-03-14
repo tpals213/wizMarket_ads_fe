@@ -1,9 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
-const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
+
+    const [editText, setEditText] = useState(text)
+
+    const handleBlur = (e) => {
+        setEditText(e.target.innerText);
+    };
 
     // ✅ 크롭 영역 (원본 크기 유지)
     const wantWidth = 1024;
@@ -106,34 +112,73 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
             {/* ✅ 텍스트 오버레이 */}
 
-            <div className="absolute w-[60%]"
+            <div className="absolute w-[70%]"
                 style={{ top: `${(200 / 1792) * 100}%`, left: `${(84 / 1024) * 100}%` }}>
-                <p className="text-white text-left break-keep pb-12"
-                    style={{
-                        color: "#FFF",
-                        fontFeatureSettings: "'case' on",
-                        fontFamily: "Pretendard",
-                        fontSize: "55px",
-                        fontStyle: "normal",
-                        fontWeight: 900,
-                        lineHeight: "60px",
 
-                    }}>
-                    {storeName}
-                </p>
-                <p className="text-white text-left break-keep"
+                {/* ✅ storeName: 7글자 넘으면 두 줄로 나누기 */}
+                {storeName.length > 7 ? (
+                    <>
+                        <p className="text-white text-left break-keep pb-3"
+                            style={{
+                                color: "#FFF",
+                                fontFeatureSettings: "'case' on",
+                                fontFamily: "Pretendard",
+                                fontSize: `${110 * (431 / 1024)}px`,
+                                fontStyle: "normal",
+                                fontWeight: 900,
+                                lineHeight: `${120 * (431 / 1024)}px`,
+                            }}>
+                            {storeName.slice(0, 7)} {/* 첫째 줄 */}
+                        </p>
+                        <p className="text-white text-left break-keep pb-12"
+                            style={{
+                                color: "#FFF",
+                                fontFeatureSettings: "'case' on",
+                                fontFamily: "Pretendard",
+                                fontSize: `${110 * (431 / 1024)}px`,
+                                fontStyle: "normal",
+                                fontWeight: 900,
+                                lineHeight: `${120 * (431 / 1024)}px`,
+                            }}>
+                            {storeName.slice(7)} {/* 둘째 줄 */}
+                        </p>
+                    </>
+                ) : (
+                    <p className="text-white text-left break-keep pb-12"
+                        style={{
+                            color: "#FFF",
+                            fontFeatureSettings: "'case' on",
+                            fontFamily: "Pretendard",
+                            fontSize: `${110 * (431 / 1024)}px`,
+                            fontStyle: "normal",
+                            fontWeight: 900,
+                            lineHeight: `${120 * (431 / 1024)}px`,
+                        }}>
+                        {storeName}
+                    </p>
+                )}
+
+                {/* ✅ contentEditable 부분 */}
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBlur}
+                    className={`editable-text blinking-cursor text-left break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "40px",
+                        fontSize: `${80 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "45px",
-                    }}>
-                    {text}
+                        lineHeight: `${84 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editText}
                 </p>
             </div>
+
             <div className="absolute w-full"
                 style={{ top: `${(1598 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
                 <p className="text-white text-center break-keep"
@@ -141,10 +186,10 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "24px",
+                        fontSize: `${48 * (431 / 1024)}px`,
                         fontStyle: "normal",
-                        fontWeight: 700,
-                        lineHeight: "45px",
+                        fontWeight: 500,
+                        lineHeight: `${50 * (431 / 1024)}px`,
                     }}>
                     {roadName}
                 </p>
