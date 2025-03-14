@@ -23,7 +23,6 @@ const AdsSeedPrompt = {
         Close-up of sizzling samgyeopsal (Korean pork belly) on a traditional grill, with crispy golden-brown edges and melting fat. 
         The meat is juicy, tender, and has grill marks. Surrounding it are fresh lettuce, garlic, and a bowl of ssamjang. 
         The smoky grill and lighting highlight the texture of the pork. Blurred background. 
-        Add text: 'Perfectly Grilled Samgyeopsal. #JuicyAndCrispy #KoreanBBQ'
     `,
 
     "/assets/template/photo/photo_image_4.png": `
@@ -59,11 +58,12 @@ const AdsSeedPrompt = {
 
 
     "/assets/template/photo/photo_image_7.png": `
-        Close-up of sizzling samgyeopsal (Korean pork belly) on a traditional grill, with crispy golden-brown edges and melting fat. 
-        The meat is juicy, tender, and has grill marks. Surrounding it are fresh lettuce, garlic, and a bowl of ssamjang. 
-        The smoky grill and lighting highlight the texture of the pork. 
-        Blurred background. 
-        Add text: 'Perfectly Grilled Samgyeopsal. #JuicyAndCrispy #KoreanBBQ'
+        Four crispy, glossy pork belly cubes are falling from top to bottom in mid-air, creating a dynamic, cascading effect. 
+        The pieces naturally stack as they descend, surrounded by fresh cilantro leaves, tiny red chili peppers, and droplets of sauce. 
+        The pork belly has a golden-brown caramelized crust with tender, juicy layers of fat and meat. 
+        The background is a soft beige gradient, and the dish is presented on a simple white plate with a drizzle of sauce beneath. 
+        The composition emphasizes a sense of motion, with herbs and seasonings dispersing in the air as the pork belly falls. 
+        The lighting is soft and diffused, highlighting textures and colors in a hyper-realistic style.
     `,
 
 
