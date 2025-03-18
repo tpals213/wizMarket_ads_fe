@@ -72,6 +72,8 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     // 시드 템플릿 선택
     const handleTemplateClick = (imgObj) => {
+        
+
         if (exampleImage === imgObj.src) {
             // 현재 선택된 이미지라면 선택 해제
             setExampleImage(null);
@@ -436,6 +438,24 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         }
     };
 
+    // 이미지 base64 형태 변환
+    const convertImageToBase64 = async (imagePath) => {
+        try {
+            const response = await fetch(imagePath);
+            const blob = await response.blob();
+
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+            });
+        } catch (error) {
+            console.error("이미지 변환 중 오류 발생:", error);
+            return null;
+        }
+    };
+
 
     // AI 로생성
     const generateAds = async () => {
@@ -444,6 +464,12 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
         const updatedUseOption = useOption === "" ? "인스타그램 스토리" : useOption;
         const aiModelOption = "imagen3"; // 이미지 생성 모델 옵션
         setContentLoading(true)
+
+        let base64Image = null;
+        if (exampleImage) {
+            base64Image = await convertImageToBase64(exampleImage);
+        }
+
         const basicInfo = {
             gpt_role: gptRole,
             weather: data.main,
@@ -457,9 +483,9 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             use_option: updatedUseOption,
             title: updatedTitle,
             ai_model_option: aiModelOption,
-            seed_prompt: seedPrompt
+            seed_prompt: seedPrompt,
+            example_image: base64Image,
         };
-
         try {
             const response = await axios.post(
                 `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/generate/template2`,
@@ -485,34 +511,34 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     // 선택한 템플릿 업로드
     const onUpload = async () => {
         const index = checkImages[0];
-    
+
         let useOptionPath = "";
         let titlePath = "";
-    
+
         if (title === "매장 소개") {
             titlePath = "intro";
         } else if (title === "이벤트") {
             titlePath = "event";
         }
-    
+
         if (useOption === "인스타그램 스토리" || useOption === "카카오톡" || useOption === "문자메시지" || useOption === "") {
             useOptionPath = "4to7";
         } else if (useOption === "인스타그램 피드") {
             useOptionPath = "1to1";
         }
-    
+
         const templateElement = document.getElementById(`template_${titlePath}_${useOptionPath}_${index}`);
-    
+
         if (templateElement) {
             setIsCaptured(true); // ✅ 캡처 시작 (커서 숨김)
-        
+
             setTimeout(async () => {
                 try {
                     // ✅ 1. HTML 요소를 캔버스로 변환
                     const canvas = await toCanvas(templateElement, {
                         cacheBust: true,
                     });
-        
+
                     // ❌ 2. 해상도 조정 부분 제거
                     // const newWidth = 1024;
                     // const newHeight = 1792;
@@ -520,19 +546,19 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                     // resizedCanvas.width = newWidth;
                     // resizedCanvas.height = newHeight;
                     // const ctx = resizedCanvas.getContext("2d");
-        
+
                     // ❌ 3. 고품질 필터링 제거
                     // ctx.imageSmoothingEnabled = true;
                     // ctx.imageSmoothingQuality = "high";
-        
+
                     // ❌ 4. 원본 캔버스를 1024×1792 크기로 리사이징하는 부분 제거
                     // ctx.drawImage(canvas, 0, 0, newWidth, newHeight);
-        
+
                     // ✅ 5. PNG로 변환 (원본 크기 그대로 내보내기)
                     const imageData = canvas.toDataURL("image/png", 1.0); // 100% 품질 유지
-        
+
                     setConvertTempImg(imageData);
-        
+
                     // ✅ 카카오톡 공유는 `shareOnKakao`에서 처리
                     if (useOption === "카카오톡") {
                         console.log("카카오톡이 선택되었습니다.");
@@ -540,7 +566,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                         setIsCaptured(false);
                         return;
                     }
-        
+
                     // ✅ 상태 업데이트 후 업로드 준비 완료
                     setIsReadyToUpload(true);
                     setIsCaptured(false);
@@ -548,7 +574,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                     console.error("Error capturing high-quality image:", error);
                 }
             }, 300);
-        }        
+        }
     };
 
 
@@ -650,15 +676,15 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             console.error("업로드할 이미지가 없습니다.");
             return;
         }
-    
+
         console.log("카카오톡 공유 시작...");
-    
+
         const kakaoJsKey = process.env.REACT_APP_KAKAO_JS_API_KEY;
         if (!kakaoJsKey) {
             console.error("Kakao JavaScript Key가 설정되지 않았습니다.");
             return;
         }
-    
+
         if (!window.Kakao) {
             console.log("카카오 SDK 로드 중...");
             const script = document.createElement("script");
@@ -673,11 +699,11 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             document.body.appendChild(script);
             return;
         }
-    
+
         if (!window.Kakao.isInitialized()) {
             window.Kakao.init(kakaoJsKey);
         }
-    
+
         try {
             // ✅ 기존 방식 유지: 카카오 이미지 업로드
             const base64ToBlob = async (base64Data) => {
@@ -685,7 +711,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                 const blob = await res.blob();
                 return blob;
             };
-    
+
             const blob = await base64ToBlob(imageData);
             const file = new File([blob], "uploaded_image.png", { type: "image/png" });
 
@@ -706,7 +732,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                 return;
             }
 
-            
+
             // ✅ 1. 공유 데이터 임시 저장 (ads/temp/insert API 호출) - axios 사용
             const saveResponse = await axios.post(
                 `${process.env.REACT_APP_FASTAPI_ADS_URL}/ads/temp/insert`,
@@ -721,13 +747,13 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                     headers: { "Content-Type": "application/json" },
                 }
             );
-    
+
             const { shortUrl } = saveResponse.data;
             if (!shortUrl) {
                 console.error("단축 URL 생성 실패");
                 return;
             }
-    
+
             // ✅ 2. 카카오톡 공유 실행 (단축 URL 사용)
             window.Kakao.Share.sendCustom({
                 templateId: 115008,
@@ -740,7 +766,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                     content: content
                 },
             });
-    
+
         } catch (error) {
             console.error("카카오톡 공유 중 오류 발생:", error);
         }
@@ -749,7 +775,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     // const convertTempToImg = async (index) => {
     //     console.log(index);
     //     const templateElement = document.getElementById(`template_intro_4to7_1`);
-    
+
     //     if (templateElement) {
     //         try {
     //             // html-to-image를 사용하여 PNG 이미지로 변환
@@ -757,7 +783,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     //                 cacheBust: true, // 캐시 방지 (이미지 변경 감지)
     //                 quality: 1,      // 이미지 품질 (0~1)
     //             });
-    
+
     //             // 변환된 이미지 데이터 저장
     //             setConvertTempImg(imageData);
     //         } catch (error) {
@@ -832,9 +858,14 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                                     ].map((option, index, array) => (
                                         <div key={option.value} className="flex items-center flex-1">
                                             <button
-                                                className={`flex-1 py-2 rounded-lg font-[Pretendard] font-semibold text-center text-sm transition ${title === option.value ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700"
-                                                    }`}
-                                                onClick={() => setTitle(option.value)}
+                                                className={`flex-1 py-2 rounded-lg font-[Pretendard] font-semibold text-center text-sm transition 
+                                                    ${title === option.value ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700"}`}
+                                                onClick={() => {
+                                                    setContent(() => ""); // ✅ 먼저 초기화
+                                                    setImageTemplateList(() => []); // ✅ 그다음 이미지 템플릿 리스트 초기화
+                                                    setInstaCopyright(() => "")
+                                                    setTitle(() => option.value); // ✅ 마지막으로 title 변경
+                                                }}
                                             >
                                                 {option.label}
                                             </button>
@@ -941,13 +972,14 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         filteredImages.map((img, index) => (
                                             <div
                                                 key={img.src}
-                                                className={`relative border-4 w-[114px] h-[120px] rounded-lg transition ${exampleImage === img.src ? "border-[#FF029A]" : "border-transparent"}`}
+                                                className={`relative w-full aspect-square transition`} // w-full + 정사각형 유지
                                                 onClick={() => handleTemplateClick(img)}
                                             >
                                                 <img
                                                     src={img.src}
                                                     alt={`이미지 ${index + 1}`}
-                                                    className="w-[114px] h-[114px] object-cover cursor-pointer"
+                                                    className={`object-cover w-full h-full cursor-pointer border-4
+                                                    ${exampleImage === img.src ? "border-[#FF029A]" : "border-transparent"}`}
                                                 />
                                             </div>
                                         ))
@@ -957,6 +989,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
                                         </p>
                                     )}
                                 </div>
+
                             </div>
 
                             {/* 주제 세부 정보 선택 영역 */}

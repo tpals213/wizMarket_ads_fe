@@ -13,7 +13,7 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
     const topText = roadName.split(" ")[1] + " | " + tag + " | " + weather + " | " + weekday;
 
     const [editText, setEditText] = useState(text)
-    
+
     const handleBlur = (e) => {
         setEditText(e.target.innerText);
     };
@@ -84,6 +84,15 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
         };
     }, [imageUrl, text]);
 
+    const formatStoreName = (name) => {
+        const chunkSize = 8;
+        let result = "";
+        for (let i = 0; i < name.length; i += chunkSize) {
+            result += name.slice(i, i + chunkSize) + "\n";
+        }
+        return result.trim();
+    };
+
 
 
     return (
@@ -107,83 +116,57 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
                 }}
             ></div>
 
-            {/* ✅ 텍스트 오버레이 */}
             <div
-                className="absolute w-[80%] flex justify-center"
-                style={{
-                    top: `${(665 / 1792) * 100}%`,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                }}
+                className="absolute w-[90%] flex flex-col items-center"
+                style={{ top: `${(328 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}
             >
-                {/* ✅ 흰색 배경 박스 */}
+                <p className="text-white text-center pb-4"
+                    style={{
+                        fontFamily: "Diphylleia",
+                        fontSize: `${36 * (431 / 1024)}px`,
+                        fontWeight: 400,
+                        lineHeight: `${42 * (431 / 1024)}px`,
+                    }}>
+                    {topText}
+                </p>
+                <p className="text-white text-center pb-8"
+                    style={{
+                        fontFamily: "Diphylleia",
+                        fontSize: `${96 * (431 / 1024)}px`,
+                        fontWeight: 400,
+                        lineHeight: `${110 * (431 / 1024)}px`,
+                        whiteSpace: "pre-line", // 
+                    }}>
+                    {formatStoreName(storeName)}
+                </p>
                 <div
-                    className="text-center px-4 py-2"
+                    className="text-center px-4 py-2 flex justify-center"
                     style={{
                         backgroundColor: "#FFF",
-                        display: "inline-block",
+                        width: "fit-content",
                         padding: "8px 8px",
                     }}
                 >
-                    {/* ✅ 텍스트 */}
                     <p
                         contentEditable
                         suppressContentEditableWarning
                         onBlur={handleBlur}
-                        className={`editable-text blinking-cursor text-center break-keep relative ${
-                            isCaptured ? "no-blinking" : "" // ✅ 캡처 중이면 커서 숨김
-                        }`}
+                        className={`editable-text blinking-cursor text-center relative ${isCaptured ? "no-blinking" : ""
+                            }`}
                         style={{
                             color: "#000",
-                            fontFeatureSettings: "'case' on",
                             fontFamily: "Diphylleia",
                             fontSize: `${36 * (431 / 1024)}px`,
-                            fontStyle: "normal",
                             fontWeight: 400,
                             lineHeight: `${42 * (431 / 1024)}px`,
                         }}
-                        data-html2canvas-ignore={isCaptured ? "true" : "false"} // ✅ 캡처 중이면 커서 숨김
-                        >
+                        data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                    >
                         {editText}
                     </p>
                 </div>
             </div>
 
-            {/* ✅ 상하좌우 50px 더 큰 배경 div */}
-            <div className="absolute"
-                style={{ top: `${(472 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-center overflow-hidden text-ellipsis break-keep"
-                    style={{
-                        color: "#FFF",
-                        fontFeatureSettings: "'case' on",
-                        fontFamily: "Diphylleia",
-                        fontSize: `${96 * (431 / 1024)}px`,
-                        fontStyle: "normal",
-                        fontWeight: 400,
-                        lineHeight: "84px",
-
-                    }}>
-                    {storeName}
-                </p>
-            </div>
-
-
-            <div className="absolute w-[90%]"
-                style={{ top: `${(368 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-center overflow-hidden text-ellipsis break-keep"
-                    style={{
-                        color: "#FFF",
-                        fontFeatureSettings: "'case' on",
-                        fontFamily: "Diphylleia",
-                        fontSize: `${36 * (431 / 1024)}px`,
-                        fontStyle: "normal",
-                        fontWeight: 400,
-                        lineHeight: "42px",
-
-                    }}>
-                    {topText}
-                </p>
-            </div>
 
             {/* ✅ Canvas (숨김 처리) */}
             <canvas ref={canvasRef} style={{ display: "none" }} />

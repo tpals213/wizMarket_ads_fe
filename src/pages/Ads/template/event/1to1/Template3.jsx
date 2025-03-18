@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
 
-const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template3 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
     // console.log(weather)
@@ -65,19 +65,19 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             );
 
             // ✅ 9. SEASON 코드 추가 (우측 하단)
-            const topWidth = 1024;  
+            const topWidth = 1024;
             const topHeight = 173;
             const topX = 0
             const topY = 0
 
-            ctx.drawImage(topImg, topX, topY, topWidth, topHeight); 
+            ctx.drawImage(topImg, topX, topY, topWidth, topHeight);
 
-            const btWidth = 1024;  
+            const btWidth = 1024;
             const btHeight = 490;
             const btX = 0
             const btY = 534
 
-            ctx.drawImage(btImg, btX, btY, btWidth, btHeight); 
+            ctx.drawImage(btImg, btX, btY, btWidth, btHeight);
 
             // ✅ 최종 이미지 저장
             const finalImageUrl = canvas.toDataURL("image/png");
@@ -86,20 +86,31 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
     }, [imageUrl, text]);
 
     const extractTexts = (text) => {
-        let top_text = "";
-        let bottom_text = "";
-    
+        let topText = "";
+        let bottomText = "";
+
         // ✅ "제목 :", "내용 :"을 기준으로 나누기
         const titleMatch = text.match(/제목\s*:\s*([^내용]*)/);
         const contentMatch = text.match(/내용\s*:\s*(.*)/);
-    
-        if (titleMatch) top_text = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
-        if (contentMatch) bottom_text = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
-    
-        return { top_text, bottom_text };
+
+        if (titleMatch) topText = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
+        if (contentMatch) bottomText = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
+
+        return { topText, bottomText };
     };
 
-    const { top_text, bottom_text } = extractTexts(text);
+    const { topText, bottomText } = extractTexts(text);
+
+    const [editTopText, setEditTopText] = useState(topText)
+    const [editBotText, setEditBotText] = useState(bottomText)
+
+    const handleTop = (e) => {
+        setEditTopText(e.target.innerText);
+    };
+
+    const handleBot = (e) => {
+        setEditBotText(e.target.innerText);
+    };
 
 
     return (
@@ -116,22 +127,28 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             )}
 
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute w-full top-[11.09%] left-1/2 transform -translate-x-1/2">
-                <p className="text-white text-center break-keep"
+            <div className="absolute w-[80%] top-[11.09%] left-1/2 transform -translate-x-1/2">
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleTop}
+                    className={`editable-text pb-4 blinking-cursor text-center break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "27.5px",
+                        fontSize: `${55 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "30px",
-                    }}>
-                    {top_text}
+                        lineHeight: `${60 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editTopText}
                 </p>
             </div>
 
-            
+
             <div className="absolute top-[58.98%] left-[7.42%]">
                 {/* ✅ 파란색 배경 (글씨보다 위아래 4px, 양옆 8px 크게 설정) */}
                 <div className="bg-[#09C5FE] px-1 h-[24px] flex items-center justify-center">
@@ -142,58 +159,59 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                 </div>
             </div>
 
-
-
-
-            <div className="absolute w-[84.96%] top-[66.21%] left-1/2 transform -translate-x-1/2">
-                <p className="text-white text-left break-keep"
+            <div className="absolute w-[70%] top-[66.21%] left-[7.42%]">
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBot}
+                    className={`editable-text blinking-cursor text-left break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "32px",
+                        fontSize: `${48 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "34px",
-                    }}>
-                    {bottom_text}
+                        lineHeight: `${64 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editBotText}
                 </p>
             </div>
 
 
 
             {/* ✅ 상하좌우 50px 더 큰 배경 div */}
-            <div className="absolute"
-                style={{ top: `${(890 / 1024) * 100}%`, left: "50%",  transform: "translateX(-50%)"  }}>
-                <p className="text-white text-center break-keep"
+            <div className="absolute left-[7.42%]"
+                style={{ top: `${(855 / 1024) * 100}%` }}>
+                <p className="text-white text-left break-keep pb-2"
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "20px",
+                        fontSize: `${40 * (431 / 1024)}px`,
                         fontStyle: "normal",
-                        fontWeight: 800,
-                        lineHeight: "20px",
+                        fontWeight: 700,
+                        lineHeight: `${48 * (431 / 1024)}px`,
                     }}>
                     {storeName}
                 </p>
-            </div>
-
-            <div className="absolute w-full"
-                style={{ top: `${(922 / 1024) * 100}%`, left: "50%",  transform: "translateX(-50%)"  }}>
-                <p className="text-white text-center break-keep"
+                <p className="text-white text-left break-keep"
                     style={{
                         color: "rgba(255, 255, 255, 0.80)",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "18px",
+                        fontSize: `${36 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 500,
-                        lineHeight: "36px",
+                        lineHeight: `${36 * (431 / 1024)}px`,
                     }}>
                     {roadName}
                 </p>
             </div>
+
+
 
 
             {/* ✅ Canvas (숨김 처리) */}

@@ -64,7 +64,7 @@ const AdsSwiper = ({ imageTemplateList, content, title, useOption, checkImages, 
         {/* 원본 이미지 */}
         <SwiperSlide key={0}>
           <div className="flex justify-center items-center relative pt-4 pb-4">
-            <img src={imageTemplateList[0]} alt="원본" className="max-w-full object-cover border-4 border-black" />
+            <img src={imageTemplateList[0]} alt="원본" className="max-w-full object-cover" />
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex justify-center items-center cursor-pointer w-16 h-16" onClick={() => handleImageClick(0)}>
               <img src={checkImages.includes(0) ? require("../../../assets/icon/check_icon.png") : require("../../../assets/icon/non_check_icon.png")} alt={checkImages.includes(0) ? "Checked" : "Non-checked"} className="w-full h-full" />
             </div>

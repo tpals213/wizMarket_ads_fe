@@ -81,6 +81,16 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
         };
     }, [imageUrl, text]);
 
+    const formatStoreName = (name) => {
+        const chunkSize = 8;
+        let result = "";
+        for (let i = 0; i < name.length; i += chunkSize) {
+            result += name.slice(i, i + chunkSize) + "\n";
+        }
+        return result.trim();
+    };
+    
+
     return (
         <div id="template_intro_4to7_4" className="relative">
             {/* ✅ 최종 이미지 출력 */}
@@ -116,47 +126,19 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
                 style={{ top: `${(200 / 1792) * 100}%`, left: `${(84 / 1024) * 100}%` }}>
 
                 {/* ✅ storeName: 7글자 넘으면 두 줄로 나누기 */}
-                {storeName.length > 7 ? (
-                    <>
-                        <p className="text-white text-left break-keep pb-3"
-                            style={{
-                                color: "#FFF",
-                                fontFeatureSettings: "'case' on",
-                                fontFamily: "Pretendard",
-                                fontSize: `${110 * (431 / 1024)}px`,
-                                fontStyle: "normal",
-                                fontWeight: 900,
-                                lineHeight: `${120 * (431 / 1024)}px`,
-                            }}>
-                            {storeName.slice(0, 7)} {/* 첫째 줄 */}
-                        </p>
-                        <p className="text-white text-left break-keep pb-12"
-                            style={{
-                                color: "#FFF",
-                                fontFeatureSettings: "'case' on",
-                                fontFamily: "Pretendard",
-                                fontSize: `${110 * (431 / 1024)}px`,
-                                fontStyle: "normal",
-                                fontWeight: 900,
-                                lineHeight: `${120 * (431 / 1024)}px`,
-                            }}>
-                            {storeName.slice(7)} {/* 둘째 줄 */}
-                        </p>
-                    </>
-                ) : (
-                    <p className="text-white text-left break-keep pb-12"
-                        style={{
-                            color: "#FFF",
-                            fontFeatureSettings: "'case' on",
-                            fontFamily: "Pretendard",
-                            fontSize: `${110 * (431 / 1024)}px`,
-                            fontStyle: "normal",
-                            fontWeight: 900,
-                            lineHeight: `${120 * (431 / 1024)}px`,
-                        }}>
-                        {storeName}
-                    </p>
-                )}
+                <p className="text-white text-left text-ellipsis break-keep pb-10"
+                    style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: `${110 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 900,
+                        lineHeight: `${120 * (431 / 1024)}px`,
+                        whiteSpace: "pre-line", 
+                    }}>
+                    {formatStoreName(storeName)}
+                </p>
 
                 {/* ✅ contentEditable 부분 */}
                 <p

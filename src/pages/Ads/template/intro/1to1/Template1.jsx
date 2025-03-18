@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
-const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
     // console.log(weather)
@@ -11,6 +11,11 @@ const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
     const topText = roadName.split(" ")[1] + " | " + tag + " | " + weather + " | " + weekday;
 
+    const [editText, setEditText] = useState(text)
+
+    const handleBlur = (e) => {
+        setEditText(e.target.innerText);
+    };
 
     useEffect(() => {
         if (!imageUrl) return;
@@ -61,6 +66,15 @@ const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
         };
     }, [imageUrl, text]);
 
+    const formatStoreName = (name) => {
+        const chunkSize = 11;
+        let result = "";
+        for (let i = 0; i < name.length; i += chunkSize) {
+            result += name.slice(i, i + chunkSize) + "\n";
+        }
+        return result.trim();
+    };
+
 
     return (
         <div id="template_intro_1to1_1" className="relative">
@@ -84,71 +98,71 @@ const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             ></div>
 
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute"
+            <div className="absolute w-full"
                 style={{
-                    top: `${(447 / 1024) * 100}%`,
+                    top: `${(154 / 1024) * 100}%`,
                     left: "50%",
                     transform: "translateX(-50%)"
                 }}>
-                {/* ✅ 흰색 배경 박스 */}
-                <div
-                    className="text-center px-4 py-2"
-                    style={{
-                        backgroundColor: "#FFF", // ✅ 흰색 배경
-                        display: "inline-block", // ✅ 텍스트 크기에 맞춤
-                        padding: "8px 8px", // ✅ 여백 추가
-                    }}>
-                    {/* ✅ 텍스트 */}
-                    <p
-                        className="text-black text-center overflow-hidden text-ellipsis"
-                        style={{
-                            fontFeatureSettings: "'case' on",
-                            fontFamily: "'Diphylleia', sans-serif",
-                            fontSize: "18px",
-                            fontStyle: "normal",
-                            fontWeight: 400,
-                            lineHeight: "21px",
-                        }}>
-                        {text}
-                    </p>
-                </div>
-            </div>
 
-
-
-            {/* ✅ 상하좌우 50px 더 큰 배경 div */}
-            <div className="absolute"
-                style={{ top: `${(254 / 1024) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-center overflow-hidden text-ellipsis"
+                <p className="text-white text-center break-keep pb-8"
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Diphylleia",
-                        fontSize: "48px",
+                        fontSize: `${36 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
-                        lineHeight: "84px",
-
-                    }}>
-                    {storeName}
-                </p>
-            </div>
-
-
-            <div className="absolute w-full"
-                style={{ top: `${(150 / 1024) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
-                <p className="text-white text-center break-keep"
-                    style={{
-                        color: "#FFF",
-                        fontFeatureSettings: "'case' on",
-                        fontFamily: "Diphylleia",
-                        fontSize: "18px",
-                        fontStyle: "normal",
-                        fontWeight: 400,
-                        lineHeight: "42px",
+                        lineHeight: `${42 * (431 / 1024)}px`,
                     }}>
                     {topText}
                 </p>
+
+                <p className="text-white text-center overflow-hidden text-ellipsis pb-8"
+                    style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Diphylleia",
+                        fontSize: `${96 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 400,
+                        lineHeight: `${84 * (431 / 1024)}px`,
+                        whiteSpace: "pre-wrap", // 줄 바꿈 허용
+                        wordBreak: "break-word", // 긴 단어가 있을 경우 줄 바꿈
+                    }}>
+                    {formatStoreName(storeName)}
+                </p>
+                {/* ✅ 흰색 배경 박스 */}
+                <div
+                    className="text-center px-4 py-2 w-1/2"
+                    style={{
+                        backgroundColor: "#FFF", // ✅ 흰색 배경
+                        display: "block", // ✅ display: block으로 변경
+                        margin: "0 auto", // ✅ 중앙 정렬
+                        padding: "8px 8px", // ✅ 여백 추가
+                    }}
+                >
+                    {/* ✅ 텍스트 */}
+                    <p
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={handleBlur}
+                        className={`editable-text blinking-cursor text-center break-keep relative ${isCaptured ? "no-blinking" : ""}`}
+                        style={{
+                            color: "#000",
+                            fontFeatureSettings: "'case' on",
+                            fontFamily: "Diphylleia",
+                            fontSize: `${36 * (431 / 1024)}px`,
+                            fontStyle: "normal",
+                            fontWeight: 400,
+                            lineHeight: `${42 * (431 / 1024)}px`,
+                        }}
+                        data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                    >
+                        {editText}
+                    </p>
+                </div>
+
             </div>
 
             {/* ✅ Canvas (숨김 처리) */}

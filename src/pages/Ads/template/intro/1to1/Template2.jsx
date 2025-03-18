@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
-const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template2 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
     // console.log(weather)
@@ -11,7 +11,6 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
     // const topText = roadName.split(" ")[1] + " | " + tag + " | " + weather + " | " + weekday;
 
-    
 
     useEffect(() => {
         if (!imageUrl) return;
@@ -183,19 +182,29 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
         };
     }, [imageUrl, text]);
 
-    const maxCharsPerLine = 10; // ✅ 한 줄에 표시할 최대 글자 수
-    const splitText = [];
-    let currentLine = "";
+    const handleBlur = (e, index) => {
+        const updatedText = [...splitText];
+        updatedText[index] = e.target.innerText.trim();  // 수정된 텍스트를 저장
+        setSplitText(updatedText);  // 상태 업데이트
+    };
 
-    text.split(" ").forEach(word => {
-        if ((currentLine + word).length > maxCharsPerLine) {
-            splitText.push(currentLine.trim()); // ✅ 기존 줄 저장
-            currentLine = word + " "; // ✅ 새로운 줄 시작
-        } else {
-            currentLine += word + " ";
-        }
+    // splitText 상태 초기화 (처음에 text를 세로로 나누어서 저장)
+    const [splitText, setSplitText] = useState(() => {
+        const maxCharsPerLine = 10;
+        const lines = [];
+        let currentLine = "";
+
+        text.split(" ").forEach(word => {
+            if ((currentLine + word).length > maxCharsPerLine) {
+                lines.push(currentLine.trim());
+                currentLine = word + " ";
+            } else {
+                currentLine += word + " ";
+            }
+        });
+        lines.push(currentLine.trim());
+        return lines;
     });
-    splitText.push(currentLine.trim()); // ✅ 마지막 줄 추가
 
     return (
         <div id="template_intro_1to1_2" className="relative">
@@ -216,23 +225,28 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             <div className="absolute flex"
                 style={{
                     top: "50%", // ✅ 상하 중앙 정렬
-                    left: `${(849 / 1024) * 100}%`, // ✅ 왼쪽에서 758px 떨어진 위치
+                    left: `${(809 / 1024) * 100}%`, // ✅ 왼쪽에서 758px 떨어진 위치
                     transform: "translateY(-50%)", // ✅ 상하 중앙 정렬 유지
                 }}>
                 {splitText.map((line, index) => (
                     <p key={index}
-                        className="text-white text-center overflow-hidden text-ellipsis"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) => handleBlur(e, index)}  // 각 줄에 대해 onBlur 처리
+                        className={`editable-text  text-center break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                         style={{
                             color: "#FFF",
                             fontFeatureSettings: "'case' on",
-                            fontFamily: "'Gowun Dodum', sans-serif",  // ✅ 작은따옴표로 감싸기
-                            fontSize: "32px",
+                            fontFamily: "'Gowun Dodum', sans-serif",
+                            fontSize: `${64 * (431 / 1024)}px`,
                             fontStyle: "normal",
                             fontWeight: 400,
-                            lineHeight: "30px",
+                            lineHeight: `${68 * (431 / 1024)}px`,
                             writingMode: "vertical-rl", // ✅ 세로쓰기 (오른쪽에서 왼쪽 방향)
                             textOrientation: "upright", // ✅ 문자를 정상 방향으로 유지
-                        }}>
+                        }}
+                        data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                    >
                         {line}
                     </p>
                 ))}
@@ -249,10 +263,10 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "'Gowun Dodum', sans-serif",  // ✅ 작은따옴표로 감싸기
-                        fontSize: "20px",
+                        fontSize: `${40 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
-                        lineHeight: "68px",
+                        lineHeight: `${68 * (431 / 1024)}px`,
                         writingMode: "vertical-rl", // ✅ 세로쓰기 (오른쪽에서 왼쪽 방향)
                         textOrientation: "upright", // ✅ 문자를 정상 방향으로 유지
                     }}>
@@ -267,10 +281,10 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "'Do Hyeon', sans-serif",  // ✅ 작은따옴표로 감싸기
-                        fontSize: "20px",
+                        fontSize: `${40 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
-                        lineHeight: "42px",
+                        lineHeight: `${42 * (431 / 1024)}px`,
                     }}>
                     {roadName}
                 </p>

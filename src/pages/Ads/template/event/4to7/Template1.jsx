@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
-const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template1 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
 
@@ -76,20 +76,32 @@ const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
         }, [imageUrl, text]);
 
     const extractTexts = (text) => {
-        let top_text = "";
-        let bottom_text = "";
+        let topText = "";
+        let bottomText = "";
 
         // ✅ "제목 :", "내용 :"을 기준으로 나누기
         const titleMatch = text.match(/제목\s*:\s*([^내용]*)/);
         const contentMatch = text.match(/내용\s*:\s*(.*)/);
 
-        if (titleMatch) top_text = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
-        if (contentMatch) bottom_text = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
+        if (titleMatch) topText = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
+        if (contentMatch) bottomText = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
 
-        return { top_text, bottom_text };
+        return { topText, bottomText };
     };
 
-    const { top_text, bottom_text } = extractTexts(text);
+    const { topText, bottomText } = extractTexts(text);
+
+    const [editTopText, setEditTopText] = useState(topText)
+    const [editBotText, setEditBotText] = useState(bottomText)
+    
+    const handleTop = (e) => {
+        setEditTopText(e.target.innerText);
+    };
+
+    const handleBot = (e) => {
+        setEditBotText(e.target.innerText);
+    };
+
 
     return (
         <div id="template_event_4to7_1" className="relative">
@@ -124,31 +136,41 @@ const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             {/* ✅ 텍스트 오버레이 */}
             <div className="absolute w-[80.5%]"
                 style={{ top: `${(150 / 1792) * 100}%`, left: `${(80 / 1024) * 100}%` }}>
-                <p className="text-white text-left break-keep pb-10"
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleTop}
+                    className={`editable-text blinking-cursor pb-8 text-left break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "55px",
+                        fontSize: `${110 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 900,
-                        lineHeight: "60px",
-
-                    }}>
-                    {top_text}
+                        lineHeight: "normal"
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editTopText}
                 </p>
-                <p className="text-white text-left break-keep"
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBot}
+                    className={`editable-text blinking-cursor text-left break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "40px",
+                        fontSize: `${64 * (431 / 1024)}px`,
                         fontStyle: "normal",
-                        fontWeight: 700,
-                        lineHeight: "42px",
-
-                    }}>
-                    {bottom_text}
+                        fontWeight: "700",
+                        lineHeight: `${84 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editBotText}
                 </p>
             </div>
 
@@ -164,8 +186,30 @@ const Template1 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                     lineHeight: "30px",
                 }}
                 >
-                <p style={{ fontSize: "24px", margin: 0 }}>{storeName}</p>
-                <p style={{ fontSize: "24px", margin: 0 }}>{roadName}</p>
+                <p className="text-white text-center break-keep pb-2"
+                    style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: `${48 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 500,
+                        lineHeight: `${50 * (431 / 1024)}px`,
+                    }}>
+                    {storeName}
+                </p>
+                <p className="text-white text-center break-keep"
+                    style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: `${48 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 500,
+                        lineHeight: `${50 * (431 / 1024)}px`,
+                    }}>
+                    {roadName}
+                </p>
             </div>
 
 

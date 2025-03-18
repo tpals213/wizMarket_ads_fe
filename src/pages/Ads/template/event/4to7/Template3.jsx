@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
-const Template3 = ({ imageUrl, text, storeName, roadName }) => {
+const Template3 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
 
@@ -111,18 +111,38 @@ const Template3 = ({ imageUrl, text, storeName, roadName }) => {
     const extractTexts = (text) => {
         let topText = "";
         let bottomText = "";
-    
+
         // ✅ "제목 :", "내용 :"을 기준으로 나누기
         const titleMatch = text.match(/제목\s*:\s*([^내용]*)/);
         const contentMatch = text.match(/내용\s*:\s*(.*)/);
-    
+
         if (titleMatch) topText = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
         if (contentMatch) bottomText = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
-    
+
         return { topText, bottomText };
     };
 
     const { topText, bottomText } = extractTexts(text);
+
+    const [editTopText, setEditTopText] = useState(topText)
+    const [editBotText, setEditBotText] = useState(bottomText)
+
+    const handleTop = (e) => {
+        setEditTopText(e.target.innerText);
+    };
+
+    const handleBot = (e) => {
+        setEditBotText(e.target.innerText);
+    };
+
+    const formatStoreName = (name) => {
+        const chunkSize = 8;
+        let result = "";
+        for (let i = 0; i < name.length; i += chunkSize) {
+            result += name.slice(i, i + chunkSize) + "\n";
+        }
+        return result.trim();
+    };
 
     return (
         <div id="template_event_4to7_3" className="relative">
@@ -139,74 +159,85 @@ const Template3 = ({ imageUrl, text, storeName, roadName }) => {
 
             {/* ✅ 텍스트 오버레이 */}
             <div className="absolute w-full"
-                style={{ top: `${(220 / 1792) * 100}%`, left: "50%",  transform: "translateX(-50%)" }}>
-                <p className="text-white text-center break-keep"
+                style={{ top: `${(108 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleTop}
+                    className={`editable-text blinking-cursor pb-8 text-center break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#7F624C",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "25px",
+                        fontSize: `${40 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "27px",
-                    }}>
-                    {topText}
+                        lineHeight: `${55 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editTopText}
                 </p>
-            </div>
-            <div className="absolute"
-                style={{ top: `${(1550 / 1792) * 100}%`, left: "50%",  transform: "translateX(-50%)" }}>
                 <p className="text-white text-center break-keep"
                     style={{
                         color: "#7F624C",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "20px",
-                        fontStyle: "normal",
-                        fontWeight: 500,
-                        lineHeight: "24px",
-                    }}>
-                    {bottomText}
-                </p>
-            </div>
-            <div className="absolute w-full"
-                style={{ top: `${(340 / 1792) * 100}%`, left: "50%",  transform: "translateX(-50%)" }}>
-                <p className="text-white text-center break-keep"
-                    style={{
-                        color: "#7F624C",
-                        fontFeatureSettings: "'case' on",
-                        fontFamily: "Pretendard",
-                        fontSize: "42px",
+                        fontSize: `${128 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 800,
-                        lineHeight: "70px",
+                        lineHeight: `${130 * (431 / 1024)}px`,
+                        whiteSpace: "pre-line",
                     }}>
-                    {storeName}
+                    {formatStoreName(storeName)}
                 </p>
             </div>
+            <div className="absolute w-[80%]"
+                style={{ top: `${(1550 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBot}
+                    className={`editable-text blinking-cursor text-center break-keep relative ${isCaptured ? "no-blinking" : ""}`}
+                    style={{
+                        color: "#7F624C",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: `${36 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 500,
+                        lineHeight: `${48 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editBotText}
+                </p>
+            </div>
+
             <div
                 className="absolute w-full flex items-center justify-center"
-                style={{ 
-                    top: `${(550 / 1792) * 100}%`, 
-                    left: "50%",  
-                    transform: "translateX(-50%)" 
+                style={{
+                    top: `${(550 / 1792) * 100}%`,
+                    left: "50%",
+                    transform: "translateX(-50%)"
                 }}
-                >
+            >
                 <img
                     src={require("../../../../../assets/icon/site.png")}
                     alt="위즈 아이콘"
                     className="w-[18px] h-[22px] mr-1" // 오른쪽 여백 추가
                 />
-                <p 
+                <p
                     className="text-white text-center"
                     style={{
-                    color: "#7F624C",
-                    fontFeatureSettings: "'case' on",
-                    fontFamily: "Pretendard",
-                    fontSize: "20px",
-                    fontStyle: "normal",
-                    fontWeight: 700,
-                    lineHeight: "20px",
-                    margin: 0, // 기본 마진 제거
+                        color: "#7F624C",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: `${40 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 500,
+                        lineHeight: `${40 * (431 / 1024)}px`,
+                        margin: 0, // 기본 마진 제거
                     }}
                 >
                     {roadName}

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
-const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template5 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
 
@@ -92,20 +92,31 @@ const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
     }, [imageUrl, roadName]);
 
     const extractTexts = (text) => {
-        let top_text = "";
-        let bottom_text = "";
+        let topText = "";
+        let bottomText = "";
 
         // ✅ "제목 :", "내용 :"을 기준으로 나누기
         const titleMatch = text.match(/제목\s*:\s*([^내용]*)/);
         const contentMatch = text.match(/내용\s*:\s*(.*)/);
 
-        if (titleMatch) top_text = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
-        if (contentMatch) bottom_text = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
+        if (titleMatch) topText = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
+        if (contentMatch) bottomText = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
 
-        return { top_text, bottom_text };
+        return { topText, bottomText };
     };
 
-    const { top_text, bottom_text } = extractTexts(text);
+    const { topText, bottomText } = extractTexts(text);
+
+    const [editTopText, setEditTopText] = useState(topText)
+    const [editBotText, setEditBotText] = useState(bottomText)
+
+    const handleTop = (e) => {
+        setEditTopText(e.target.innerText);
+    };
+
+    const handleBot = (e) => {
+        setEditBotText(e.target.innerText);
+    };
 
     return (
         <div id="template_event_4to7_5" className="relative">
@@ -136,28 +147,45 @@ const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             ></div>
 
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute h-[9.5%] w-[50%] text-white text-center top-[18%] left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+            <div className="absolute h-[9.5%] w-[70%] text-white text-center top-[18%] left-1/2 transform -translate-x-1/2 flex items-center justify-center">
                 <p
-                    className="break-words whitespace-pre-line font-extrabold text-[#ACACAC]"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleTop}
+                    className={`editable-text blinking-cursor text-center break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
-                        fontSize: "clamp(1.75rem, 3vh, 2rem)",
-                        lineHeight: "clamp(2rem, 4vh, 2.2rem)"
+                        color: "#ACACAC",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: `${63 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 700,
+                        lineHeight: `${66 * (431 / 1024)}px`,
                     }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
                 >
-                    {top_text}
+                    {editTopText}
                 </p>
             </div>
 
-            <div className="absolute h-[30%] w-[84%] text-white text-center top-[30.2%] left-1/2 transform -translate-x-1/2">
+            <div className="absolute h-[30%] w-[70%] text-white text-center top-[30.2%] left-1/2 transform -translate-x-1/2">
                 <p
-                    className="break-keep whitespace-pre-line"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBot}
+                    className={`editable-text blinking-cursor text-center break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
-                        fontSize: "18px",
-                        lineHeight: "40px",
-                        fontWeight: 500
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: `${35 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 500,
+                        lineHeight: `${40 * (431 / 1024)}px`,
                     }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
                 >
-                    {bottom_text}
+                    {editBotText}
                 </p>
             </div>
 
@@ -167,29 +195,29 @@ const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "JejuHallasan",
-                        fontSize: "24px",
+                        fontSize: `${48 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "32px",
+                        lineHeight: `${50 * (431 / 1024)}px`,
                     }}>
                     {storeName}
                 </p>
             </div>
 
             <div className="absolute top-[93.5%] w-[80%] text-white text-center left-1/2 transform -translate-x-1/2">
-                <p
-                    className="break-words whitespace-pre-line font-medium"
+            <p className="text-white text-center break-keep pb-12"
                     style={{
-                        fontSize: "clamp(1.125rem, 2vh, 1.25rem)",
-                        lineHeight: "clamp(1.5rem, 2.5vh, 1.75rem)"
-                    }}
-                >
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: `${36 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 500,
+                        lineHeight: `${50 * (431 / 1024)}px`,
+                    }}>
                     {roadName}
                 </p>
             </div>
-
-
-
 
             {/* ✅ Canvas (숨김 처리) */}
             <canvas ref={canvasRef} style={{ display: "none" }} />

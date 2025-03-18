@@ -89,6 +89,15 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
         };
     }, [imageUrl, text]);
 
+    const formatStoreName = (name) => {
+        const chunkSize = 8;
+        let result = "";
+        for (let i = 0; i < name.length; i += chunkSize) {
+            result += name.slice(i, i + chunkSize) + "\n";
+        }
+        return result.trim();
+    };
+
 
     return (
         <div id="template_intro_4to7_3" className="relative">
@@ -112,7 +121,7 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
             ></div>
 
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute w-[80%]"
+            <div className="absolute w-[70%]"
                 style={{ top: `${(878 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
                 <p
                     contentEditable
@@ -154,50 +163,16 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
                     }}
                 >
                     {/* ✅ storeName 텍스트 */}
-                    {storeName.length > 7 ? (
-                        <>
-                            <p
-                                className="text-white overflow-hidden text-ellipsis break-keep"
-                                style={{
-                                    color: "#FFF",
-                                    fontFamily: "Pretendard",
-                                    fontSize: `${96 * (431 / 1024)}px`,
-                                    fontStyle: "normal",
-                                    fontWeight: 600,
-                                    lineHeight: "normal"
-                                }}
-                            >
-                                {storeName.slice(0, 7)} {/* 첫째 줄 */}
-                            </p>
-                            <p
-                                className="text-white overflow-hidden text-ellipsis break-keep"
-                                style={{
-                                    color: "#FFF",
-                                    fontFamily: "Pretendard",
-                                    fontSize: `${96 * (431 / 1024)}px`,
-                                    fontStyle: "normal",
-                                    fontWeight: 600,
-                                    lineHeight: "normal"
-                                }}
-                            >
-                                {storeName.slice(7)} {/* 둘째 줄 */}
-                            </p>
-                        </>
-                    ) : (
-                        <p
-                            className="text-white overflow-hidden text-ellipsis break-keep"
-                            style={{
-                                color: "#FFF",
-                                fontFamily: "Pretendard",
-                                fontSize: `${96 * (431 / 1024)}px`,
-                                fontStyle: "normal",
-                                fontWeight: 600,
-                                lineHeight: "normal"
-                            }}
-                        >
-                            {storeName}
-                        </p>
-                    )}
+                    <p className="text-white text-center "
+                    style={{
+                        fontFamily: "Pretendard",
+                        fontSize: `${96 * (431 / 1024)}px`,
+                        fontWeight: 60,
+                        lineHeight: "normal",
+                        whiteSpace: "pre-line", 
+                    }}>
+                    {formatStoreName(storeName)}
+                </p>
                 </div>
             </div>
 

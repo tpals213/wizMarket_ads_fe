@@ -89,7 +89,7 @@ const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
             const roadNameRight = canvas.width / 2 + ctx.measureText(roadName).width;
             ctx.beginPath();
             ctx.moveTo(roadNameRight + rightPadding, roadNameTop);
-            ctx.lineTo(canvas.width - 10, roadNameTop);
+            ctx.lineTo(canvas.width , roadNameTop);
             ctx.stroke();
 
             // ✅ 최종 이미지 저장
@@ -97,6 +97,23 @@ const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
             setFinalImage(finalImageUrl);
         };
     }, [imageUrl, roadName]);
+
+    const formatRoadName = (name) => {
+        if (name.length > 25) {
+            // 17번째 문자에서 줄 바꿈
+            return name.slice(0, 25) + "\n" + name.slice(25);
+        }
+        return name;
+    };
+
+    const formatStoreName = (name) => {
+        const chunkSize = 8;
+        let result = "";
+        for (let i = 0; i < name.length; i += chunkSize) {
+            result += name.slice(i, i + chunkSize) + "\n";
+        }
+        return result.trim();
+    };
 
     return (
         <div id="template_intro_4to7_5" className="relative">
@@ -123,9 +140,9 @@ const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
                         fontStyle: "normal",
                         fontWeight: 300,
                         lineHeight: "normal",
-
+                        whiteSpace: "pre-line", 
                     }}>
-                    {storeName}
+                    {formatStoreName(storeName)}
                 </p>
                 <p
                     contentEditable
@@ -157,8 +174,10 @@ const Template5 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday,
                         fontStyle: "normal",
                         fontWeight: 300,
                         lineHeight: `${50 * (431 / 1024)}px`,
+                        whiteSpace: "pre-wrap", // 줄 바꿈 허용
+                        wordBreak: "break-word", // 긴 단어가 있을 경우 줄 바꿈
                     }}>
-                    {roadName}
+                    {formatRoadName(roadName)}
                 </p>
             </div>
 

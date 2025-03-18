@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
-const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template2 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
 
@@ -68,43 +68,43 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             );
 
             // ✅ 9. SEASON 코드 추가 (우측 하단)
-            const seasonWidth = 1024;  
+            const seasonWidth = 1024;
             const seasonHeight = 422;
             const seasonX = 0
             const seasonY = 0
 
-            ctx.drawImage(seasonImg, seasonX, seasonY, seasonWidth, seasonHeight); 
+            ctx.drawImage(seasonImg, seasonX, seasonY, seasonWidth, seasonHeight);
 
             // ✅ 9. star 코드 추가 (우측 하단)
-            const starWidth1 = 201;  
+            const starWidth1 = 201;
             const starHeight1 = 201;
             const starX1 = 611
             const starY1 = 300
-            ctx.drawImage(starImg, starX1, starY1, starWidth1, starHeight1); 
+            ctx.drawImage(starImg, starX1, starY1, starWidth1, starHeight1);
 
-            const starWidth2 = 176;  
+            const starWidth2 = 176;
             const starHeight2 = 176;
             const starX2 = 37
             const starY2 = 570
-            ctx.drawImage(starImg, starX2, starY2, starWidth2, starHeight2); 
+            ctx.drawImage(starImg, starX2, starY2, starWidth2, starHeight2);
 
-            const starWidth3 = 124;  
+            const starWidth3 = 124;
             const starHeight3 = 124;
             const starX3 = 76
             const starY3 = 154
-            ctx.drawImage(starImg, starX3, starY3, starWidth3, starHeight3); 
+            ctx.drawImage(starImg, starX3, starY3, starWidth3, starHeight3);
 
-            const starWidth4 = 127;  
+            const starWidth4 = 127;
             const starHeight4 = 127;
             const starX4 = 831
             const starY4 = 128
-            ctx.drawImage(starImg, starX4, starY4, starWidth4, starHeight4); 
+            ctx.drawImage(starImg, starX4, starY4, starWidth4, starHeight4);
 
-            const groupWidth = 222.8;  
+            const groupWidth = 222.8;
             const groupHeight = 216.93;
             const groupX = 449.44
             const groupY = 56.16
-            ctx.drawImage(groupImg, groupX, groupY, groupWidth, groupHeight); 
+            ctx.drawImage(groupImg, groupX, groupY, groupWidth, groupHeight);
 
             // ✅ 최종 이미지 저장
             const finalImageUrl = canvas.toDataURL("image/png");
@@ -113,20 +113,31 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
     }, [imageUrl, roadName]);
 
     const extractTexts = (text) => {
-        let top_text = "";
-        let bottom_text = "";
+        let topText = "";
+        let bottomText = "";
 
         // ✅ "제목 :", "내용 :"을 기준으로 나누기
         const titleMatch = text.match(/제목\s*:\s*([^내용]*)/);
         const contentMatch = text.match(/내용\s*:\s*(.*)/);
 
-        if (titleMatch) top_text = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
-        if (contentMatch) bottom_text = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
+        if (titleMatch) topText = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
+        if (contentMatch) bottomText = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
 
-        return { top_text, bottom_text };
+        return { topText, bottomText };
     };
 
-    const { top_text, bottom_text } = extractTexts(text);
+    const { topText, bottomText } = extractTexts(text);
+
+    const [editTopText, setEditTopText] = useState(topText)
+    const [editBotText, setEditBotText] = useState(bottomText)
+
+    const handleTop = (e) => {
+        setEditTopText(e.target.innerText);
+    };
+
+    const handleBot = (e) => {
+        setEditBotText(e.target.innerText);
+    };
 
     return (
         <div id="template_event_4to7_2" className="relative">
@@ -159,32 +170,43 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
 
             {/* ✅ 텍스트 오버레이 */}
-             <div className="absolute w-[84.14%] text-white text-center left-1/2 transform -translate-x-1/2"
+            <div className="absolute w-[80.14%] text-white text-center left-1/2 transform -translate-x-1/2"
                 style={{ top: `${(150 / 1792) * 100}%` }}>
-                <p className="text-white text-center break-keep pb-6"
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleTop}
+                    className={`editable-text blinking-cursor pb-6 text-center break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "BlackAndWhitePicture",
-                        fontSize: "48px",
+                        fontSize: `${96 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
-                        lineHeight: "60px",
-
-                    }}>
-                    {top_text}
+                        lineHeight: `${100 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editTopText}
                 </p>
-                <p className="text-white text-center break-keep"
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBot}
+                    className={`editable-text blinking-cursor text-center break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "30px",
+                        fontSize: `${60 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "32px",
-                    }}>
-                    {bottom_text}
+                        lineHeight: `${64 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editBotText}
                 </p>
             </div>
 
@@ -192,16 +214,32 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                 className="absolute w-full text-white text-center left-1/2 transform -translate-x-1/2"
                 style={{
                     top: `${(1593 / 1792) * 100}%`,
-                    color: "#FFF",
-                    fontFeatureSettings: "'case' on",
-                    fontFamily: "Pretendard",
-                    fontStyle: "normal",
-                    fontWeight: 500,
-                    lineHeight: "30px",
                 }}
-                >
-                <p style={{ fontSize: "24px", margin: 0 }}>{storeName}</p>
-                <p style={{ fontSize: "24px", margin: 0 }}>{roadName}</p>
+            >
+                <p className="text-white text-center break-keep pb-2"
+                    style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: `${48 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 500,
+                        lineHeight: `${50 * (431 / 1024)}px`,
+                    }}>
+                    {storeName}
+                </p>
+                <p className="text-white text-center break-keep"
+                    style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "Pretendard",
+                        fontSize: `${48 * (431 / 1024)}px`,
+                        fontStyle: "normal",
+                        fontWeight: 500,
+                        lineHeight: `${50 * (431 / 1024)}px`,
+                    }}>
+                    {roadName}
+                </p>
             </div>
 
 

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
 
-const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template2 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
     // console.log(weather)
@@ -63,20 +63,40 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
     }, [imageUrl, text]);
 
     const extractTexts = (text) => {
-        let top_text = "";
-        let bottom_text = "";
+        let topText = "";
+        let bottomText = "";
 
         // ✅ "제목 :", "내용 :"을 기준으로 나누기
         const titleMatch = text.match(/제목\s*:\s*([^내용]*)/);
         const contentMatch = text.match(/내용\s*:\s*(.*)/);
 
-        if (titleMatch) top_text = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
-        if (contentMatch) bottom_text = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
+        if (titleMatch) topText = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
+        if (contentMatch) bottomText = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
 
-        return { top_text, bottom_text };
+        return { topText, bottomText };
     };
 
-    const { top_text, bottom_text } = extractTexts(text);
+    const { topText, bottomText } = extractTexts(text);
+
+    const [editTopText, setEditTopText] = useState(topText)
+    const [editBotText, setEditBotText] = useState(bottomText)
+
+    const handleTop = (e) => {
+        setEditTopText(e.target.innerText);
+    };
+
+    const handleBot = (e) => {
+        setEditBotText(e.target.innerText);
+    };
+
+    const formatStoreName = (name) => {
+        const chunkSize = 8;
+        let result = "";
+        for (let i = 0; i < name.length; i += chunkSize) {
+            result += name.slice(i, i + chunkSize) + "\n";
+        }
+        return result.trim();
+    };
 
 
     return (
@@ -103,55 +123,68 @@ const Template2 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             {/* ✅ 텍스트 오버레이 */}
             <div className="absolute"
                 style={{ top: `${(69 / 1024) * 100}%`, left: `${(96 / 1024) * 100}%` }}>
-                <p className="text-white text-left break-keep pb-2"
+                <p className="text-white text-left break-keep pb-6"
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "JejuHallasan, sans-serif",
-                        fontSize: "18px",
+                        fontSize: `${48 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 400,
                         lineHeight: "normal",
+                        whiteSpace: "pre-line",
                     }}>
-                    {storeName}
+                    {formatStoreName(storeName)}
                 </p>
-                <p className="text-white text-left break-keep pb-4"
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleTop}
+                    className={`editable-text pb-4 blinking-cursor text-left break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "20px",
+                        fontSize: `${48 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "35px",
-                    }}>
-                    {top_text}
+                        lineHeight: `${55 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editTopText}
                 </p>
-                <p className="text-white text-left break-keep"
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBot}
+                    className={`editable-text blinking-cursor text-left break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "16px",
+                        fontSize: `${40 * (431 / 1024)}px`,
                         fontStyle: "normal",
-                        fontWeight: 500,
-                        lineHeight: "35px",
-                    }}>
-                    {bottom_text}
+                        fontWeight: 400,
+                        lineHeight: `${35 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editBotText}
                 </p>
             </div>
 
             <div className="absolute w-full"
-                style={{ top: `${(925 / 1024) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
+                style={{ top: `${(888 / 1024) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
                 <p className="text-white text-center break-keep"
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "18px",
+                        fontSize: `${36 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 500,
-                        lineHeight: "50px",
+                        lineHeight: `${50 * (431 / 1024)}px`,
                     }}>
                     {roadName}
                 </p>

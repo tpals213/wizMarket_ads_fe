@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
 
-const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template4 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
     // console.log(weather)
@@ -10,7 +10,7 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
     const wantWidth = 1024;
     const wantHeight = 1792;
 
-    const topStore = storeName + " | " + roadName.split(" ")[1] 
+    const topStore = storeName + " | " + roadName.split(" ")[1]
 
 
     useEffect(() => {
@@ -82,33 +82,19 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             );
 
             // ✅ 9. SEASON 코드 추가 (우측 하단)
-            const topWidth = 1024;  
+            const topWidth = 1024;
             const topHeight = 415;
             const topX = 0
             const topY = 0
 
-            ctx.drawImage(topImg, topX, topY, topWidth, topHeight); 
+            ctx.drawImage(topImg, topX, topY, topWidth, topHeight);
 
-            const btWidth = 1024;  
+            const btWidth = 1024;
             const btHeight = 822;
             const btX = 0
             const btY = 970
 
-            ctx.drawImage(btImg, btX, btY, btWidth, btHeight); 
-
-            ctx.beginPath();
-            ctx.moveTo(153, 103); // 시작점
-            ctx.lineTo(153 + 700, 103); // 끝점 (너비 189px)
-            ctx.lineWidth = 2; // 선 두께
-            ctx.strokeStyle = "#FFFFFF"; // 선 색상
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(153, 208); // 시작점
-            ctx.lineTo(153 + 700, 208); // 끝점 (너비 189px)
-            ctx.lineWidth = 2; // 선 두께
-            ctx.strokeStyle = "#FFFFFF"; // 선 색상
-            ctx.stroke();
+            ctx.drawImage(btImg, btX, btY, btWidth, btHeight);
 
             // ✅ 최종 이미지 저장
             const finalImageUrl = canvas.toDataURL("image/png");
@@ -119,18 +105,39 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
     const extractTexts = (text) => {
         let topText = "";
         let bottomText = "";
-    
+
         // ✅ "제목 :", "내용 :"을 기준으로 나누기
         const titleMatch = text.match(/제목\s*:\s*([^내용]*)/);
         const contentMatch = text.match(/내용\s*:\s*(.*)/);
-    
+
         if (titleMatch) topText = titleMatch[1].trim(); // ✅ 제목 값만 가져옴
         if (contentMatch) bottomText = contentMatch[1].trim(); // ✅ 내용 값만 가져옴
-    
+
         return { topText, bottomText };
     };
 
     const { topText, bottomText } = extractTexts(text);
+
+    const [editTopText, setEditTopText] = useState(topText)
+    const [editBotText, setEditBotText] = useState(bottomText)
+
+    const handleTop = (e) => {
+        setEditTopText(e.target.innerText);
+    };
+
+    const handleBot = (e) => {
+        setEditBotText(e.target.innerText);
+    };
+
+
+    const formatTop = (name) => {
+        const chunkSize = 8;
+        let result = "";
+        for (let i = 0; i < name.length; i += chunkSize) {
+            result += name.slice(i, i + chunkSize) + "\n";
+        }
+        return result.trim();
+    };
 
 
     return (
@@ -147,9 +154,9 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             )}
 
             {/* ✅ 텍스트 오버레이 */}
-            
 
-            
+
+
             <div className="absolute top-[67.22%] left-[7.42%]">
                 {/* ✅ 파란색 배경 (글씨보다 위아래 4px, 양옆 8px 크게 설정) */}
                 <div className="bg-[#09C5FE] px-1 h-[24px] flex items-center justify-center">
@@ -160,62 +167,84 @@ const Template4 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
                 </div>
             </div>
 
-            <div className="absolute w-[68.06%] top-[71.21%] left-[7.42%]">
-                <p className="text-white text-left break-keep pb-12"
+            <div className="absolute w-[68.06%] top-[71.91%] left-[7.42%]">
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleTop}
+                    className={`editable-text blinking-cursor pb-8 text-left break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "32px",
+                        fontSize: `${64 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "32px",
-                    }}>
-                    {topText}
+                        lineHeight: `${64 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editTopText}
                 </p>
-                <p className="text-white text-left break-keep"
+                <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBot}
+                    className={`editable-text blinking-cursor pb-8 text-left break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "20px",
+                        fontSize: `${40 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 500,
-                        lineHeight: "26px",
-                    }}>
-                    {bottomText}
+                        lineHeight: `${52 * (431 / 1024)}px`,
+                    }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
+                >
+                    {editBotText}
                 </p>
             </div>
 
 
             {/* ✅ 상하좌우 50px 더 큰 배경 div */}
-            <div className="absolute w-full"
-                style={{ top: `${(134 / 1792) * 100}%`, left: "50%",  transform: "translateX(-50%)"  }}>
-                <p className="text-white text-center overflow-hidden text-ellipsis"
+            <div className="absolute w-[80%]"
+                style={{ top: `${(128 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
+                <p className="text-white text-center text-ellipsis"
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "27.5px",
+                        fontSize: `${55 * (431 / 1024)}px`,
                         fontStyle: "normal",
-                        fontWeight: 800,
-                        lineHeight: "30px",
+                        fontWeight: 700,
+                        lineHeight: `${60 * (431 / 1024)}px`,
+                        whiteSpace: "pre-line",
                     }}>
-                    {topStore}
+                    {formatTop(topStore).split("\n").map((line, index, array) => (
+                        <span key={index}
+                            style={{
+                                display: "block",
+                                borderTop: index === 0 ? "2px solid white" : "none", // 첫 줄 위에 선 추가
+                                borderBottom: index === array.length - 1 ? "2px solid white" : "none", // 마지막 줄 아래에 선 추가
+                            }}>
+                            {line}
+                        </span>
+                    ))}
                 </p>
             </div>
 
             <div className="absolute w-full"
-                style={{ top: `${(1704 / 1792) * 100}%`, left: "50%",  transform: "translateX(-50%)"  }}>
+                style={{ top: `${(1702 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
                 <p className="text-white text-center overflow-hidden text-ellipsis"
                     style={{
                         color: "rgba(255, 255, 255, 0.80)",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "16px",
+                        fontSize: `${32 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 500,
-                        lineHeight: "20px",
+                        lineHeight: `${40 * (431 / 1024)}px`,
                     }}>
                     {roadName}
                 </p>

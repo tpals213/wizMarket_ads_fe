@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "../../../../../styles/templateFont.css"
 
 
-const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday }) => {
+const Template3 = ({ imageUrl, text, storeName, isCaptured }) => {
     const canvasRef = useRef(null);
     const [finalImage, setFinalImage] = useState(null);
     // console.log(weather)
@@ -12,6 +12,11 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
 
     // const topText = roadName.split(" ")[1] + " | " + tag + " | " + weather + " | " + weekday;
 
+    const [editText, setEditText] = useState(text)
+
+    const handleBlur = (e) => {
+        setEditText(e.target.innerText);
+    };
 
     useEffect(() => {
         if (!imageUrl) return;
@@ -62,6 +67,16 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
         };
     }, [imageUrl, text]);
 
+    const formatStoreName = (name) => {
+        const chunkSize = 11;
+        let result = "";
+        for (let i = 0; i < name.length; i += chunkSize) {
+            result += name.slice(i, i + chunkSize) + "\n";
+        }
+        return result.trim();
+    };
+
+
     return (
         <div id="template_intro_1to1_3" className="relative">
             {/* ✅ 최종 이미지 출력 */}
@@ -84,28 +99,38 @@ const Template3 = ({ imageUrl, text, storeName, roadName, weather, tag, weekday 
             ></div>
 
             {/* ✅ 텍스트 오버레이 */}
-            <div className="absolute text-white text-left top-[7.7%] left-[9.4%]">
-                <p 
-                    className="break-words whitespace-pre-line text-[36px] font-normal leading-normal pb-8"
-                    style={{ 
-                        fontFamily: "JejuHallasan, sans-serif",
+            <div className="absolute text-white text-left top-[7.7%] left-[9.4%] w-[80%]">
+                <p className="text-white text-left break-keep pb-8"
+                    style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
+                        fontFamily: "JejuHallasan",
+                        fontSize: `${64 * (431 / 1024)}px`,
                         fontStyle: "normal",
-                        color: "#FFF" // 명확하게 설정
+                        fontWeight: 400,
+                        lineHeight: "normal",
+                        whiteSpace: "pre-line", // 
                     }}>
-                    {storeName}
+                    {formatStoreName(storeName)}
                 </p>
 
                 <p
-                    className="break-words whitespace-pre-line font-bold"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleBlur}
+                    className={`editable-text blinking-cursor text-left break-keep relative ${isCaptured ? "no-blinking" : ""}`}
                     style={{
+                        color: "#FFF",
+                        fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: "32px",
+                        fontSize: `${64 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: "35px",
+                        lineHeight: "normal"
                     }}
+                    data-html2canvas-ignore={isCaptured ? "true" : "false"}
                 >
-                    {text}
+                    {editText}
                 </p>
             </div>
 
