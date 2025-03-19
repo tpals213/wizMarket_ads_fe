@@ -72,7 +72,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
 
     // 시드 템플릿 선택
     const handleTemplateClick = (imgObj) => {
-        
+
 
         if (exampleImage === imgObj.src) {
             // 현재 선택된 이미지라면 선택 해제
@@ -254,11 +254,11 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
     }), []);
 
 
-    // useEffect(() => {
-    //     if (isOpen) {
-    //         resetModalState();
-    //     }
-    // }, [isOpen]);
+    useEffect(() => {
+        if (isOpen) {
+            resetModalState();
+        }
+    }, [isOpen]);
 
 
     useEffect(() => {
