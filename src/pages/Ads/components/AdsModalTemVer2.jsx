@@ -495,7 +495,7 @@ const AdsModalTemVer2 = ({ isOpen, onClose, storeBusinessNumber }) => {
             setContent(response.data.copyright); // 성공 시 서버에서 받은 데이터를 상태에 저장
             // setOriginImage(response.data.origin_image)
             const formattedOriginImage = `data:image/png;base64,${response.data.origin_image[0]}`;
-            // console.log(response.data);
+            // console.log(response.data.copyright);
             setWithoutSign(response.data.copyright.replace(/["']/g, "").trim());
             setImageTemplateList([formattedOriginImage])
             setInstaCopyright(response.data.insta_copyright)

@@ -131,7 +131,7 @@ const Template4 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
 
 
     const formatTop = (name) => {
-        const chunkSize = 8;
+        const chunkSize = 11;
         let result = "";
         for (let i = 0; i < name.length; i += chunkSize) {
             result += name.slice(i, i + chunkSize) + "\n";
@@ -180,7 +180,7 @@ const Template4 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
                         fontSize: `${64 * (431 / 1024)}px`,
                         fontStyle: "normal",
                         fontWeight: 700,
-                        lineHeight: `${64 * (431 / 1024)}px`,
+                        lineHeight: `${70 * (431 / 1024)}px`,
                     }}
                     data-html2canvas-ignore={isCaptured ? "true" : "false"}
                 >
@@ -208,14 +208,14 @@ const Template4 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
 
 
             {/* ✅ 상하좌우 50px 더 큰 배경 div */}
-            <div className="absolute w-[80%]"
+            <div className="absolute w-[65%]"
                 style={{ top: `${(128 / 1792) * 100}%`, left: "50%", transform: "translateX(-50%)" }}>
                 <p className="text-white text-center text-ellipsis"
                     style={{
                         color: "#FFF",
                         fontFeatureSettings: "'case' on",
                         fontFamily: "Pretendard",
-                        fontSize: `${55 * (431 / 1024)}px`,
+                        fontSize: `${55 * (431 / 1024)}px`, // ✅ 적용 안될 경우 대비해서 span에도 적용
                         fontStyle: "normal",
                         fontWeight: 700,
                         lineHeight: `${60 * (431 / 1024)}px`,
@@ -227,6 +227,9 @@ const Template4 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
                                 display: "block",
                                 borderTop: index === 0 ? "2px solid white" : "none", // 첫 줄 위에 선 추가
                                 borderBottom: index === array.length - 1 ? "2px solid white" : "none", // 마지막 줄 아래에 선 추가
+                                fontSize: `${55 * (431 / 1024)}px`, // ✅ span에도 폰트 크기 적용
+                                fontWeight: 700, // ✅ 글자 두께 유지
+                                lineHeight: `${60 * (431 / 1024)}px`, // ✅ 줄 간격 유지
                             }}>
                             {line}
                         </span>
@@ -249,7 +252,6 @@ const Template4 = ({ imageUrl, text, storeName, roadName, isCaptured }) => {
                     {roadName}
                 </p>
             </div>
-
 
             {/* ✅ Canvas (숨김 처리) */}
             <canvas ref={canvasRef} style={{ display: "none" }} />
